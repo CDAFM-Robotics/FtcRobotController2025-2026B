@@ -343,7 +343,11 @@ public class Launcher {
 
         shootingTable = new InterpolationTable(InterpolationTable.ExtrapolationMode.LINEAR);
 
-        shootingTable.add(30.20,1080,1.0);
+        // key = distance from goal,
+        // data1 = motor power,
+        // data2 = shooter hood servo position
+        shootingTable.add(35,1080,1.0);
+        shootingTable.add(45.29,1120,0.65);
         shootingTable.add(60.02,1200,0.30);
         shootingTable.add(90,1320,0.15);
         shootingTable.add(140,1560,0.0);
