@@ -38,7 +38,8 @@ public class Robot {
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
 
-    public final int WAIT_TIME_KICKER = 300; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
+    public final int WAIT_TIME_KICKER_UP = 250; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
+    public final int WAIT_TIME_KICKER_DOWN = 150; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry) {
         // Create an instance of the hardware map and telemetry in the Robot class
@@ -139,8 +140,6 @@ public class Robot {
                      // This line is removed to save time.
                      indexer.updateColorAllSlots();
                      intake3Balls = true;
-//                     indexer.positionForOuttake();
-                     autoIntakeState = AutoIntakeStates.INIT;
                      break;
                  }
              case TURN_EMPTY_SLOT_TO_INTAKE:
@@ -158,11 +157,6 @@ public class Robot {
                          autoIntakeState = AutoIntakeStates.INIT;
                          break;
                      }
-                 }
-                 break;
-             case POSITION_FOR_OUTTAKE:
-                 if (indexer.indexerFinishedTurning()) {
-                     autoIntakeState = AutoIntakeStates.INIT;
                  }
                  break;
              default:
@@ -254,7 +248,7 @@ public class Robot {
                     case RESET_KICKER:
                         telemetry.addLine("shootAllBalls: RESET_KICKER");
                         RobotLog.d("shootAllBalls: RESET_KICKER");
-                        if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER) {
+                        if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER_UP) {
                             launcher.resetKicker();
                             timeSinceKickReset.reset();
                             launchState = LaunchBallStates.UPDATE_INDEXER;
@@ -265,7 +259,7 @@ public class Robot {
                     case UPDATE_INDEXER:
                         telemetry.addLine("shootAllBalls: UPDATE_INDEXER");
                         RobotLog.d("shootAllBalls: UPDATE_INDEXER");
-                        if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER) {
+                        if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER_DOWN) {
                             safeToStop = true;
                             indexer.updateAfterShoot();
                             launchState = LaunchBallStates.INIT;
@@ -314,6 +308,8 @@ public class Robot {
         indexer.updateColorAllSlots();
     }
 
+    private double lastRelativeHeading = -5000; // Just to check whether it has been set yet
+
     //updating the turret every loop
     public void updateTurretAngle(){
         //read the current pose
@@ -356,13 +352,31 @@ public class Robot {
         launcher.setTurretRelativeAngle(relativeAngle);
     }
 
+    double buffer = 10;
+
     public double normalizeAngle (double angle) {
+
+        if (lastRelativeHeading == -5000) {
+            lastRelativeHeading = angle;
+        }
+
+
         while (angle > 180.0) {
+            if (angle > 180 && angle < 180 + buffer && lastRelativeHeading > 0) {
+                lastRelativeHeading = angle;
+                return angle;
+            }
             angle -= 360.0;
         }
         while (angle < -180.0) {
+            if (angle < -180 && angle > -180 - buffer && lastRelativeHeading < 0) {
+                lastRelativeHeading = angle;
+                return angle;
+            }
             angle += 360.0;
         }
+
+        lastRelativeHeading = angle;
         return angle;
     }
 

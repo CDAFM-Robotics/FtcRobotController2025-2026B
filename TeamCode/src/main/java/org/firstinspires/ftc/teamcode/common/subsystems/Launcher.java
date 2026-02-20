@@ -349,7 +349,9 @@ public class Launcher {
         shootingTable.add(35,1080,1.0);
         shootingTable.add(45.29,1120,0.65);
         shootingTable.add(60.02,1200,0.30);
+        shootingTable.add(74.84,1250,0.20);
         shootingTable.add(90,1320,0.15);
+        shootingTable.add(105.16,1380,0.1);
         shootingTable.add(140,1560,0.0);
 
         //limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -656,11 +658,11 @@ public class Launcher {
         double diff = Math.abs(currentAngle - lastAngle);
 
         if (!firstLoop) {
-            if (currentAngle > 180 && lastAngle < 180 && diff > 30) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
                 currentAngleOffset -= 360;
             }
 
-            if (currentAngle < 180 && lastAngle > 180 && diff > 30) {
+            if (currentAngle < 180 && lastAngle > 180 && diff > 100) {
                 currentAngleOffset += 360;
             }
         }

@@ -573,13 +573,7 @@ public class Indexer {
         //Check for empty slot according to current position
         double position = getIndexerPosition();
 
-        if (artifactColorArray[0] == ArtifactColor.NONE
-                && artifactColorArray[1] == ArtifactColor.NONE
-                && artifactColorArray[2] == ArtifactColor.NONE) {
-            nextEmptySlot = 2;
-            return true;
-        }
-        else if (position >= POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
+        if (position >= POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
             if (artifactColorArray[0] == ArtifactColor.NONE) {
                 nextEmptySlot = 0;
                 return true;

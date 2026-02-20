@@ -132,7 +132,7 @@ public class Hud {
     public void UpdateBallUI() {
 
 
-        // Sleep for 5ms between command to avoid overwhelming i2c device with
+        // //sleep for 5ms between command to avoid overwhelming i2c device with
         // messages (0 causes glitches & strip freezes)
 
         if (ball1 != last1 ) { // only send update if different
@@ -140,61 +140,61 @@ public class Hud {
             last1 = ball1;
             // Ball1 (bottom) LEDs 0-2
             ledstripRear.setColor(0, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+            ////sleep(ms_delay);
             ledstripFront.setColor(0, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+            ////sleep(ms_delay);
             ledstripRear.setColor(1, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(1, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripRear.setColor(2, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(2, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
         }
 
         if (ball2 != last2) {
             last2 = ball2;
             // Ball2
             ledstripRear.setColor(3, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(3, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripRear.setColor(4, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(4, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripRear.setColor(5, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(5, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
 
         }
         if (ball3 != last3) {
             // Drop2_sensor (bottom) LEDs 5-8
             last3 = ball3;
             ledstripRear.setColor(6, Balls[ball3.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(6, Balls[ball3.ordinal()]);
 
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripRear.setColor(7, Balls[ball3.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(7, Balls[ball3.ordinal()]);
 
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripRear.setColor(8, Balls[ball3.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(8, Balls[ball3.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
         }
         // set aiming led
         if (aimLED != lastAimLED) {
             lastAimLED = aimLED;
             ledstripRear.setColor(9, Balls[aimLED.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
             ledstripFront.setColor(9, Balls[aimLED.ordinal()]);
-            sleep(ms_delay);
+            //sleep(ms_delay);
         }
 
     }

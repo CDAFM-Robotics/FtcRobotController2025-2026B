@@ -70,7 +70,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 driveSpeed = driveSpeed == 1 ? 0.5 : 1;
             }
 
-            robot.getDriveBase().setMotorPowers(gamepad1.left_stick_x, -gamepad1.left_stick_y, gamepad1.right_stick_x, driveSpeed, fieldCentric);
+            robot.getDriveBase().setMotorPowers(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x, driveSpeed, fieldCentric);
 
             // Kickstand control
 //            if (currentGamepad1.a != previousGamepad1.a) {
@@ -104,15 +104,13 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 robot.getIntake().stopIntake();
             }
 
-
-
             // reverse the intake for half a second to prevent the robot from intake the fourth ball
-            if (waitForReverseTimer
-                    && reverseIntakeTimer.milliseconds() >= REVERSE_INTAKE_TIME
-                    && robot.getIntake().getIntakeState() == -1) {
-                waitForReverseTimer = false;
-                robot.getIntake().stopIntake();
-            }
+//            if (waitForReverseTimer
+//                    && reverseIntakeTimer.milliseconds() >= REVERSE_INTAKE_TIME
+//                    && robot.getIntake().getIntakeState() == -1) {
+//                waitForReverseTimer = false;
+//                robot.getIntake().stopIntake();
+//            }
 
             // When indexer stuck or out of alignment, recover the color of the balls
             if (currentGamepad2.left_trigger != 0 && previousGamepad2.left_trigger == 0){
