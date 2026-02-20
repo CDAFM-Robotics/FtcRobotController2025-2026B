@@ -10,9 +10,10 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 @TeleOp(name = "Custom Action Test", group = "testing")
 @Disabled
 public class CustomActionTestOpMode extends LinearOpMode {
+    boolean isRedSide = false;
     @Override
     public void runOpMode() throws InterruptedException {
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
         waitForStart();
 
         double power = 0;

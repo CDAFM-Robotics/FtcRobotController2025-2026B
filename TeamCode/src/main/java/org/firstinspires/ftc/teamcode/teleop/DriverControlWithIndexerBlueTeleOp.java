@@ -12,7 +12,7 @@ import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCapt
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 
-@TeleOp(name = "BLUE Bot2", group = "0teleop")
+@TeleOp(name = "BLUE Bot2 ", group = "0teleop")
 public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
     public boolean isRedSide = false;
 
@@ -23,7 +23,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // FtcDashboard dashboard = FtcDashboard.getInstance();
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         double driveSpeed = 1;
         boolean fieldCentric = true;
@@ -43,8 +43,11 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
+        // Set piopoint position here to avoid racing issue with pinpoint reset
+        robot.getDriveBase().setPinPointInitialPosition();
 
         while (opModeIsActive()){
+            telemetry.addData("is red side", isRedSide);
             previousGamepad1.copy(currentGamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
@@ -83,8 +86,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //                robot.getDriveBase().resetKickStandLight();
 //            }
 
-            // Intake Balls
-            if (currentGamepad1.right_trigger != 0.0) {
+            // Intake Balls. Add isSafeToStop()
+            if (currentGamepad1.right_trigger != 0.0 && robot.isSafeToStop()) {
                 //telemetry.addLine("gameped 1 right trigger or 2 left trigger");
                 //start the intake rolling
                 robot.getIntake().startIntake();
@@ -200,12 +203,6 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             //change gamepad 2 light bar when sped up all the way
             /*if(robot.getLauncher().getLauncherVelocity() == robot.getLauncher().getLauncherTargetVelocity() && robot.getLauncher().getLauncherTargetVelocity() != 0.0){
                 gamepad2.setLedColor(255, 255, 0, 20);
-            }*/
-
-            //rumble gamepad 2 when empty
-            /*if(robot.getIndexer().artifactColorArray == new ArtifactColor[] {ArtifactColor.NONE, ArtifactColor.NONE, ArtifactColor.NONE} && robot.getLauncher().getLauncherTargetVelocity() != 0.0){
-                gamepad2.rumble(0.25, 0, 10);
-                gamepad2.rumble(0, 0.25, 10);
             }*/
 
             //telemetry.addData("launcher power:", robot.getLauncher().getLaunchPower());

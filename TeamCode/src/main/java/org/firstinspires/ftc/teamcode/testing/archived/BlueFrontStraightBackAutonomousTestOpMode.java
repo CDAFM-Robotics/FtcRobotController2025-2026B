@@ -17,11 +17,11 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 public class BlueFrontStraightBackAutonomousTestOpMode extends LinearOpMode {
 
     AutonomousActionBuilder actionBuilder;
-
+    boolean isRedSide = false;
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive md = new MecanumDrive(hardwareMap, new Pose2d(-50.5, -50.5, Math.toRadians(-37)));
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         actionBuilder = new AutonomousActionBuilder(md, robot);
 

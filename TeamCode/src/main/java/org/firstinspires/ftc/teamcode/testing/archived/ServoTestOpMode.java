@@ -16,10 +16,10 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 @TeleOp(name = "Servo Test", group = "Testing")
 @Disabled
 public class ServoTestOpMode extends LinearOpMode {
-
+    boolean isRedSide = false;
     @Override
     public void runOpMode() throws InterruptedException {
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         AnalogInput axon_position_V;
         axon_position_V = hardwareMap.get(AnalogInput.class, "analog0");

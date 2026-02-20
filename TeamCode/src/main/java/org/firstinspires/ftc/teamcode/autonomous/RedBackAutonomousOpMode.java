@@ -26,12 +26,12 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
     Action[] trajectories;
 
     AutonomousActionBuilder autonomousActionBuilder;
-
+    boolean isRedSide = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive md = new MecanumDrive(hardwareMap, /*new Pose2d(new Vector2d(61, 11.5), Math.toRadians(180))*/ new Pose2d(new Vector2d(61, 11.75), Math.toRadians(-90)));
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
         //robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
         autonomousActionBuilder = new AutonomousActionBuilder(md, robot);
 

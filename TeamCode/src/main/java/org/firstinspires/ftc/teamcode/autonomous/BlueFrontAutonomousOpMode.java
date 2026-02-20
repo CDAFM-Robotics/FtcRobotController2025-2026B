@@ -25,12 +25,12 @@ public class BlueFrontAutonomousOpMode extends LinearOpMode {
     Action[] trajectories;
 
     AutonomousActionBuilder autonomousActionBuilder;
-
+    boolean isRedSide = false;
 
     @Override
     public void runOpMode() {
 
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
         //robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
 
         ArtifactColor[] motif = null;

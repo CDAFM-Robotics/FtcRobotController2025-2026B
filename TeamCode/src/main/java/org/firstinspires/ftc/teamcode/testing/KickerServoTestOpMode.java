@@ -10,10 +10,10 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 @TeleOp(name = "Kicker Servo Test", group = "testing")
 
 public class KickerServoTestOpMode extends LinearOpMode {
-
+    boolean isRedSide = false;
     @Override
     public void runOpMode() throws InterruptedException {
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry,isRedSide);
 
         //AnalogInput axon_position_V;
         //axon_position_V = hardwareMap.get(AnalogInput.class, "analog0");

@@ -32,6 +32,7 @@ public class Robot {
     public boolean intake3Balls = false; //Picked up all three balls
     public boolean intake1Ball = false; //Picked up one ball
     private boolean safeToStop = true; //if kicker is down
+    private boolean isRedSide = false;
 
     private ArtifactColor ballColor = ArtifactColor.NONE;
 
@@ -41,20 +42,20 @@ public class Robot {
     public final int WAIT_TIME_KICKER_UP = 250; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
     public final int WAIT_TIME_KICKER_DOWN = 150; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
 
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry) {
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
         timeSinceKick.startTime();
         timeSinceKickReset.startTime();
         reverseIntakeTimer.startTime();
-
-        initializeSubsystems();
+        isRedSide = isRed;
+        initializeSubsystems(isRed);
     }
 
-    public void initializeSubsystems() {
+    public void initializeSubsystems(boolean isRed) {
         // Create an instance of every subsystem in the Robot class
-        this.driveBase = new DriveBase(this.hardwareMap, this.telemetry);
+        this.driveBase = new DriveBase(this.hardwareMap, this.telemetry, isRed);
         this.indexer = new Indexer(this.hardwareMap, this.telemetry);
         this.launcher = new Launcher(this.hardwareMap, this.telemetry);
         this.intake = new Intake(this.hardwareMap, this.telemetry);
@@ -321,9 +322,18 @@ public class Robot {
         double robotHeading = Math.toDegrees(pinPointHeading);
 
         //calculate the relative angle of the turret to the robot
+        double blueGoalX;
+        double blueGoalY;
         // coordinates of the blue goal
-        double blueGoalX = -64;
-        double blueGoalY = -64;
+        if (isRedSide) {
+            blueGoalX = -64;
+            blueGoalY = 64;
+        }
+        else {
+            blueGoalX = -64;
+            blueGoalY = -64;
+        }
+
 
         // calculate vector to blue goal
         double deltaX = blueGoalX - robotX;
@@ -335,7 +345,7 @@ public class Robot {
         double absoluteAngleRadians = Math.atan2(deltaY, deltaX);
         double absoluteAngleDegree = Math.toDegrees(absoluteAngleRadians);
 
-        double relativeAngle = absoluteAngleDegree - robotHeading;
+        double relativeAngle = (absoluteAngleDegree - robotHeading)*180/180;
 
         relativeAngle = normalizeAngle(relativeAngle);
 

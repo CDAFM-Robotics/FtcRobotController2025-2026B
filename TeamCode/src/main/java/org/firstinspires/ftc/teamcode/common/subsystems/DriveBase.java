@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -31,16 +32,18 @@ public class DriveBase {
 
     GoBildaPinpointDriver pinpoint;
     private Pose2D pos;
+    private boolean isRedSide;
 
 
-    public DriveBase(HardwareMap hardwareMap, Telemetry telemetry) {
+    public DriveBase(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
+        isRedSide = isRed;
 
-        initializeDriveBaseDevices();
+        initializeDriveBaseDevices(isRed);
     }
 
-    public void initializeDriveBaseDevices() {
+    public void initializeDriveBaseDevices(boolean isRed) {
         frontLeftMotor = hardwareMap.get(DcMotor.class, "frontLeftMotor");
         frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
         backLeftMotor = hardwareMap.get(DcMotor.class, "backLeftMotor");
@@ -71,28 +74,10 @@ public class DriveBase {
 
         // Configure the sensor
         configurePinpoint();
-        double startX = 0;
-        double startY = 0;
-        double startHeading = 0;
-
-
-
-        // if the auto completed, use the value from end of auto
-        if (RobotStaticValuesClass.autoCompleted) {
-            startX = RobotStaticValuesClass.robotStaticX;
-            startY = RobotStaticValuesClass.robotStaticY;
-            startHeading = RobotStaticValuesClass.robotStaticHeading;
-        }
-
-        // Set the location of the robot - this should be the place you are starting the robot from
-        pinpoint.setPosition(new Pose2D(DistanceUnit.MM, startX, startY, AngleUnit.RADIANS, startHeading));
-
     }
 
     public void resetIMU(){
-
         resetPinpointIMU();
-
     }
 
     public void resetPinpointIMU()
@@ -114,21 +99,35 @@ public class DriveBase {
     }
 
     public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
+//        RobotLog.d("pinpoint heading1 %.2f", pinpoint.getHeading(AngleUnit.DEGREES));
+//        telemetry.addData("X", pinpoint.getPosX(DistanceUnit.INCH));
+//        telemetry.addData("y", pinpoint.getPosY(DistanceUnit.INCH));
         pinpoint.update();
         pos = pinpoint.getPosition();
 
-
-        double heading;
+        double heading = 0;
+        double driverOffset;
+        double adjustedHeading;
         if (fieldCentric) {
-            // heading = -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-            heading = -pos.getHeading(AngleUnit.RADIANS);
+            heading = pos.getHeading(AngleUnit.RADIANS);
+            // Apply 90-degree driver offset (in radians)
+            if (isRedSide) {
+                driverOffset = Math.toRadians(-90); // Change to -90 if opposite direction needed
+            }
+            else {
+                driverOffset = Math.toRadians(90);
+            }
+
+            adjustedHeading= -(heading - driverOffset);
+            //if (adjustedHeading > 180)  adjustedHeading -= 360;
+            //if (adjustedHeading < -180) adjustedHeading += 360;
         }
         else {
-            heading = 0;
+            adjustedHeading = 0;
         }
 
-        double rotX = x * Math.cos(heading) - y * Math.sin(heading);
-        double rotY = x * Math.sin(heading) + y * Math.cos(heading);
+        double rotX = x * Math.cos(adjustedHeading) - y * Math.sin(adjustedHeading);
+        double rotY = x * Math.sin(adjustedHeading) + y * Math.cos(adjustedHeading);
 
         // put strafing factors here
         rotX = rotX * 1;
@@ -190,4 +189,29 @@ public class DriveBase {
     public double getPinPointHeading() {
         return pinpoint.getHeading(AngleUnit.RADIANS);
     }
+
+    public void setPinPointInitialPosition() {
+        double startX;
+        double startY;
+        double startHeading;
+
+        // if the auto completed, use the value from end of auto
+        if (RobotStaticValuesClass.autoCompleted) {
+            startX = RobotStaticValuesClass.robotStaticX;
+            startY = RobotStaticValuesClass.robotStaticY;
+            startHeading = RobotStaticValuesClass.robotStaticHeading;
+        } else {
+            startX = 0;
+            startY = 0;
+            startHeading = 0;
+        }
+
+        // Set the location of the robot - this should be the place you are starting the robot from
+        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, startX, startY, AngleUnit.DEGREES, startHeading));
+        pinpoint.update();
+        telemetry.addData("setPinPointInitialPosition heading", pinpoint.getHeading(AngleUnit.DEGREES));
+        telemetry.addData("setPinPointInitialPositionX", pinpoint.getPosX(DistanceUnit.INCH));
+        telemetry.addData("setPinPointInitialPositiony", pinpoint.getPosY(DistanceUnit.INCH));
+    }
+
 }

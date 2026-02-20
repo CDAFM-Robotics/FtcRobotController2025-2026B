@@ -9,10 +9,10 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 @TeleOp(name="Mecanum Drive Field Centric Test", group = "Testing")
 @Disabled
 public class MecanumDriveFieldCentricTestOpMode extends LinearOpMode {
-
+    boolean isRedSide = false;
     @Override
     public void runOpMode() {
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad1 = new Gamepad();

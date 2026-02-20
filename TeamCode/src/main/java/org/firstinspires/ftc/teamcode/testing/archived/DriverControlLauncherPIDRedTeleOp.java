@@ -23,12 +23,12 @@ public class DriverControlLauncherPIDRedTeleOp extends LinearOpMode {
         // TODO Add Data to Dashboard Start
         FtcDashboard dashboard = FtcDashboard.getInstance();
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
-
+        boolean isRedSide = false;
         //dashTelemetry.addData("HelloWorld", 0.0);
         //dashTelemetry.update();
         // TODO Add Data to Dashboard End
 
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         double driveSpeed = 1;
         boolean fieldCentric = true;

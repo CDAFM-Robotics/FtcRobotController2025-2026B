@@ -9,10 +9,10 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 @TeleOp(name = "motor debugger", group = "testing")
 @Disabled
 public class MotorDirectionDebuggerOpMode extends LinearOpMode {
-
+    boolean isRedSide = false;
     @Override
     public void runOpMode() throws InterruptedException {
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         double frontLeftPower = 0;
         double frontRightPower = 0;
