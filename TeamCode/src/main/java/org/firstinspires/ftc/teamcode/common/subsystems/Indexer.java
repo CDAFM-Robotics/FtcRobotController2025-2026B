@@ -211,7 +211,7 @@ public class Indexer {
         telemetry.addData("sensor1Distance", sensor1Distance);
         telemetry.addData("sensor2Distance", sensor2Distance);
 
-        if (sensor1Distance > 3.5) {
+        if (sensor1Distance > 5) {
             sensor1DetectedColor = ArtifactColor.NONE;
         } else if (sensor1RGBA.blue > sensor1RGBA.green) {
             sensor1DetectedColor = ArtifactColor.PURPLE;
@@ -221,7 +221,7 @@ public class Indexer {
 
         ArtifactColor sensor2DetectedColor;
 
-        if (sensor2Distance > 3.5) {
+        if (sensor2Distance > 5) {
             sensor2DetectedColor = ArtifactColor.NONE;
         } else if (sensor2RGBA.blue > sensor2RGBA.green) {
             sensor2DetectedColor = ArtifactColor.PURPLE;
@@ -304,8 +304,8 @@ public class Indexer {
     }
 
     public void updateBallColorAtIntake(double position) {
-        telemetry.addLine("updateBallColorAtIntakeLeft() start");
-        RobotLog.d("Indexer: updateBallColorAtIntakeLeft() start");
+        telemetry.addLine("updateBallColorAtIntake() start");
+        RobotLog.d("Indexer: updateBallColorAtIntake() start");
         telemetry.addData("updateBallColors Color 0", artifactColorArray[0]);
         telemetry.addData("updateBallColors Color 1", artifactColorArray[1]);
         telemetry.addData("updateBallColors Color 2", artifactColorArray[2]);
@@ -329,7 +329,7 @@ public class Indexer {
             ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
         telemetry.addData("updateBallColors index", i);
         telemetry.addData("updateBallColors color1", artifactColorArray[i]);
-        RobotLog.d("updateBallColors color Intake Left %s",artifactColorArray[i]);
+        RobotLog.d("updateBallColors color Intake %s",artifactColorArray[i]);
 
     }
 
@@ -569,6 +569,7 @@ public class Indexer {
 //
     public boolean checkEmptySlot() {
         telemetry.addLine("checkEmptySlot");
+        RobotLog.d("checkEmptySlot");
 
         //Check for empty slot according to current position
         double position = getIndexerPosition();
@@ -819,8 +820,8 @@ public class Indexer {
             ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM));
         telemetry.addData("isBallAtIntake colorSensorIntakeLL",
             ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
-        if (((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM) < 2.5
-            || ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM) < 2.5) {
+        if (((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM) < 2.0
+            || ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM) < 2.0) {
             return true;
         } else {
             return false;

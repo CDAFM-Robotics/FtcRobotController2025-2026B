@@ -131,6 +131,7 @@ public class Robot {
 
          switch (autoIntakeState) {
              case INIT:
+                 RobotLog.d("intakeWithIndexerTurn: INIT)");
                  if (indexer.checkEmptySlot()) {
                      telemetry.addLine("Robot: found empty slot");
                      RobotLog.d("RRobot: found empty slot");
@@ -144,15 +145,19 @@ public class Robot {
                      break;
                  }
              case TURN_EMPTY_SLOT_TO_INTAKE:
+                 RobotLog.d("intakeWithIndexerTurn: TURN_EMPTY_SLOT_TO_INTAKE)");
                  indexer.turnEmptySlotToIntake();
                  autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
                  break;
              case WAIT_FOR_BALL:
                  telemetry.addLine("Robot: WAIT_FOR_BALL");
+                 RobotLog.d("Robot: WAIT_FOR_BALLt");
                  if (indexer.indexerFinishedTurning()) {
                      telemetry.addLine("Robot: indexerFinishedTurning");
+                     RobotLog.d("Robot: indexerFinishedTurning");
                      if (indexer.isBallAtIntake()) {
                          telemetry.addLine("Robot: isBallAtIntake");
+                         RobotLog.d("Robot: isBallAtIntake");
                          intake1Ball = true;
                          indexer.updateColorAtIntakeOnly();
                          autoIntakeState = AutoIntakeStates.INIT;
@@ -221,6 +226,7 @@ public class Robot {
                             break;
                         }
                         else if (!indexer.atIntake()){
+                            RobotLog.d("shootAllBalls: !indexer.atIntake())");
                             indexer.positionForIntake();
                             launchState = LaunchBallStates.READY_TO_INTAKE;
                             break;
@@ -268,6 +274,7 @@ public class Robot {
                         }
                         break;
                     case READY_TO_INTAKE:
+                        RobotLog.d("shootAllBalls: READY_TO_INTAKE");
                         if (indexer.indexerFinishedTurning()) {
                             updateColorAllSlots();
                             launchState = LaunchBallStates.INIT;
@@ -345,7 +352,13 @@ public class Robot {
         double absoluteAngleRadians = Math.atan2(deltaY, deltaX);
         double absoluteAngleDegree = Math.toDegrees(absoluteAngleRadians);
 
-        double relativeAngle = (absoluteAngleDegree - robotHeading)*180/180;
+        double relativeAngle;
+        if (isRedSide) {
+            relativeAngle = (absoluteAngleDegree - robotHeading) * 177 / 180;
+        }
+        else {
+            relativeAngle = (absoluteAngleDegree - robotHeading) * 185 / 180;
+        }
 
         relativeAngle = normalizeAngle(relativeAngle);
 

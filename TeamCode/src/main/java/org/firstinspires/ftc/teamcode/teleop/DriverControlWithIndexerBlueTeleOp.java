@@ -29,6 +29,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         boolean fieldCentric = true;
         boolean waitForReverseTimer = false;
         int REVERSE_INTAKE_TIME = 500;
+        boolean isIntaking = false;
 
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad1 = new Gamepad();
@@ -90,6 +91,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             if (currentGamepad1.right_trigger != 0.0 && robot.isSafeToStop()) {
                 //telemetry.addLine("gameped 1 right trigger or 2 left trigger");
                 //start the intake rolling
+                isIntaking = true;
                 robot.getIntake().startIntake();
                 //turn the indexer for intake
                 robot.intakeWithIndexerTurn();
@@ -97,6 +99,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             else if (currentGamepad1.right_trigger == 0.0 && previousGamepad1.right_trigger != 0){
                 //robot update artifact colors
                 robot.getIntake().stopIntake();
+                isIntaking = false;
             }
 
             if (currentGamepad1.left_trigger != 0) {
@@ -116,9 +119,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //            }
 
             // When indexer stuck or out of alignment, recover the color of the balls
-            if (currentGamepad2.left_trigger != 0 && previousGamepad2.left_trigger == 0){
-                robot.updateColorAllSlots();
-            }
+//            if (currentGamepad2.left_trigger != 0 && previousGamepad2.left_trigger == 0){
+//                robot.updateColorAllSlots();
+//            }
 
             // Launcher
             if (currentGamepad2.x && !previousGamepad2.x) {
@@ -156,32 +159,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             telemetry.addData("kickerServo postion", robot.getLauncher().getKickerServoPosition());
             telemetry.addData("isLauncher active", robot.getLauncher().isLauncherActive());
 
-            //set launcher velocity
-//            if ( robot.getLauncher().limelightValid()
-//                    && robot.getLauncher().isLauncherActive()
-//                    && autoLaunch) {
-//                robot.getLauncher().setLauncherVelocityDistance();
-//            }
-
-            //launch a green ball
-//            if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper){
-//                robot.startLaunchAGreenBall();
-//            }
-//            if (currentGamepad2.left_bumper) {
-//                    robot.launchAColorBall();
-//            }
-//
-//            //launch a purple ball
-//            if (currentGamepad2.right_bumper && !previousGamepad2.right_bumper){
-//                robot.startLaunchAPurpleBall();
-//            }
-//
-//            if (currentGamepad2.right_bumper) {
-//                    robot.launchAColorBall();
-//            }
-
             //Launch all balls in the robot.
-            if (currentGamepad2.right_trigger != 0) {
+            if (currentGamepad2.right_trigger != 0 && !isIntaking) {
                 robot.shootAllBalls();
             }
 
