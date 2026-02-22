@@ -1,11 +1,9 @@
 package org.firstinspires.ftc.teamcode.common.subsystems;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -73,8 +71,20 @@ public class DriveBase {
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
         // Configure the sensor
-        configurePinpoint();
-    }
+        //configurePinpoint();
+        Pose2D startPose2D;
+        // if the auto completed, use the value from end of auto
+        if (RobotStaticValuesClass.autoCompleted) {
+            startPose2D = RobotStaticValuesClass.savedPose;
+        }
+        else {
+            startPose2D = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0);
+        }
+
+        // Set the location of the robot - this should be the place you are starting the robot from
+        pinpoint.setPosition(startPose2D);
+        RobotLog.d("Pos x: %.2f, y: %2f, heading: %.2f", startPose2D.getX(DistanceUnit.INCH), startPose2D.getY(DistanceUnit.INCH), startPose2D.getHeading(AngleUnit.RADIANS));
+     }
 
     public void resetIMU(){
         resetPinpointIMU();
@@ -188,30 +198,6 @@ public class DriveBase {
 
     public double getPinPointHeading() {
         return pinpoint.getHeading(AngleUnit.RADIANS);
-    }
-
-    public void setPinPointInitialPosition() {
-        double startX;
-        double startY;
-        double startHeading;
-
-        // if the auto completed, use the value from end of auto
-        if (RobotStaticValuesClass.autoCompleted) {
-            startX = RobotStaticValuesClass.robotStaticX;
-            startY = RobotStaticValuesClass.robotStaticY;
-            startHeading = RobotStaticValuesClass.robotStaticHeading;
-        } else {
-            startX = 0;
-            startY = 0;
-            startHeading = 0;
-        }
-
-        // Set the location of the robot - this should be the place you are starting the robot from
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, startX, startY, AngleUnit.DEGREES, startHeading));
-        pinpoint.update();
-        telemetry.addData("setPinPointInitialPosition heading", pinpoint.getHeading(AngleUnit.DEGREES));
-        telemetry.addData("setPinPointInitialPositionX", pinpoint.getPosX(DistanceUnit.INCH));
-        telemetry.addData("setPinPointInitialPositiony", pinpoint.getPosY(DistanceUnit.INCH));
     }
 
 }

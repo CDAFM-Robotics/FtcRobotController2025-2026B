@@ -44,8 +44,6 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        // Set piopoint position here to avoid racing issue with pinpoint reset
-        robot.getDriveBase().setPinPointInitialPosition();
 
         while (opModeIsActive()){
             telemetry.addData("is red side", isRedSide);
@@ -186,7 +184,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 robot.shootAllBalls();
             }
 
-            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStop()) {
+            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStopOuttake()) {
                 robot.shootAllBalls();
             }
 

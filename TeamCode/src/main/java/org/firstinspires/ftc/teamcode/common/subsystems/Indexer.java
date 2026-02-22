@@ -334,7 +334,6 @@ public class Indexer {
     }
 
     public void updateColorAtIntakeOnly() {
-        telemetry.addLine("updateBallColorAtIntakeLeft() start");
         RobotLog.d("Indexer: updateBallColorAtIntakeLeft() start");
         //telemetry.addData("updateBallColors Color 0", artifactColorArray[0]);
         //telemetry.addData("updateBallColors Color 1", artifactColorArray[1]);
@@ -349,7 +348,7 @@ public class Indexer {
         } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
             i = 2;
         } else {
-            telemetry.addLine("ERROR: updateBallColors");
+            RobotLog.d("ERROR: updateColorAtIntakeOnly: not at intake position");
         }
 
         artifactColorArray[i] = getPredictedColorAtIntake(
@@ -357,10 +356,7 @@ public class Indexer {
             colorSensorIntakeR.getNormalizedColors(),
             ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM),
             ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
-        telemetry.addData("updateBallColors index", i);
-        telemetry.addData("updateBallColors color1", artifactColorArray[i]);
-        RobotLog.d("updateBallColors color Intake Left %s",artifactColorArray[i]);
-
+        RobotLog.d("updateColorAtIntakeOnly color %s",artifactColorArray[i]);
     }
 
     public void updateBallColorAtBackR(double position) {
@@ -816,12 +812,11 @@ public class Indexer {
 //
     // Check to see if there is any ball by distance sensing
     public boolean isBallAtIntake() {
-        telemetry.addData("isBallAtIntake colorSensorIntakeLL",
-            ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM));
-        telemetry.addData("isBallAtIntake colorSensorIntakeLL",
-            ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
-        if (((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM) < 2.0
-            || ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM) < 2.0) {
+        double distance1 = ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM);
+        double distance2 = ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM);
+        RobotLog.d("isBallAtIntake colorSensorIntakeL %.2f", distance1);
+        RobotLog.d("isBallAtIntake colorSensorIntakeR %.2f", distance2);
+        if (distance1 < 2.0 || distance2 < 2.0) {
             return true;
         } else {
             return false;

@@ -79,6 +79,12 @@ public class Robot {
         UPDATE_INDEXER,
         READY_TO_INTAKE
     }
+
+    public enum RobotInOutStates {
+        IDLE,
+        INTAKE,
+        OUTTAKE
+    }
     /*
         LIMELIGHT PIPELINES:        TYPE:               STATUS:
             0: PURPLE               COLOR               USED
@@ -104,6 +110,7 @@ public class Robot {
 
     LaunchBallStates launchState = LaunchBallStates.INIT;
     AutoIntakeStates autoIntakeState = AutoIntakeStates.INIT;
+    RobotInOutStates robotInOutState = RobotInOutStates.IDLE;
 
     public DriveBase getDriveBase() {
         return driveBase;
@@ -211,7 +218,7 @@ public class Robot {
         telemetry.addData("color:", indexer.artifactColorArray[2]);
 
         // check to see if flywheel motors are running
-        if(launcher.isLauncherActive()) {
+        if(launcher.isLauncherActive() && robotInOutState == RobotInOutStates.OUTTAKE) {
             RobotLog.d("shootAllBalls");
             RobotLog.d("0 color: %s", indexer.artifactColorArray[0]);
             RobotLog.d("1 color: %s", indexer.artifactColorArray[1]);
@@ -232,11 +239,13 @@ public class Robot {
                             break;
                         }
                         else {
+                            launchState = LaunchBallStates.INIT;
                             break;
                         }
                     case TURN_TO_LAUNCH:
                         telemetry.addLine("shootAllBalls: TURN_TO_LAUNCH");
                         RobotLog.d("shootAllBalls: TURN_TO_LAUNCH");
+                        safeToStop = false;
                         indexer.moveToOuttake();
                         launchState = LaunchBallStates.KICK_BALL;
                         break;
@@ -244,7 +253,6 @@ public class Robot {
                         telemetry.addLine("shootAllBalls: KICK_BALL");
                         RobotLog.d("shootAllBalls: KICK_BALL");
                         if (indexer.indexerFinishedTurning()) {
-                            safeToStop = false;
                             launcher.kickBall();
                             timeSinceKick.reset();
                             launchState = LaunchBallStates.RESET_KICKER;
@@ -371,6 +379,15 @@ public class Robot {
         telemetry.addData("pinPointHeading:", pinPointHeading);
         telemetry.addData("relativeAngle:", relativeAngle);
         telemetry.addData("distance to goal",distanceToGoal);
+        RobotLog.d("deltaX: %.2f", deltaX);
+        RobotLog.d("deltaY: %.2f", deltaY);
+        RobotLog.d("robotX: %.2f", robotX);
+        RobotLog.d("robotY: %.2f", robotY);
+        RobotLog.d("absoluteAngleRadians: %.2f", absoluteAngleRadians);
+        RobotLog.d("absoluteAngleDegree:%.2f", absoluteAngleDegree);
+        RobotLog.d("pinPointHeading:%.2f", pinPointHeading);
+        RobotLog.d("relativeAngle: %.2f", relativeAngle);
+        RobotLog.d("distance to goal: %.2f",distanceToGoal);
 
         launcher.setTurretRelativeAngle(relativeAngle);
     }
@@ -403,7 +420,33 @@ public class Robot {
         return angle;
     }
 
-    public boolean isSafeToStop() {
+    public boolean isSafeToStopOuttake() {
         return safeToStop;
     }
+
+    public void setRobotState(RobotInOutStates state) {
+        robotInOutState = state;
+    }
+
+    public RobotInOutStates getRobotInOutState() {
+        return robotInOutState;
+    }
+
+    public void setLaunchState(LaunchBallStates state) {
+        launchState = state;
+    }
+
+    public LaunchBallStates getLaunchState() {
+        return launchState;
+    }
+
+    public void setAutoIntakeState(AutoIntakeStates state) {
+        autoIntakeState = state;
+    }
+
+    public AutoIntakeStates getAutoIntakeStat() {
+        return autoIntakeState;
+    }
+
+
 }
