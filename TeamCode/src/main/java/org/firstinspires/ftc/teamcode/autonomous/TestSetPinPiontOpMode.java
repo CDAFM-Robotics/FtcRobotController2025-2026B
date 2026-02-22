@@ -26,16 +26,8 @@ public class TestSetPinPiontOpMode extends LinearOpMode {
             GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         // Set starting position on field (e.g. blue alliance)
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 12, 12, AngleUnit.RADIANS, 3.13));
-        pinpoint.update();
-        telemetry.addData("Pinpoint"," Heading %.2f degrees: %.2f, Pos x:%.2f y:%.2f", pinpoint.getHeading(AngleUnit.DEGREES), pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getPosX(DistanceUnit.INCH),pinpoint.getPosY(DistanceUnit.INCH));
         pinpoint.resetPosAndIMU();
         sleep(500);
-        pinpoint.update();
-        telemetry.addData("Pinpoint1"," Heading %.2f degrees: %.2f, Pos x:%.2f y:%.2f", pinpoint.getHeading(AngleUnit.DEGREES), pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getPosX(DistanceUnit.INCH),pinpoint.getPosY(DistanceUnit.INCH));
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 24, 24, AngleUnit.RADIANS, 1.57));
-        sleep(500);
-        pinpoint.update();
         telemetry.addData("Pinpoint2"," Heading %.2f degrees: %.2f, Pos x:%.2f y:%.2f", pinpoint.getHeading(AngleUnit.DEGREES), pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getPosX(DistanceUnit.INCH),pinpoint.getPosY(DistanceUnit.INCH));
         telemetry.update();
 
@@ -43,11 +35,6 @@ public class TestSetPinPiontOpMode extends LinearOpMode {
 
         while (opModeIsActive()) {
             pinpoint.update();
-            telemetry.addData("Pinpoint3"," Heading %.2f degrees: %.2f, Pos x:%.2f y:%.2f", pinpoint.getHeading(AngleUnit.DEGREES), pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getPosX(DistanceUnit.INCH),pinpoint.getPosY(DistanceUnit.INCH));
-            pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0));
-            pinpoint.update();
-            telemetry.addData("Pinpoint4"," Heading %.2f degrees: %.2f, Pos x:%.2f y:%.2f", pinpoint.getHeading(AngleUnit.DEGREES), pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getPosX(DistanceUnit.INCH),pinpoint.getPosY(DistanceUnit.INCH));
-            telemetry.update();
             // ... your auto code ...
         }
 
