@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.common.subsystems;
 
-import static android.os.SystemClock.sleep;
-
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -73,9 +71,7 @@ public class DriveBase {
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
 
         // Configure the sensor
-        configurePinpoint();
-        pinpoint.update();
-        RobotLog.d("Pos x: %.2f, y: %2f, heading: %.2f", pinpoint.getPosX(DistanceUnit.INCH), pinpoint.getPosY(DistanceUnit.INCH), pinpoint.getHeading(AngleUnit.RADIANS));
+        //configurePinpoint();
         Pose2D startPose2D;
         // if the auto completed, use the value from end of auto
         if (RobotStaticValuesClass.autoCompleted) {
@@ -87,7 +83,6 @@ public class DriveBase {
 
         // Set the location of the robot - this should be the place you are starting the robot from
         pinpoint.setPosition(startPose2D);
-        pinpoint.update();
         RobotLog.d("Pos x: %.2f, y: %2f, heading: %.2f", startPose2D.getX(DistanceUnit.INCH), startPose2D.getY(DistanceUnit.INCH), startPose2D.getHeading(AngleUnit.RADIANS));
      }
 
@@ -111,7 +106,6 @@ public class DriveBase {
                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         pinpoint.resetPosAndIMU();
-        sleep(300);
     }
 
     public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
