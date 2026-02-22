@@ -1,23 +1,12 @@
 package org.firstinspires.ftc.teamcode.common;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-
 public class RobotStaticValuesClass {
-
-    public enum Oblisk {
-        GPP,
-        PGP,
-        PPG
-    }
-
     // Static variables persist between OpModes
-    public static Pose2D savedPose = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0);
-    public static Oblisk savedOblisk = Oblisk.GPP;
+    public static double robotStaticX = 0.0;
+    public static double robotStaticY = 0.0;
+    public static double robotStaticHeading = 0.0;
+
     public static double turretAngleOffset = 0.0;
     public static boolean autoCompleted = false;
 
 }
-
