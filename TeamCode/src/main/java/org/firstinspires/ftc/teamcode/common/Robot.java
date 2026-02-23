@@ -39,8 +39,8 @@ public class Robot {
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
 
-    public final int WAIT_TIME_KICKER_UP = 250; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
-    public final int WAIT_TIME_KICKER_DOWN = 150; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
+    public final int WAIT_TIME_KICKER_UP = 80; // 250; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
+    public final int WAIT_TIME_KICKER_DOWN = 35; // 150; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class
@@ -79,6 +79,12 @@ public class Robot {
         UPDATE_INDEXER,
         READY_TO_INTAKE
     }
+
+    public enum RobotInOutStates {
+        IDLE,
+        INTAKE,
+        OUTTAKE
+    }
     /*
         LIMELIGHT PIPELINES:        TYPE:               STATUS:
             0: PURPLE               COLOR               USED
@@ -104,6 +110,7 @@ public class Robot {
 
     LaunchBallStates launchState = LaunchBallStates.INIT;
     AutoIntakeStates autoIntakeState = AutoIntakeStates.INIT;
+    RobotInOutStates robotInOutState = RobotInOutStates.IDLE;
 
     public DriveBase getDriveBase() {
         return driveBase;
@@ -217,7 +224,7 @@ public class Robot {
         telemetry.addData("color:", indexer.artifactColorArray[2]);
 
         // check to see if flywheel motors are running
-        if(launcher.isLauncherActive()) {
+        if(launcher.isLauncherActive() && robotInOutState == RobotInOutStates.OUTTAKE) {
             RobotLog.d("shootAllBalls");
             RobotLog.d("0 color: %s", indexer.artifactColorArray[0]);
             RobotLog.d("1 color: %s", indexer.artifactColorArray[1]);
@@ -366,10 +373,10 @@ public class Robot {
 
         double relativeAngle;
         if (isRedSide) {
-            relativeAngle = (absoluteAngleDegree - robotHeading) * 177 / 180;
+            relativeAngle = (absoluteAngleDegree - robotHeading);
         }
         else {
-            relativeAngle = (absoluteAngleDegree - robotHeading) * 185 / 180;
+            relativeAngle = (absoluteAngleDegree - robotHeading);
         }
 
         relativeAngle = normalizeAngle(relativeAngle);
@@ -415,7 +422,32 @@ public class Robot {
         return angle;
     }
 
-    public boolean isSafeToStop() {
+    public boolean isSafeToStopOuttake() {
         return safeToStop;
     }
+
+    public void setRobotState(RobotInOutStates state) {
+        robotInOutState = state;
+    }
+
+    public RobotInOutStates getRobotInOutState() {
+        return robotInOutState;
+    }
+
+    public void setLaunchState(LaunchBallStates state) {
+        launchState = state;
+    }
+
+    public LaunchBallStates getLaunchState() {
+        return launchState;
+    }
+
+    public void setAutoIntakeState(AutoIntakeStates state) {
+        autoIntakeState = state;
+    }
+
+    public AutoIntakeStates getAutoIntakeStat() {
+        return autoIntakeState;
+    }
+
 }

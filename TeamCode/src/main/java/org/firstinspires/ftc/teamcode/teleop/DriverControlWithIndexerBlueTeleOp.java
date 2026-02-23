@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import static org.firstinspires.ftc.teamcode.pedropathing.Tuning.follower;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -11,10 +16,17 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
+import com.bylazar.configurables.PanelsConfigurables;
 
+@Configurable
 @TeleOp(name = "BLUE Bot2 ", group = "0teleop")
 public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
     public boolean isRedSide = false;
+
+
+    // TODO add Data to Panels
+    // static TelemetryManager telemetryM;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -22,6 +34,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // TODO Add Data to Dashboard Start
         // FtcDashboard dashboard = FtcDashboard.getInstance();
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+        // TODO Panels telemetry
+        // telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
@@ -44,8 +59,6 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        // Set piopoint position here to avoid racing issue with pinpoint reset
-        robot.getDriveBase().setPinPointInitialPosition();
 
         while (opModeIsActive()){
             telemetry.addData("is red side", isRedSide);
@@ -88,18 +101,26 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //            }
 
             // Intake Balls. Add isSafeToStop()
-            if (currentGamepad1.right_trigger != 0.0 && robot.isSafeToStop()) {
-                //telemetry.addLine("gameped 1 right trigger or 2 left trigger");
-                //start the intake rolling
-                isIntaking = true;
-                robot.getIntake().startIntake();
+            if (currentGamepad1.right_trigger != 0.0
+                && robot.isSafeToStopOuttake()) {
+                //telemetry.addLine("gameped 1 right trigger");
+                // Robot entering intake state
+                if (robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
+                    robot.setRobotState(Robot.RobotInOutStates.INTAKE);
+                    // reset outtake state
+                    robot.setLaunchState(Robot.LaunchBallStates.INIT);
+                    //start the intake rolling
+                    robot.getIntake().startIntake();
+                }
                 //turn the indexer for intake
                 robot.intakeWithIndexerTurn();
             }
-            else if (currentGamepad1.right_trigger == 0.0 && previousGamepad1.right_trigger != 0){
+
+            if (currentGamepad1.right_trigger == 0.0 && previousGamepad1.right_trigger != 0){
                 //robot update artifact colors
                 robot.getIntake().stopIntake();
-                isIntaking = false;
+                //TODO: reverse intake for 500 milliseconds if there are three ball already
+                robot.setRobotState(Robot.RobotInOutStates.IDLE);
             }
 
             if (currentGamepad1.left_trigger != 0) {
@@ -124,7 +145,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //            }
 
             // Launcher
-            if (currentGamepad2.x && !previousGamepad2.x) {
+            if (currentGamepad2.x && !previousGamepad2.x && robot.isSafeToStopOuttake()) {
                 robot.getLauncher().toggleLauncher();
                 if (robot.getLauncher().isLauncherActive()){
                     gamepad2.rumble(0.0,1.0,500);
@@ -160,12 +181,24 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             telemetry.addData("isLauncher active", robot.getLauncher().isLauncherActive());
 
             //Launch all balls in the robot.
-            if (currentGamepad2.right_trigger != 0 && !isIntaking) {
+            if (currentGamepad2.right_trigger != 0
+                && robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
+                if(robot.getRobotInOutState() != Robot.RobotInOutStates.OUTTAKE){
+                    robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
+                    // reset intake state
+                    robot.setAutoIntakeState(Robot.AutoIntakeStates.INIT);
+                }
                 robot.shootAllBalls();
             }
 
-            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStop()) {
+            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStopOuttake()) {
                 robot.shootAllBalls();
+            }
+
+            if (currentGamepad2.right_trigger == 0 && robot.isSafeToStopOuttake()) {
+                if (robot.getRobotInOutState() == Robot.RobotInOutStates.OUTTAKE) {
+                    robot.setRobotState(Robot.RobotInOutStates.IDLE);
+                }
             }
 
             //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball
@@ -190,8 +223,14 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[0]);
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[1]);
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[2]);
-            //RobotLog.d("launcher velocity: %f",
-                    //robot.getLauncher().getLauncherVelocity());
+
+            // TODO Measure Loop time and launcher velocity
+            // RobotLog.d("launcher velocity: %f",
+            //        robot.getLauncher().getLauncherVelocity());
+
+            // TODO spit it out to Panels graph
+            // telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
+            // telemetryM.update(telemetry);
 
             // Refresh the indicator lights
 //            robot.getHud().setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);

@@ -7,6 +7,9 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -34,7 +37,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 @Config
+@Configurable
 public class Launcher {
+
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
@@ -349,11 +354,12 @@ public class Launcher {
         shootingTable.add(35,1080,1.0);
         shootingTable.add(45.29,1120,0.68);
         shootingTable.add(60.02,1200,0.32);
-        shootingTable.add(74.84,1250,0.22);
+        shootingTable.add(74.84,1250,0.28);
         shootingTable.add(90,1320,0.15);
         shootingTable.add(105.16,1380,0.14);
         shootingTable.add(122.54,1500,0.13);
         shootingTable.add(140,1560,0.0);
+
 
         //limelight = hardwareMap.get(Limelight3A.class, "limelight");
         //limelight.pipelineSwitch(0);
@@ -529,8 +535,8 @@ public class Launcher {
         if (hoodPosition > 1.0) {
             hoodPosition = 1.0;
         }
-        else if (hoodPosition < 0.0) {
-            hoodPosition = 0.0;
+        else if (hoodPosition < 0.1) {
+            hoodPosition = 0.1;
         }
 
         hoodServo.setPosition(hoodPosition);
