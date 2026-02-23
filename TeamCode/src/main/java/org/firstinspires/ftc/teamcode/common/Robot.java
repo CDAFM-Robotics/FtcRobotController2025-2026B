@@ -79,6 +79,12 @@ public class Robot {
         UPDATE_INDEXER,
         READY_TO_INTAKE
     }
+
+    public enum RobotInOutStates {
+        IDLE,
+        INTAKE,
+        OUTTAKE
+    }
     /*
         LIMELIGHT PIPELINES:        TYPE:               STATUS:
             0: PURPLE               COLOR               USED
@@ -104,6 +110,7 @@ public class Robot {
 
     LaunchBallStates launchState = LaunchBallStates.INIT;
     AutoIntakeStates autoIntakeState = AutoIntakeStates.INIT;
+    RobotInOutStates robotInOutState = RobotInOutStates.IDLE;
 
     public DriveBase getDriveBase() {
         return driveBase;
@@ -211,7 +218,7 @@ public class Robot {
         telemetry.addData("color:", indexer.artifactColorArray[2]);
 
         // check to see if flywheel motors are running
-        if(launcher.isLauncherActive()) {
+        if(launcher.isLauncherActive() && robotInOutState == RobotInOutStates.OUTTAKE) {
             RobotLog.d("shootAllBalls");
             RobotLog.d("0 color: %s", indexer.artifactColorArray[0]);
             RobotLog.d("1 color: %s", indexer.artifactColorArray[1]);
@@ -403,7 +410,32 @@ public class Robot {
         return angle;
     }
 
-    public boolean isSafeToStop() {
+    public boolean isSafeToStopOuttake() {
         return safeToStop;
     }
+
+    public void setRobotState(RobotInOutStates state) {
+        robotInOutState = state;
+    }
+
+    public RobotInOutStates getRobotInOutState() {
+        return robotInOutState;
+    }
+
+    public void setLaunchState(LaunchBallStates state) {
+        launchState = state;
+    }
+
+    public LaunchBallStates getLaunchState() {
+        return launchState;
+    }
+
+    public void setAutoIntakeState(AutoIntakeStates state) {
+        autoIntakeState = state;
+    }
+
+    public AutoIntakeStates getAutoIntakeStat() {
+        return autoIntakeState;
+    }
+
 }

@@ -86,18 +86,26 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //            }
 
             // Intake Balls. Add isSafeToStop()
-            if (currentGamepad1.right_trigger != 0.0 && robot.isSafeToStop()) {
-                //telemetry.addLine("gameped 1 right trigger or 2 left trigger");
-                //start the intake rolling
-                isIntaking = true;
-                robot.getIntake().startIntake();
+            if (currentGamepad1.right_trigger != 0.0
+                && robot.isSafeToStopOuttake()) {
+                //telemetry.addLine("gameped 1 right trigger");
+                // Robot entering intake state
+                if (robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
+                    robot.setRobotState(Robot.RobotInOutStates.INTAKE);
+                    // reset outtake state
+                    robot.setLaunchState(Robot.LaunchBallStates.INIT);
+                    //start the intake rolling
+                    robot.getIntake().startIntake();
+                }
                 //turn the indexer for intake
                 robot.intakeWithIndexerTurn();
             }
-            else if (currentGamepad1.right_trigger == 0.0 && previousGamepad1.right_trigger != 0){
+
+            if (currentGamepad1.right_trigger == 0.0 && previousGamepad1.right_trigger != 0){
                 //robot update artifact colors
                 robot.getIntake().stopIntake();
-                isIntaking = false;
+                //TODO: reverse intake for 500 milliseconds if there are three ball already
+                robot.setRobotState(Robot.RobotInOutStates.IDLE);
             }
 
             if (currentGamepad1.left_trigger != 0) {
@@ -122,7 +130,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //            }
 
             // Launcher
-            if (currentGamepad2.x && !previousGamepad2.x) {
+            if (currentGamepad2.x && !previousGamepad2.x && robot.isSafeToStopOuttake()) {
                 robot.getLauncher().toggleLauncher();
                 if (robot.getLauncher().isLauncherActive()){
                     gamepad2.rumble(0.0,1.0,500);
@@ -158,12 +166,24 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             telemetry.addData("isLauncher active", robot.getLauncher().isLauncherActive());
 
             //Launch all balls in the robot.
-            if (currentGamepad2.right_trigger != 0 && !isIntaking) {
+            if (currentGamepad2.right_trigger != 0
+                && robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
+                if(robot.getRobotInOutState() != Robot.RobotInOutStates.OUTTAKE){
+                    robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
+                    // reset intake state
+                    robot.setAutoIntakeState(Robot.AutoIntakeStates.INIT);
+                }
                 robot.shootAllBalls();
             }
 
-            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStop()) {
+            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStopOuttake()) {
                 robot.shootAllBalls();
+            }
+
+            if (currentGamepad2.right_trigger == 0 && robot.isSafeToStopOuttake()) {
+                if (robot.getRobotInOutState() == Robot.RobotInOutStates.OUTTAKE) {
+                    robot.setRobotState(Robot.RobotInOutStates.IDLE);
+                }
             }
 
             //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball

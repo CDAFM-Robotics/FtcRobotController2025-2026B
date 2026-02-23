@@ -184,7 +184,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 robot.shootAllBalls();
             }
 
-            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStop()) {
+            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStopOuttake()) {
                 robot.shootAllBalls();
             }
 
