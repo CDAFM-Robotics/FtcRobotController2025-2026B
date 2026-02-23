@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.autonomous.actions.AutonomousActionBuilder
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
-@TeleOp(name = "Indexer Servo Test", group = "Testing")
+@TeleOp(name = "Bot2 Indexer Servo Test", group = "Testing")
 public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
     boolean isRedSide = false;
     @Override

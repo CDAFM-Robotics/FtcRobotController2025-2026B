@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import static org.firstinspires.ftc.teamcode.pedropathing.Tuning.follower;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -11,10 +16,17 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
+import com.bylazar.configurables.PanelsConfigurables;
 
+@Configurable
 @TeleOp(name = "BLUE Bot2 ", group = "0teleop")
 public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
     public boolean isRedSide = false;
+
+
+    // TODO add Data to Panels
+    // static TelemetryManager telemetryM;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -22,6 +34,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // TODO Add Data to Dashboard Start
         // FtcDashboard dashboard = FtcDashboard.getInstance();
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
+
+        // TODO Panels telemetry
+        // telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
@@ -208,8 +223,14 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[0]);
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[1]);
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[2]);
-            //RobotLog.d("launcher velocity: %f",
-                    //robot.getLauncher().getLauncherVelocity());
+
+            // TODO Measure Loop time and launcher velocity
+            // RobotLog.d("launcher velocity: %f",
+            //        robot.getLauncher().getLauncherVelocity());
+
+            // TODO spit it out to Panels graph
+            // telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
+            // telemetryM.update(telemetry);
 
             // Refresh the indicator lights
 //            robot.getHud().setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);
