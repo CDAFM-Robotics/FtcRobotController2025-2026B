@@ -7,6 +7,9 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -34,7 +37,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 @Config
+@Configurable
 public class Launcher {
+
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
@@ -529,8 +534,8 @@ public class Launcher {
         if (hoodPosition > 1.0) {
             hoodPosition = 1.0;
         }
-        else if (hoodPosition < 0.0) {
-            hoodPosition = 0.0;
+        else if (hoodPosition < 0.1) {
+            hoodPosition = 0.1;
         }
 
         hoodServo.setPosition(hoodPosition);
