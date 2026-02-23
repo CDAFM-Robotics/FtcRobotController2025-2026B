@@ -170,6 +170,10 @@ public class Robot {
          }
      }
 
+    public Telemetry getTelemetry() {
+        return telemetry;
+    }
+
     public void startLaunchAGreenBall(){
         if(launcher.isLauncherActive()) {
             //telemetry.addLine("stratLaunchAGreenBall");
@@ -203,6 +207,8 @@ public class Robot {
 
     }
 
+    boolean noArtifacts = false;
+
     public void shootAllBalls() {
         telemetry.addLine("shootAllBalls");
 
@@ -219,6 +225,7 @@ public class Robot {
 
                 switch (launchState) {
                     case INIT:
+                        noArtifacts = false;
                         telemetry.addLine("shootAllBalls: INIT");
                         RobotLog.d("shootAllBalls: INIT");
                         if(indexer.findABall()) {
@@ -232,6 +239,7 @@ public class Robot {
                             break;
                         }
                         else {
+                            noArtifacts = true;
                             break;
                         }
                     case TURN_TO_LAUNCH:
@@ -285,6 +293,10 @@ public class Robot {
                         throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
                 }
         }
+    }
+
+    public boolean isNoArtifacts() {
+        return noArtifacts;
     }
 
     public void resetIndexer() {

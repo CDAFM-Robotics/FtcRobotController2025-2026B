@@ -601,6 +601,12 @@ public class Launcher {
         launcherMotor1.setVelocity(launcherVelocity);
     }
 
+    public void setAutoVelocity(double velocity) {
+        launcherMotor2.setVelocity(velocity);
+        launcherMotor1.setVelocity(velocity);
+        launcherActive = true;
+    }
+
 
     public void changeLauncherVelocity(double change) {
         launcherVelocity += change;
@@ -706,6 +712,45 @@ public class Launcher {
         // Logging
 
         RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
+
+        // Set last variables for next loop
+
+        lastAngle = currentAngle;
+        lastVoltage = currentVoltage;
+
+        firstLoop = false;
+    }
+
+    public double getTurretDegrees() {
+        return actualAngle / 2;
+    }
+
+    public void autoUpdateTurretPID (double target) {
+        double turretTarget = target * 2;
+        // Find the voltage returned and the angle of the servo
+
+        currentVoltage = launcherAnalogInput.getVoltage();
+        currentAngle = currentVoltage / 3.3 * 360;
+
+        // Find out whether the angle looped around
+
+        double diff = Math.abs(currentAngle - lastAngle);
+
+        if (!firstLoop) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
+                currentAngleOffset -= 360;
+            }
+
+            if (currentAngle < 180 && lastAngle > 180 && diff > 100) {
+                currentAngleOffset += 360;
+            }
+        }
+
+        actualAngle = currentAngle + currentAngleOffset;
+
+        // Set Servo power
+        double turretPower = updateTurretPID(turretTarget, actualAngle);
+        launcherServo.setPower(turretPower);
 
         // Set last variables for next loop
 

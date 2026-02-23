@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.pedropathing.commands;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
@@ -9,6 +10,7 @@ public class Paths {
     private PathChain blueFarPickupFirstMark;
     private PathChain blueFarPickupSecondMark;
     private PathChain blueFarPickupThirdMark;
+    private PathChain blueFarPickupHumanPlayerZone;
 
     Follower follower;
 
@@ -24,9 +26,10 @@ public class Paths {
         blueFarPickupFirstMark = follower.pathBuilder().addPath(
                 new BezierCurve(
                     new Pose(56.000, 8.500),
-                    new Pose(43.000, 52.000),
-                    new Pose(4.000, 43.000),
-                    new Pose(0.000, 18.000),
+                    new Pose(63.000, 109.000),
+                    new Pose(28.000, 74.000),
+                    new Pose(1.000, 96.000),
+                    new Pose(15.000, 89.000),
                     new Pose(56.000, 8.500)
                 )
             ).setConstantHeadingInterpolation(Math.toRadians(180))
@@ -54,16 +57,33 @@ public class Paths {
         blueFarPickupThirdMark = follower.pathBuilder().addPath(
                 new BezierCurve(
                     new Pose(56.000, 8.500),
-                    new Pose(63.000, 109.000),
-                    new Pose(28.000, 74.000),
-                    new Pose(1.000, 96.000),
-                    new Pose(15.000, 89.000),
+                    new Pose(43.000, 52.000),
+                    new Pose(4.000, 43.000),
+                    new Pose(0.000, 18.000),
                     new Pose(56.000, 8.500)
                 )
             ).setConstantHeadingInterpolation(Math.toRadians(180))
             .build();
 
         return blueFarPickupThirdMark;
+    }
+
+    public PathChain getBlueFarPickupHumanPlayerZone() {
+        blueFarPickupHumanPlayerZone = follower.pathBuilder()
+            .addPath(
+                new BezierLine(
+                    new Pose(56.000, 8.500),
+                    new Pose(8.000, 8.500)
+                )).setConstantHeadingInterpolation(Math.toRadians(180))
+            .addPath(
+                new BezierLine(
+                    new Pose(8.000, 8.500),
+                    new Pose(56.000, 8.500)
+            )).setConstantHeadingInterpolation(Math.toRadians(180))
+
+            .build();
+
+        return blueFarPickupHumanPlayerZone;
     }
 }
 

@@ -30,8 +30,8 @@ public class Indexer {
     private double targetIndexerPosition;
 
     //after indexer HW change, this is the left color sensor on the intake
-    NormalizedColorSensor colorSensorIntakeL = null;
-    NormalizedColorSensor colorSensorIntakeR = null;
+    public NormalizedColorSensor colorSensorIntakeL = null;
+    public NormalizedColorSensor colorSensorIntakeR = null;
     //after indexer HW change, this is the left color sensor on the back left
     NormalizedColorSensor colorSensorBackRL = null;
     NormalizedColorSensor colorSensorBackRR = null;
@@ -43,15 +43,15 @@ public class Indexer {
 
     public ArtifactColor[] artifactColorArray = new ArtifactColor[]{ArtifactColor.NONE, ArtifactColor.NONE, ArtifactColor.NONE};
 
-    public final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.176;
-    public final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.938;
-    public final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.555;
-    public final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.746;
-    public final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.365;
-    public final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.0;
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.176;
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.938;
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.555;
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.746;
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.365;
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.0;
 
-    public final double AXON_SERVO_VOLTAGE_OFFSET = 0.228;
-    public final double AXON_SERVO_VOLTAGE_SCALER = 0.1 / 0.2815;
+    public static final double AXON_SERVO_VOLTAGE_OFFSET = 0.228;
+    public static final double AXON_SERVO_VOLTAGE_SCALER = 0.1 / 0.2815;
 
     /*******************************************************
      * constructor and hardware initialization
@@ -194,10 +194,12 @@ public class Indexer {
     public boolean indexerFinishedTurning() {
         //telemetry.addData("indexerFinishedTurning start", targetIdexerPosition);
         //TODO: 0.02 is used to start with. Is 0.02 the best value to use here?
-        if (getIndexerServoAtPosition(targetIndexerPosition, 0.05))
+        if (getIndexerServoAtPosition(targetIndexerPosition, 0.05)) {
             return true;
-        else
+        }
+        else {
             return false;
+        }
     }
 
     public void rotateToPosition(double position) {
@@ -205,7 +207,7 @@ public class Indexer {
         indexerServo.setPosition(position);
     }
 
-    private ArtifactColor getPredictedColor(NormalizedRGBA sensor1RGBA, NormalizedRGBA sensor2RGBA, double sensor1Distance, double sensor2Distance) {
+    public ArtifactColor getPredictedColor(NormalizedRGBA sensor1RGBA, NormalizedRGBA sensor2RGBA, double sensor1Distance, double sensor2Distance) {
 
         ArtifactColor sensor1DetectedColor;
         telemetry.addData("sensor1Distance", sensor1Distance);
@@ -213,9 +215,11 @@ public class Indexer {
 
         if (sensor1Distance > 5) {
             sensor1DetectedColor = ArtifactColor.NONE;
-        } else if (sensor1RGBA.blue > sensor1RGBA.green) {
+        }
+        else if (sensor1RGBA.blue > sensor1RGBA.green) {
             sensor1DetectedColor = ArtifactColor.PURPLE;
-        } else {
+        }
+        else {
             sensor1DetectedColor = ArtifactColor.GREEN;
         }
 
@@ -223,19 +227,24 @@ public class Indexer {
 
         if (sensor2Distance > 5) {
             sensor2DetectedColor = ArtifactColor.NONE;
-        } else if (sensor2RGBA.blue > sensor2RGBA.green) {
+        }
+        else if (sensor2RGBA.blue > sensor2RGBA.green) {
             sensor2DetectedColor = ArtifactColor.PURPLE;
-        } else {
+        }
+        else {
             sensor2DetectedColor = ArtifactColor.GREEN;
         }
 
         if (sensor1DetectedColor == sensor2DetectedColor) {
             return sensor1DetectedColor;
-        } else if (sensor2DetectedColor == ArtifactColor.NONE) {
+        }
+        else if (sensor2DetectedColor == ArtifactColor.NONE) {
             return sensor1DetectedColor;
-        } else if (sensor1DetectedColor == ArtifactColor.NONE) {
+        }
+        else if (sensor1DetectedColor == ArtifactColor.NONE) {
             return sensor2DetectedColor;
-        } else {
+        }
+        else {
             return ArtifactColor.UNKNOWN;
         }
     }
@@ -248,9 +257,11 @@ public class Indexer {
 
         if (sensor1Distance > 5) {
             sensor1DetectedColor = ArtifactColor.UNKNOWN;
-        } else if (sensor1RGBA.blue > sensor1RGBA.green) {
+        }
+        else if (sensor1RGBA.blue > sensor1RGBA.green) {
             sensor1DetectedColor = ArtifactColor.PURPLE;
-        } else {
+        }
+        else {
             sensor1DetectedColor = ArtifactColor.GREEN;
         }
 
@@ -258,19 +269,24 @@ public class Indexer {
 
         if (sensor2Distance > 5) {
             sensor2DetectedColor = ArtifactColor.UNKNOWN;
-        } else if (sensor2RGBA.blue > sensor2RGBA.green) {
+        }
+        else if (sensor2RGBA.blue > sensor2RGBA.green) {
             sensor2DetectedColor = ArtifactColor.PURPLE;
-        } else {
+        }
+        else {
             sensor2DetectedColor = ArtifactColor.GREEN;
         }
 
         if (sensor1DetectedColor == sensor2DetectedColor) {
             return sensor1DetectedColor;
-        } else if (sensor2DetectedColor != ArtifactColor.UNKNOWN) {
+        }
+        else if (sensor2DetectedColor != ArtifactColor.UNKNOWN) {
             return sensor2DetectedColor;
-        } else if (sensor1DetectedColor != ArtifactColor.UNKNOWN) {
+        }
+        else if (sensor1DetectedColor != ArtifactColor.UNKNOWN) {
             return sensor1DetectedColor;
-        } else {
+        }
+        else {
             return ArtifactColor.UNKNOWN;
         }
     }
@@ -284,11 +300,14 @@ public class Indexer {
 
         if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
             i = 1;
-        } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
+        }
+        else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
             i = 2;
-        } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
+        }
+        else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
             i = 0;
-        } else {
+        }
+        else {
             telemetry.addLine("ERROR: updateBallColors");
         }
 
@@ -820,8 +839,8 @@ public class Indexer {
             ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM));
         telemetry.addData("isBallAtIntake colorSensorIntakeLL",
             ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
-        if (((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM) < 2.0
-            || ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM) < 2.0) {
+        if (((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM) < 5.0
+            || ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM) < 5.0) {
             return true;
         } else {
             return false;
