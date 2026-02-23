@@ -354,10 +354,10 @@ public class Robot {
 
         double relativeAngle;
         if (isRedSide) {
-            relativeAngle = (absoluteAngleDegree - robotHeading) * 177 / 180;
+            relativeAngle = (absoluteAngleDegree - robotHeading);
         }
         else {
-            relativeAngle = (absoluteAngleDegree - robotHeading) * 185 / 180;
+            relativeAngle = (absoluteAngleDegree - robotHeading);
         }
 
         relativeAngle = normalizeAngle(relativeAngle);

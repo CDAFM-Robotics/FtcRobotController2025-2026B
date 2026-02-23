@@ -44,8 +44,6 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        // Set piopoint position here to avoid racing issue with pinpoint reset
-        robot.getDriveBase().setPinPointInitialPosition();
 
         while (opModeIsActive()){
             telemetry.addData("is red side", isRedSide);

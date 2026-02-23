@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.common.subsystems;
 
+import static android.os.SystemClock.sleep;
+
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -74,18 +76,33 @@ public class DriveBase {
 
         // Configure the sensor
         configurePinpoint();
+        pinpoint.update();
+        
+        //read the pose value from autonomous or initialized it at start up location
+        Pose2D startPose2D;
+        // if the auto completed, use the value from end of auto
+        if (RobotStaticValuesClass.autoCompleted) {
+            startPose2D = RobotStaticValuesClass.savedPose;
+        } else {
+            startPose2D = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0);
+        }
+
+        // Set the location of the robot - this should be the place you are starting the robot from
+        pinpoint.setPosition(startPose2D);
+        pinpoint.update();
+        RobotLog.d("Pos x: %.2f, y: %2f, heading: %.2f", startPose2D.getX(DistanceUnit.INCH), startPose2D.getY(DistanceUnit.INCH), startPose2D.getHeading(AngleUnit.RADIANS));
+
     }
 
-    public void resetIMU(){
+    public void resetIMU() {
         resetPinpointIMU();
     }
 
-    public void resetPinpointIMU()
-    {
+    public void resetPinpointIMU() {
         pinpoint.resetPosAndIMU();
     }
 
-    public void configurePinpoint(){
+    public void configurePinpoint() {
 
         // TODO TESTING Orientation may be wrong.
         pinpoint.setOffsets(8, -3.25, DistanceUnit.INCH); //Tuned for 2026 Bot2 17Feb26 OK
@@ -93,9 +110,10 @@ public class DriveBase {
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+            GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         pinpoint.resetPosAndIMU();
+        sleep(300);
     }
 
     public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
@@ -113,16 +131,14 @@ public class DriveBase {
             // Apply 90-degree driver offset (in radians)
             if (isRedSide) {
                 driverOffset = Math.toRadians(-90); // Change to -90 if opposite direction needed
-            }
-            else {
+            } else {
                 driverOffset = Math.toRadians(90);
             }
 
-            adjustedHeading= -(heading - driverOffset);
+            adjustedHeading = -(heading - driverOffset);
             //if (adjustedHeading > 180)  adjustedHeading -= 360;
             //if (adjustedHeading < -180) adjustedHeading += 360;
-        }
-        else {
+        } else {
             adjustedHeading = 0;
         }
 
@@ -145,8 +161,8 @@ public class DriveBase {
         frontRightMotor.setPower(frontRightPower);
         backRightMotor.setPower(backRightPower);
         telemetry.addData("Pinpoint", "Heading %.2f, Pos %.2f", heading, pos.getX(DistanceUnit.MM));
-        telemetry.addData("fieldCentric",fieldCentric);
-        telemetry.addData("powers", "front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f", frontLeftPower *speed*100, frontRightPower *speed*100, backLeftPower *speed*100, backRightPower *speed*100);
+        telemetry.addData("fieldCentric", fieldCentric);
+        telemetry.addData("powers", "front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f", frontLeftPower * speed * 100, frontRightPower * speed * 100, backLeftPower * speed * 100, backRightPower * speed * 100);
     }
 
     public void setIndividualMotorPowers(double frontLeftPower, double frontRightPower, double backRightPower, double backLeftPower) {
@@ -188,30 +204,6 @@ public class DriveBase {
 
     public double getPinPointHeading() {
         return pinpoint.getHeading(AngleUnit.RADIANS);
-    }
-
-    public void setPinPointInitialPosition() {
-        double startX;
-        double startY;
-        double startHeading;
-
-        // if the auto completed, use the value from end of auto
-        if (RobotStaticValuesClass.autoCompleted) {
-            startX = RobotStaticValuesClass.robotStaticX;
-            startY = RobotStaticValuesClass.robotStaticY;
-            startHeading = RobotStaticValuesClass.robotStaticHeading;
-        } else {
-            startX = 0;
-            startY = 0;
-            startHeading = 0;
-        }
-
-        // Set the location of the robot - this should be the place you are starting the robot from
-        pinpoint.setPosition(new Pose2D(DistanceUnit.INCH, startX, startY, AngleUnit.DEGREES, startHeading));
-        pinpoint.update();
-        telemetry.addData("setPinPointInitialPosition heading", pinpoint.getHeading(AngleUnit.DEGREES));
-        telemetry.addData("setPinPointInitialPositionX", pinpoint.getPosX(DistanceUnit.INCH));
-        telemetry.addData("setPinPointInitialPositiony", pinpoint.getPosY(DistanceUnit.INCH));
     }
 
 }
