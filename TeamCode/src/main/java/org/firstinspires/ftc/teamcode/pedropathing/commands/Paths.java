@@ -22,6 +22,8 @@ public class Paths {
         return follower;
     }
 
+    /*
+
     public PathChain getBlueFarPickupFirstMark() {
         blueFarPickupFirstMark = follower.pathBuilder().addPath(
                 new BezierCurve(
@@ -38,6 +40,10 @@ public class Paths {
         return blueFarPickupFirstMark;
     }
 
+     */
+
+    /*
+
     public PathChain getBlueFarPickupSecondMark() {
         blueFarPickupSecondMark = follower.pathBuilder().addPath(
                 new BezierCurve(
@@ -53,6 +59,8 @@ public class Paths {
         return blueFarPickupSecondMark;
     }
 
+     */
+
     public PathChain getBlueFarPickupThirdMark() {
         blueFarPickupThirdMark = follower.pathBuilder().addPath(
                 new BezierCurve(
@@ -67,6 +75,8 @@ public class Paths {
 
         return blueFarPickupThirdMark;
     }
+
+    /*
 
     public PathChain getBlueFarPickupHumanPlayerZone() {
         blueFarPickupHumanPlayerZone = follower.pathBuilder()
@@ -85,5 +95,7 @@ public class Paths {
 
         return blueFarPickupHumanPlayerZone;
     }
+
+     */
 }
 

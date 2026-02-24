@@ -632,6 +632,12 @@ public class Indexer {
         return false;
     }
 
+    public void autoFillColorArray() {
+        artifactColorArray[0] = ArtifactColor.PURPLE;
+        artifactColorArray[1] = ArtifactColor.PURPLE;
+        artifactColorArray[2] = ArtifactColor.PURPLE;
+    }
+
     public Boolean turnEmptySlotToIntake() {
         telemetry.addData("turnEmptySlotToIntake", nextEmptySlot);
         RobotLog.d("RRobot: turnEmptySlotToIntake %s", nextEmptySlot);

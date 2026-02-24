@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+
 public class RobotStaticValuesClass {
 
     public enum Oblisk {
