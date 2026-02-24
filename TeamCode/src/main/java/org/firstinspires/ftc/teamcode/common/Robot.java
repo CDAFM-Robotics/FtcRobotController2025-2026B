@@ -12,6 +12,7 @@ import org.firstinspires.ftc.teamcode.common.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 
+import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -39,8 +40,19 @@ public class Robot {
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
 
-    public final int WAIT_TIME_KICKER_UP = 80; // 250; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
-    public final int WAIT_TIME_KICKER_DOWN = 35; // 150; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
+    //shooting order for the balls
+    LinkedList<Integer> shootQueue = new LinkedList<>();
+    enum TargetPattern {
+        NONE,
+        GPP,
+        PGP,
+        PPG
+    }
+    private TargetPattern targetPattern = TargetPattern.NONE;
+    boolean obliskReady = false;
+
+    public final int WAIT_TIME_KICKER_UP = 125; // 250; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
+    public final int WAIT_TIME_KICKER_DOWN = 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class
@@ -60,6 +72,14 @@ public class Robot {
         this.launcher = new Launcher(this.hardwareMap, this.telemetry);
         this.intake = new Intake(this.hardwareMap, this.telemetry);
         //this.hud = new Hud(this.hardwareMap, this.telemetry);
+
+        // read the target pattern from autonomous
+        if (RobotStaticValuesClass.autoCompleted) {
+            obliskReady = true;
+        }
+        //else {
+        // try to read the oblisk with limelight
+        // }
     }
 
     public enum AutoIntakeStates {
@@ -235,7 +255,8 @@ public class Robot {
                         noArtifacts = false;
                         telemetry.addLine("shootAllBalls: INIT");
                         RobotLog.d("shootAllBalls: INIT");
-                        if(indexer.findABall()) {
+                        if(findNextBall()) {
+                            RobotLog.d("shootAllBalls: findNextBall");
                             launchState = LaunchBallStates.TURN_TO_LAUNCH;
                             break;
                         }
@@ -243,6 +264,7 @@ public class Robot {
                             RobotLog.d("shootAllBalls: !indexer.atIntake())");
                             indexer.positionForIntake();
                             launchState = LaunchBallStates.READY_TO_INTAKE;
+                            RobotLog.d("shootAllBalls: INIT %s", launchState);
                             break;
                         }
                         else {
@@ -450,4 +472,128 @@ public class Robot {
         return autoIntakeState;
     }
 
+    public void shootOrder() {
+        indexer.buildShootQueueNoColor(shootQueue);
+
+        if (shootQueue.size() >= 2) {
+            if (targetPattern == TargetPattern.GPP) {
+                int index = shootQueue.get(0);
+                if (indexer.artifactColorArray[index] != ArtifactColor.GREEN) {
+                    for (int i=0; i < shootQueue.size(); i++) {
+                        if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.GREEN) {
+                            int item = shootQueue.remove(i);  // remove from old position
+                            shootQueue.add(0, item);
+                            break;
+                        }
+                        else if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.UNKNOWN) {
+                            int item = shootQueue.remove(i);  // remove from old position
+                            shootQueue.add(0, item);
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (targetPattern == TargetPattern.PGP) {
+                int index = shootQueue.get(1);
+                if (indexer.artifactColorArray[index] != ArtifactColor.GREEN) {
+                    for (int i=0; i < shootQueue.size(); i++) {
+                        if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.GREEN) {
+                            int item = shootQueue.remove(i);  // remove from old position
+                            shootQueue.add(1, item);
+                            break;
+                        }
+                        else if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.UNKNOWN) {
+                            int item = shootQueue.remove(i);  // remove from old position
+                            shootQueue.add(1, item);
+                            break;
+                        }
+                    }
+                }
+
+            }
+            else if (targetPattern == TargetPattern.PPG) {
+                if (shootQueue.size() >= 3) {
+                    int index = shootQueue.get(2);
+                    if (indexer.artifactColorArray[index] != ArtifactColor.GREEN) {
+                        for (int i = 0; i < shootQueue.size(); i++) {
+                            if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.GREEN) {
+                                int item = shootQueue.remove(i);  // remove from old position
+                                shootQueue.add(2, item);
+                                break;
+                            } else if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.UNKNOWN) {
+                                int item = shootQueue.remove(i);  // remove from old position
+                                shootQueue.add(2, item);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        for (int value :shootQueue) {
+            RobotLog.d("shootOrder: %d", value);
+        }
+    }
+
+    public void shootOrderNone() {
+        shootQueue.clear();
+        launchState = LaunchBallStates.INIT;
+        targetPattern = TargetPattern.NONE;
+        shootOrder();
+    }
+
+    public void shootOrderMotif() {
+        shootQueue.clear();
+        launchState = LaunchBallStates.INIT;
+        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+            targetPattern = TargetPattern.GPP;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+            targetPattern = TargetPattern.PGP;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+            targetPattern = TargetPattern.PPG;
+
+        shootOrder();
+    }
+
+    public void shootOrderMotifOneOff() {
+        shootQueue.clear();
+        launchState = LaunchBallStates.INIT;
+        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+            targetPattern = TargetPattern.PPG;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+            targetPattern = TargetPattern.GPP;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+            targetPattern = TargetPattern.PGP;
+
+        shootOrder();
+    }
+
+    public void shootOrderMotifTwoOff() {
+        shootQueue.clear();
+        launchState = LaunchBallStates.INIT;
+        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+            targetPattern = TargetPattern.PGP;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+            targetPattern = TargetPattern.PPG;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+            targetPattern = TargetPattern.GPP;
+
+        shootOrder();
+    }
+
+    public boolean findNextBall() {
+        RobotLog.d("findNextBall");
+        for (int value :shootQueue) {
+            RobotLog.d("shootOrder: %d", value);
+        }
+
+        if ( !shootQueue.isEmpty() ) {
+            RobotLog.d("findNextBall:!shootQueue.isEmpty()");
+            indexer.setNextShootSlot(shootQueue.getFirst());
+            shootQueue.removeFirst();
+            return true;
+        }
+        return false;
+    }
 }

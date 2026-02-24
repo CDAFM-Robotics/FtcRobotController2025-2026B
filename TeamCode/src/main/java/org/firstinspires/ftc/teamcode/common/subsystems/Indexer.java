@@ -18,6 +18,9 @@ import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.common.util.RunTimeoutAction;
 import org.firstinspires.ftc.teamcode.common.util.WaitUntilAction;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class Indexer {
 
     HardwareMap hardwareMap;
@@ -766,6 +769,7 @@ public class Indexer {
         artifactColorArray[nextShootSlot] = ArtifactColor.NONE;
     }
 
+    // find the next ball to shoot
     public boolean findABall() {
 
         if (artifactColorArray[0] == ArtifactColor.NONE
@@ -814,7 +818,46 @@ public class Indexer {
         return false;
     }
 
-//    public double getAxonServoPosition() {
+    public void buildShootQueueNoColor(LinkedList<Integer> shootQueue){
+        // build the shoot queue according
+        double position = getIndexerPosition();
+        if (position <= POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT) {
+            //is there a ball at ZERO?
+            if (artifactColorArray[0] != ArtifactColor.NONE) {
+                shootQueue.add(0);
+            }
+            if (artifactColorArray[2] != ArtifactColor.NONE) {
+                shootQueue.add(2);
+            }
+            if (artifactColorArray[1] != ArtifactColor.NONE) {
+                shootQueue.add(1);
+            }
+        } else if (position <= POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT) {
+            //is there a ball at one?
+            if (artifactColorArray[2] != ArtifactColor.NONE) {
+                shootQueue.add(2);
+            }
+            if (artifactColorArray[1] != ArtifactColor.NONE) {
+                shootQueue.add(1);
+            }
+            if (artifactColorArray[0] != ArtifactColor.NONE) {
+                shootQueue.add(0);
+            }
+        } else if (position <= POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT) {
+            //is there a ball at two?
+            if (artifactColorArray[1] != ArtifactColor.NONE) {
+                shootQueue.add(1);
+            }
+            if (artifactColorArray[2] != ArtifactColor.NONE) {
+                shootQueue.add(2);
+            }
+            if (artifactColorArray[0] != ArtifactColor.NONE) {
+                shootQueue.add(0);
+            }
+        }
+    }
+
+    //    public double getAxonServoPosition() {
 //        //RobotLog.d("getAxonServoPosition: %f", indexerServoVoltage.getVoltage());
 //        return (indexerServoVoltage.getVoltage() - AXON_SERVO_VOLTAGE_OFFSET) * AXON_SERVO_VOLTAGE_SCALER;
 //    }
@@ -914,5 +957,8 @@ public class Indexer {
 
     }
 
+    public void setNextShootSlot(int slot) {
+        nextShootSlot = slot;
+    }
 
 }

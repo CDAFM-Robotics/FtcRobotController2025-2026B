@@ -107,8 +107,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 // Robot entering intake state
                 if (robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
                     robot.setRobotState(Robot.RobotInOutStates.INTAKE);
-                    // reset outtake state
-                    robot.setLaunchState(Robot.LaunchBallStates.INIT);
+                    //reset intake state
+                    robot.setAutoIntakeState(Robot.AutoIntakeStates.INIT);
                     //start the intake rolling
                     robot.getIntake().startIntake();
                 }
@@ -131,21 +131,10 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 robot.getIntake().stopIntake();
             }
 
-            // reverse the intake for half a second to prevent the robot from intake the fourth ball
-//            if (waitForReverseTimer
-//                    && reverseIntakeTimer.milliseconds() >= REVERSE_INTAKE_TIME
-//                    && robot.getIntake().getIntakeState() == -1) {
-//                waitForReverseTimer = false;
-//                robot.getIntake().stopIntake();
-//            }
-
-            // When indexer stuck or out of alignment, recover the color of the balls
-//            if (currentGamepad2.left_trigger != 0 && previousGamepad2.left_trigger == 0){
-//                robot.updateColorAllSlots();
-//            }
+            // TODO: When indexer stuck or out of alignment, recover the color of the balls
 
             // Launcher
-            if (currentGamepad2.x && !previousGamepad2.x && robot.isSafeToStopOuttake()) {
+            if (currentGamepad2.x && !previousGamepad2.x) {
                 robot.getLauncher().toggleLauncher();
                 if (robot.getLauncher().isLauncherActive()){
                     gamepad2.rumble(0.0,1.0,500);
@@ -181,27 +170,67 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             telemetry.addData("isLauncher active", robot.getLauncher().isLauncherActive());
 
             //Launch all balls in the robot.
-            if (currentGamepad2.right_trigger != 0
-                && robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
-                if(robot.getRobotInOutState() != Robot.RobotInOutStates.OUTTAKE){
+            if (currentGamepad2.right_trigger != 0 && previousGamepad2.right_trigger == 0) {
+                //set the shooting order
+                robot.shootOrderNone();
+            }
+
+            // Shoot balls in motif pattern
+            if (currentGamepad2.right_bumper && !previousGamepad2.right_bumper) {
+                //set motif shooting order
+                robot.shootOrderMotif();
+            }
+
+            // Shoot balls in motif pattern of by 1
+            if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper) {
+                //set motif shooting order of by 1
+                robot.shootOrderMotifOneOff();
+            }
+
+            // Shoot balls in motif pattern of by 2
+            if (currentGamepad2.left_trigger != 0 && previousGamepad2.left_trigger == 0) {
+                //set the shooting order of by 2
+                robot.shootOrderMotifTwoOff();
+            }
+
+            if ((currentGamepad2.right_trigger != 0
+                || currentGamepad2.left_trigger != 0
+                || currentGamepad2.right_bumper
+                || currentGamepad2.left_bumper)
+                && robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE
+                && robot.getRobotInOutState() != Robot.RobotInOutStates.OUTTAKE) {
                     robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
-                    // reset intake state
-                    robot.setAutoIntakeState(Robot.AutoIntakeStates.INIT);
-                }
+            }
+
+            if ((currentGamepad2.right_trigger != 0
+                || currentGamepad2.left_trigger != 0
+                || currentGamepad2.right_bumper
+                || currentGamepad2.left_bumper)
+                && robot.getRobotInOutState() == Robot.RobotInOutStates.OUTTAKE) {
                 robot.shootAllBalls();
             }
 
-            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStopOuttake()) {
+            if ((currentGamepad2.right_trigger == 0
+                || currentGamepad2.left_trigger == 0
+                || !currentGamepad2.right_bumper
+                || !currentGamepad2.left_bumper)
+                && !robot.isSafeToStopOuttake()) {
                 robot.shootAllBalls();
             }
 
-            if (currentGamepad2.right_trigger == 0 && robot.isSafeToStopOuttake()) {
+            if ((currentGamepad2.right_trigger == 0
+                || currentGamepad2.left_trigger == 0
+                || !currentGamepad2.right_bumper
+                || !currentGamepad2.left_bumper)
+                && robot.isSafeToStopOuttake()) {
                 if (robot.getRobotInOutState() == Robot.RobotInOutStates.OUTTAKE) {
                     robot.setRobotState(Robot.RobotInOutStates.IDLE);
                 }
             }
 
-            //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball
+            //TODO: if auton did not savve oblisk, read limelight until find oblisk aprilTag
+
+                //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball
 /*            if (robot.isIntake1Ball()) {
                 gamepad1.rumble(250);
                 robot.setIntak1BallOff();

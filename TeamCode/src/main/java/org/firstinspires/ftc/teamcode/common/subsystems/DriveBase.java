@@ -77,14 +77,14 @@ public class DriveBase {
         // Configure the sensor
         configurePinpoint();
         pinpoint.update();
-        
+
         //read the pose value from autonomous or initialized it at start up location
         Pose2D startPose2D;
         // if the auto completed, use the value from end of auto
         if (RobotStaticValuesClass.autoCompleted) {
             startPose2D = RobotStaticValuesClass.savedPose;
         } else {
-            startPose2D = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0);
+            startPose2D = new Pose2D(DistanceUnit.INCH, 63, -12, AngleUnit.RADIANS, -1.57);
         }
 
         // Set the location of the robot - this should be the place you are starting the robot from
