@@ -255,8 +255,7 @@ public class Robot {
                         noArtifacts = false;
                         telemetry.addLine("shootAllBalls: INIT");
                         RobotLog.d("shootAllBalls: INIT");
-                        if(findNextBall()) {
-                            RobotLog.d("shootAllBalls: findNextBall");
+                        if(indexer.findABall()) {
                             launchState = LaunchBallStates.TURN_TO_LAUNCH;
                             break;
                         }
@@ -264,7 +263,6 @@ public class Robot {
                             RobotLog.d("shootAllBalls: !indexer.atIntake())");
                             indexer.positionForIntake();
                             launchState = LaunchBallStates.READY_TO_INTAKE;
-                            RobotLog.d("shootAllBalls: INIT %s", launchState);
                             break;
                         }
                         else {
@@ -321,6 +319,61 @@ public class Robot {
                         RobotLog.d("shootAllBalls Unexpected");
                         throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
                 }
+        }
+    }
+
+    public void shootAllBallsAuto() {
+
+    // check to see if flywheel motors are running
+        switch (launchState) {
+            case INIT:
+                noArtifacts = false;
+                if(indexer.findABall()) {
+                    launchState = LaunchBallStates.TURN_TO_LAUNCH;
+                    break;
+                }
+                else {
+                    noArtifacts = true;
+                    break;
+                }
+            case TURN_TO_LAUNCH:
+                indexer.moveToOuttake();
+                launchState = LaunchBallStates.KICK_BALL;
+                break;
+            case KICK_BALL:
+                if (indexer.indexerFinishedTurning()) {
+                    safeToStop = false;
+                    launcher.kickBall();
+                    timeSinceKick.reset();
+                    launchState = LaunchBallStates.RESET_KICKER;
+                    break;
+                } else {
+                    break;
+                }
+            case RESET_KICKER:
+                if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER_UP) {
+                    launcher.resetKicker();
+                    timeSinceKickReset.reset();
+                    launchState = LaunchBallStates.UPDATE_INDEXER;
+                    break;
+                } else {
+                    break;
+                }
+            case UPDATE_INDEXER:
+                if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER_DOWN) {
+                    safeToStop = true;
+                    indexer.updateAfterShoot();
+                    launchState = LaunchBallStates.INIT;
+                }
+                break;
+            case READY_TO_INTAKE:
+                if (indexer.indexerFinishedTurning()) {
+                    updateColorAllSlots();
+                    launchState = LaunchBallStates.INIT;
+                }
+                break;
+            default:
+                throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
         }
     }
 
