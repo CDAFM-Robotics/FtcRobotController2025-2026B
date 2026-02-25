@@ -50,9 +50,9 @@ public class DriveBase {
         frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
         backLeftMotor = hardwareMap.get(DcMotor.class, "backLeftMotor");
         backRightMotor = hardwareMap.get(DcMotor.class, "backRightMotor");
-        //rightKickStand = hardwareMap.get(Servo.class, "rightKickStand");
-        //leftKickStand = hardwareMap.get(Servo.class, "leftKickStand");
-        //kickStandLight = hardwareMap.get(Servo.class, "kickStandLight");
+        rightKickStand = hardwareMap.get(Servo.class, "rightKickStand");
+        leftKickStand = hardwareMap.get(Servo.class, "leftKickStand");
+        // kickStandLight = hardwareMap.get(Servo.class, "kickStandLight");
 
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -172,7 +172,7 @@ public class DriveBase {
         backLeftMotor.setPower(backLeftPower);
     }
 
-/*    public void setKickStand() {
+    public void setKickStand() {
         rightKickStand.setPosition(0.0);
         leftKickStand.setPosition(1.0);
     }
@@ -192,7 +192,7 @@ public class DriveBase {
 
     public void adjustKickStandLight(double power){
         kickStandLight.setPosition(power);
-    }*/
+    }
 
     public double getPinPointPosX() {
         return pinpoint.getPosX(DistanceUnit.INCH);

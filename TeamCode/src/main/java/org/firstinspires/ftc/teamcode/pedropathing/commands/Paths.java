@@ -10,6 +10,7 @@ public class Paths {
     private PathChain blueFarPickupFirstMark;
     private PathChain blueFarPickupSecondMark;
     private PathChain blueFarPickupThirdMark;
+    private PathChain blueFarReturnFromThirdMark;
     private PathChain blueFarPickupHumanPlayerZone;
 
     Follower follower;
@@ -64,16 +65,29 @@ public class Paths {
     public PathChain getBlueFarPickupThirdMark() {
         blueFarPickupThirdMark = follower.pathBuilder().addPath(
                 new BezierCurve(
-                    new Pose(56.000, 8.500),
-                    new Pose(43.000, 52.000),
-                    new Pose(4.000, 43.000),
-                    new Pose(0.000, 18.000),
-                    new Pose(56.000, 8.500)
+                    new Pose(56.000, 11.000),
+                    new Pose(57.314, 38.264),
+                    new Pose(11.000, 36.000)
                 )
-            ).setConstantHeadingInterpolation(Math.toRadians(180))
+            ).setTangentHeadingInterpolation()
+
             .build();
 
         return blueFarPickupThirdMark;
+    }
+
+    public PathChain getBlueFarReturnFromThirdMark() {
+        blueFarReturnFromThirdMark = follower.pathBuilder().addPath(
+                new BezierLine(
+                    new Pose(11.000, 36.000),
+
+                    new Pose(56.000, 11.000)
+                )
+            ).setLinearHeadingInterpolation(Math.toRadians(-176), Math.toRadians(90))
+
+            .build();
+
+        return blueFarReturnFromThirdMark;
     }
 
     /*

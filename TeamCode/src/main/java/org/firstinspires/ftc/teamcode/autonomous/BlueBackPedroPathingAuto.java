@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -55,7 +55,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         robot = new Robot(hardwareMap, telemetry, false);
 
-        follower.setStartingPose(new Pose(56, 8.5, Math.PI));
+        follower.setStartingPose(new Pose(56, 8, Math.toRadians(90)));
 
         SubsystemCommands subsystemCommands = new SubsystemCommands(robot);
         paths = new Paths(follower);
@@ -68,7 +68,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
 
     @Override
     public void init_loop() {
-        robot.getLauncher().autoUpdateTurretPID(-64);
+        robot.getLauncher().autoUpdateTurretPID(23);
     }
 
     @Override
@@ -93,12 +93,14 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 break;
 
             case FAR_PICKUP:
-                updateDrive();
+                updateDrive(paths.getBlueFarPickupThirdMark(), paths.getBlueFarReturnFromThirdMark());
                 break;
 
             default:
                 //yup this is default
         }
+
+        follower.update();
 
         RobotLog.d("States: " + state + ", " + shootState + ", " + driveState + ", " + newState_Drive);
 
@@ -123,16 +125,16 @@ public class BlueBackPedroPathingAuto extends OpMode {
 
         switch (shootState) {
             case INIT:
-                robot.getLauncher().setAutoVelocity(1565);
-                robot.getLauncher().autoUpdateTurretPID(-64);
+                robot.getLauncher().setAutoVelocity(1580);
+                robot.getLauncher().autoUpdateTurretPID(23);
 
-                follower.holdPoint(new Pose(56, 8.5, Math.toRadians(180)));
+                follower.holdPoint(new Pose(56, 11, Math.toRadians(90)));
 
                 robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
 
                 robot.getIndexer().autoFillColorArray();
 
-                if (robot.getLauncher().getLauncherVelocity() >= 1540 && Math.abs(robot.getLauncher().getTurretDegrees() + 64) < 5) {
+                if (robot.getLauncher().getLauncherVelocity() >= 1560 && Math.abs(robot.getLauncher().getTurretDegrees() - 23) < 5) {
                     shootState = ShootState.SHOOTING_0;
                 }
                 else {
@@ -144,13 +146,13 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 telemetry.addData("Launcher Velocity", robot.getLauncher().getLauncherVelocity());
                 telemetry.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
 
-                robot.getLauncher().autoUpdateTurretPID(-64);
-                if (robot.getLauncher().getLauncherVelocity() >= 1540 && Math.abs(robot.getLauncher().getTurretDegrees() + 64) < 5) {
+                robot.getLauncher().autoUpdateTurretPID(23);
+                if (robot.getLauncher().getLauncherVelocity() >= 1560 && Math.abs(robot.getLauncher().getTurretDegrees() - 23) < 5) {
                     shootState = ShootState.SHOOTING_0;
                 }
                 break;
             case SHOOTING_0:
-                robot.getLauncher().autoUpdateTurretPID(-64);
+                robot.getLauncher().autoUpdateTurretPID(23);
                 robot.shootAllBallsAuto();
 
                 if (robot.isNoArtifacts()) {
@@ -164,14 +166,10 @@ public class BlueBackPedroPathingAuto extends OpMode {
         }
 
         // TODO
-//        if (driveState != DriveState.FINISHED) {
-//            newState = false;
-//        }
         if (shootState != ShootState.FINISHED) {
             newState_Shoot = false;
         }
 
-        follower.update();
 
 
     }
@@ -182,24 +180,24 @@ public class BlueBackPedroPathingAuto extends OpMode {
         PICKUP_1,
         PICKUP_2,
         PICKUP_0,
+        PREP_FOR_SHOOT_INIT,
         PREP_FOR_SHOOT,
         FINISHED
     }
 
     DriveState driveState = DriveState.INIT;
 
-    private void updateDrive() {
+    private void updateDrive(PathChain pickup, PathChain returnToPos) {
         if (newState_Drive) {
             driveState = DriveState.INIT;
         }
 
         switch (driveState) {
             case INIT:
-                follower.followPath(paths.getBlueFarPickupThirdMark(), false);
+                follower.followPath(pickup, 0.8, false);
                 robot.getIntake().setIntakeMotorPower(1);
-                robot.getIndexer().rotateToPosition(0);
+                robot.getIndexer().rotateToPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE);
                 driveState = DriveState.PREPARE;
-                RobotLog.d("Pedro: Drive INIT");
                 break;
             case PREPARE:
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE, 0.05)) {
@@ -207,54 +205,59 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 }
 
                 if (!follower.isBusy()) {
-                    driveState = DriveState.FINISHED;
+                    driveState = DriveState.PREP_FOR_SHOOT_INIT;
                 }
 
                 break;
             case PICKUP_0:
-                if (!robot.getIndexer().getPredictedColor(
-                        robot.getIndexer().colorSensorIntakeL.getNormalizedColors(),
-                        robot.getIndexer().colorSensorIntakeR.getNormalizedColors(),
-                        ((DistanceSensor) robot.getIndexer().colorSensorIntakeL).getDistance(DistanceUnit.CM),
-                        ((DistanceSensor) robot.getIndexer().colorSensorIntakeR).getDistance(DistanceUnit.CM)).equals(ArtifactColor.NONE)) {
+                if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE, 0.05)
+                    && robot.getIndexer().isBallAtIntake()) {
 
                     driveState = DriveState.PICKUP_1;
-                    robot.getIndexer().rotateToPosition(1);
+                    robot.getIndexer().rotateToPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE);
                 }
+
                 if (!follower.isBusy()) {
-                    driveState = DriveState.FINISHED;
+                    driveState = DriveState.PREP_FOR_SHOOT_INIT;
                 }
 
                 break;
             case PICKUP_1:
-                if (!robot.getIndexer().getPredictedColor(
+                if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE, 0.05) &&
+                    !robot.getIndexer().getPredictedColor(
                     robot.getIndexer().colorSensorIntakeL.getNormalizedColors(),
                     robot.getIndexer().colorSensorIntakeR.getNormalizedColors(),
                     ((DistanceSensor) robot.getIndexer().colorSensorIntakeL).getDistance(DistanceUnit.CM),
                     ((DistanceSensor) robot.getIndexer().colorSensorIntakeR).getDistance(DistanceUnit.CM)).equals(ArtifactColor.NONE)) {
 
                     driveState = DriveState.PICKUP_2;
-                    robot.getIndexer().rotateToPosition(1);
+                    robot.getIndexer().rotateToPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE);
                 }
                 if (!follower.isBusy()) {
-                    driveState = DriveState.FINISHED;
+                    driveState = DriveState.PREP_FOR_SHOOT_INIT;
                 }
                 break;
             case PICKUP_2:
-                if (!robot.getIndexer().getPredictedColor(
+                if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE, 0.05)
+                    && !robot.getIndexer().getPredictedColor(
                     robot.getIndexer().colorSensorIntakeL.getNormalizedColors(),
                     robot.getIndexer().colorSensorIntakeR.getNormalizedColors(),
                     ((DistanceSensor) robot.getIndexer().colorSensorIntakeL).getDistance(DistanceUnit.CM),
                     ((DistanceSensor) robot.getIndexer().colorSensorIntakeR).getDistance(DistanceUnit.CM)).equals(ArtifactColor.NONE)) {
 
-                    driveState = DriveState.PREP_FOR_SHOOT;
-                    robot.getIndexer().rotateToPosition(0);
-                    robot.getLauncher().setAutoVelocity(1565);
+                    driveState = DriveState.PREP_FOR_SHOOT_INIT;
+                    robot.getIndexer().rotateToPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT);
+                    robot.getLauncher().setAutoVelocity(1580);
 
                 }
                 if (!follower.isBusy()) {
-                    driveState = DriveState.FINISHED;
+                    driveState = DriveState.PREP_FOR_SHOOT_INIT;
                 }
+                break;
+            case PREP_FOR_SHOOT_INIT:
+                follower.followPath(returnToPos);
+                driveState = DriveState.PREP_FOR_SHOOT;
+                robot.getLauncher().setAutoVelocity(1580);
                 break;
             case PREP_FOR_SHOOT:
 
@@ -262,11 +265,12 @@ public class BlueBackPedroPathingAuto extends OpMode {
                     driveState = DriveState.FINISHED;
                 }
 
+                robot.getLauncher().autoUpdateTurretPID(23);
+
+
                 break;
             case FINISHED:
                 state = getNextState();
-                // TODO This may cause it to repeat Drive State machine
-                // newState = true;
                 newState_Drive = false;
                 break;
         }
@@ -278,8 +282,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
             robot.getIndexer().colorSensorIntakeL.getNormalizedColors(),
             robot.getIndexer().colorSensorIntakeR.getNormalizedColors(),
             ((DistanceSensor) robot.getIndexer().colorSensorIntakeL).getDistance(DistanceUnit.CM),
-            ((DistanceSensor) robot.getIndexer().colorSensorIntakeR).getDistance(DistanceUnit.CM)) + ", " + shootState + ", " + driveState + ", " + newState_Drive);
+            ((DistanceSensor) robot.getIndexer().colorSensorIntakeR).getDistance(DistanceUnit.CM)) + ", " + robot.getIndexer().getIndexerServoAtPosition(robot.getIndexer().getTargetIndexerPosition(), 0.05));
 
-        follower.update();
     }
 }

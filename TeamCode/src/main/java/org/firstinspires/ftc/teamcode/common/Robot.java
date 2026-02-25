@@ -51,8 +51,8 @@ public class Robot {
     private TargetPattern targetPattern = TargetPattern.NONE;
     boolean obliskReady = false;
 
-    public final int WAIT_TIME_KICKER_UP = 125; // 250; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
-    public final int WAIT_TIME_KICKER_DOWN = 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
+    public final int WAIT_TIME_KICKER_UP = 170; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
+    public final int WAIT_TIME_KICKER_DOWN = 80; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class

@@ -194,6 +194,10 @@ public class Indexer {
         return (double) Math.round(position * 1000) / 1000.00;
     }
 
+    public double getTargetIndexerPosition() {
+        return indexerServo.getPosition();
+    }
+
     public boolean indexerFinishedTurning() {
         //telemetry.addData("indexerFinishedTurning start", targetIdexerPosition);
         //TODO: 0.02 is used to start with. Is 0.02 the best value to use here?
