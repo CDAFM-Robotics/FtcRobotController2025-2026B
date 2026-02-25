@@ -798,12 +798,12 @@ public class Launcher {
 
         double turretPower = Math.max(Math.min((error * turretkP) + (turretIntegralSum * turretkI) + (derivative * turretkD) + (turretkF * Math.signum(error)), 1), -1);
 
-        telemetry.addData("turret target angle", "%.2f", target);
-        telemetry.addData("turret current angle", "%.2f", current);
-        telemetry.addData("turret Error", "%.2f", error);
-        telemetry.addData("turret Integral", "%.2f", turretIntegralSum);
-        telemetry.addData("turret Derivative", "%.2f", derivative);
-        telemetry.addData("turret Power", "%.2f", turretPower);
+//        telemetry.addData("turret target angle", "%.2f", target);
+//        telemetry.addData("turret current angle", "%.2f", current);
+//        telemetry.addData("turret Error", "%.2f", error);
+//        telemetry.addData("turret Integral", "%.2f", turretIntegralSum);
+//        telemetry.addData("turret Derivative", "%.2f", derivative);
+//        telemetry.addData("turret Power", "%.2f", turretPower);
 
         return turretPower;
     }
