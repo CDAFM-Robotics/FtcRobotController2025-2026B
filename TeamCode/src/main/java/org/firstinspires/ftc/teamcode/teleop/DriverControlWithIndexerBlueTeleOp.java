@@ -159,16 +159,16 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             }
 
             if (currentGamepad2.dpad_left && !previousGamepad2.dpad_left) {
-                robot.getLauncher().changeHood(-0.05);
+                robot.getLauncher().changeHood(-0.01);
             }
 
             if (currentGamepad2.dpad_right && !previousGamepad2.dpad_right) {
-                robot.getLauncher().changeHood(0.05);
+                robot.getLauncher().changeHood(0.01);
             }
 
-            telemetry.addData("hoodServo postion", robot.getLauncher().getHoodServoPosition());
-            telemetry.addData("kickerServo postion", robot.getLauncher().getKickerServoPosition());
-            telemetry.addData("isLauncher active", robot.getLauncher().isLauncherActive());
+            //telemetry.addData("hoodServo postion", robot.getLauncher().getHoodServoPosition());
+            //telemetry.addData("kickerServo postion", robot.getLauncher().getKickerServoPosition());
+            //telemetry.addData("isLauncher active", robot.getLauncher().isLauncherActive());
 
             //Launch all balls in the robot.
             if (currentGamepad2.right_trigger != 0 && previousGamepad2.right_trigger == 0) {
@@ -248,8 +248,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             }*/
 
             //telemetry.addData("launcher power:", robot.getLauncher().getLaunchPower());
-            telemetry.addData("launcher velocity:", robot.getLauncher().getLauncherVelocity());
-            telemetry.addData("launcher velocity2:", robot.getLauncher().getLauncherVelocity2());
+            //telemetry.addData("launcher velocity:", robot.getLauncher().getLauncherVelocity());
+            //telemetry.addData("launcher velocity2:", robot.getLauncher().getLauncherVelocity2());
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[0]);
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[1]);
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[2]);

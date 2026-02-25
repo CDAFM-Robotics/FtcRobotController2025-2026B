@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import static org.firstinspires.ftc.teamcode.pedropathing.Tuning.follower;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -10,11 +15,19 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
+import com.bylazar.configurables.PanelsConfigurables;
 
+@Configurable
 @TeleOp(name = "RED Bot2 ", group = "0teleop")
 public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     public boolean isRedSide = true;
+
+
+    // TODO add Data to Panels
+    // static TelemetryManager telemetryM;
+
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -23,6 +36,8 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         // FtcDashboard dashboard = FtcDashboard.getInstance();
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
+        // TODO Panels telemetry
+        // telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
@@ -30,6 +45,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         boolean fieldCentric = true;
         boolean waitForReverseTimer = false;
         int REVERSE_INTAKE_TIME = 500;
+        boolean isIntaking = false;
 
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad1 = new Gamepad();
@@ -75,27 +91,37 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             robot.getDriveBase().setMotorPowers(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x, driveSpeed, fieldCentric);
 
             // Kickstand control
-//            if (currentGamepad1.a != previousGamepad1.a) {
-//                robot.getDriveBase().setKickStand();
-//                robot.getDriveBase().setKickStandLight();
-//            }
-//
-//            if (currentGamepad1.b != previousGamepad1.b) {
-//                robot.getDriveBase().resetKickStand();
-//                robot.getDriveBase().resetKickStandLight();
-//            }
+            if (currentGamepad1.a != previousGamepad1.a) {
+                robot.getDriveBase().setKickStand();
+                //robot.getDriveBase().setKickStandLight();
+            }
 
-            // Intake Balls
-            if (currentGamepad1.right_trigger != 0.0) {
-                //telemetry.addLine("gameped 1 right trigger or 2 left trigger");
-                //start the intake rolling
-                robot.getIntake().startIntake();
+            if (currentGamepad1.b != previousGamepad1.b) {
+                robot.getDriveBase().resetKickStand();
+                //robot.getDriveBase().resetKickStandLight();
+            }
+
+            // Intake Balls. Add isSafeToStop()
+            if (currentGamepad1.right_trigger != 0.0
+                && robot.isSafeToStopOuttake()) {
+                //telemetry.addLine("gameped 1 right trigger");
+                // Robot entering intake state
+                if (robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
+                    robot.setRobotState(Robot.RobotInOutStates.INTAKE);
+                    //reset intake state
+                    robot.setAutoIntakeState(Robot.AutoIntakeStates.INIT);
+                    //start the intake rolling
+                    robot.getIntake().startIntake();
+                }
                 //turn the indexer for intake
                 robot.intakeWithIndexerTurn();
             }
-            else if (currentGamepad1.right_trigger == 0.0 && previousGamepad1.right_trigger != 0){
+
+            if (currentGamepad1.right_trigger == 0.0 && previousGamepad1.right_trigger != 0){
                 //robot update artifact colors
                 robot.getIntake().stopIntake();
+                //TODO: reverse intake for 500 milliseconds if there are three ball already
+                robot.setRobotState(Robot.RobotInOutStates.IDLE);
             }
 
             if (currentGamepad1.left_trigger != 0) {
@@ -106,18 +132,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 robot.getIntake().stopIntake();
             }
 
-            // reverse the intake for half a second to prevent the robot from intake the fourth ball
-//            if (waitForReverseTimer
-//                    && reverseIntakeTimer.milliseconds() >= REVERSE_INTAKE_TIME
-//                    && robot.getIntake().getIntakeState() == -1) {
-//                waitForReverseTimer = false;
-//                robot.getIntake().stopIntake();
-//            }
-
-            // When indexer stuck or out of alignment, recover the color of the balls
-            if (currentGamepad2.left_trigger != 0 && previousGamepad2.left_trigger == 0){
-                robot.updateColorAllSlots();
-            }
+            // TODO: When indexer stuck or out of alignment, recover the color of the balls
 
             // Launcher
             if (currentGamepad2.x && !previousGamepad2.x) {
@@ -144,51 +159,79 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             }
 
             if (currentGamepad2.dpad_left && !previousGamepad2.dpad_left) {
-                robot.getLauncher().changeHood(-0.05);
+                robot.getLauncher().changeHood(-0.01);
             }
 
             if (currentGamepad2.dpad_right && !previousGamepad2.dpad_right) {
-                robot.getLauncher().changeHood(0.05);
+                robot.getLauncher().changeHood(0.01);
             }
 
-            telemetry.addData("hoodServo postion", robot.getLauncher().getHoodServoPosition());
-            telemetry.addData("kickerServo postion", robot.getLauncher().getKickerServoPosition());
-            telemetry.addData("isLauncher active", robot.getLauncher().isLauncherActive());
-
-            //set launcher velocity
-//            if ( robot.getLauncher().limelightValid()
-//                    && robot.getLauncher().isLauncherActive()
-//                    && autoLaunch) {
-//                robot.getLauncher().setLauncherVelocityDistance();
-//            }
-
-            //launch a green ball
-//            if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper){
-//                robot.startLaunchAGreenBall();
-//            }
-//            if (currentGamepad2.left_bumper) {
-//                    robot.launchAColorBall();
-//            }
-//
-//            //launch a purple ball
-//            if (currentGamepad2.right_bumper && !previousGamepad2.right_bumper){
-//                robot.startLaunchAPurpleBall();
-//            }
-//
-//            if (currentGamepad2.right_bumper) {
-//                    robot.launchAColorBall();
-//            }
+            //telemetry.addData("hoodServo postion", robot.getLauncher().getHoodServoPosition());
+            //telemetry.addData("kickerServo postion", robot.getLauncher().getKickerServoPosition());
+            //telemetry.addData("isLauncher active", robot.getLauncher().isLauncherActive());
 
             //Launch all balls in the robot.
-            if (currentGamepad2.right_trigger != 0) {
+            if (currentGamepad2.right_trigger != 0 && previousGamepad2.right_trigger == 0) {
+                //set the shooting order
+                robot.shootOrderNone();
+            }
+
+            // Shoot balls in motif pattern
+            if (currentGamepad2.right_bumper && !previousGamepad2.right_bumper) {
+                //set motif shooting order
+                robot.shootOrderMotif();
+            }
+
+            // Shoot balls in motif pattern of by 1
+            if (currentGamepad2.left_bumper && !previousGamepad2.left_bumper) {
+                //set motif shooting order of by 1
+                robot.shootOrderMotifOneOff();
+            }
+
+            // Shoot balls in motif pattern of by 2
+            if (currentGamepad2.left_trigger != 0 && previousGamepad2.left_trigger == 0) {
+                //set the shooting order of by 2
+                robot.shootOrderMotifTwoOff();
+            }
+
+            if ((currentGamepad2.right_trigger != 0
+                || currentGamepad2.left_trigger != 0
+                || currentGamepad2.right_bumper
+                || currentGamepad2.left_bumper)
+                && robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE
+                && robot.getRobotInOutState() != Robot.RobotInOutStates.OUTTAKE) {
+                    robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
+            }
+
+            if ((currentGamepad2.right_trigger != 0
+                || currentGamepad2.left_trigger != 0
+                || currentGamepad2.right_bumper
+                || currentGamepad2.left_bumper)
+                && robot.getRobotInOutState() == Robot.RobotInOutStates.OUTTAKE) {
                 robot.shootAllBalls();
             }
 
-            if (currentGamepad2.right_trigger == 0 && !robot.isSafeToStopOuttake()) {
+            if ((currentGamepad2.right_trigger == 0
+                || currentGamepad2.left_trigger == 0
+                || !currentGamepad2.right_bumper
+                || !currentGamepad2.left_bumper)
+                && !robot.isSafeToStopOuttake()) {
                 robot.shootAllBalls();
             }
 
-            //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball
+            if ((currentGamepad2.right_trigger == 0
+                || currentGamepad2.left_trigger == 0
+                || !currentGamepad2.right_bumper
+                || !currentGamepad2.left_bumper)
+                && robot.isSafeToStopOuttake()) {
+                if (robot.getRobotInOutState() == Robot.RobotInOutStates.OUTTAKE) {
+                    robot.setRobotState(Robot.RobotInOutStates.IDLE);
+                }
+            }
+
+            //TODO: if auton did not savve oblisk, read limelight until find oblisk aprilTag
+
+                //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball
 /*            if (robot.isIntake1Ball()) {
                 gamepad1.rumble(250);
                 robot.setIntak1BallOff();
@@ -205,13 +248,19 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             }*/
 
             //telemetry.addData("launcher power:", robot.getLauncher().getLaunchPower());
-            telemetry.addData("launcher velocity:", robot.getLauncher().getLauncherVelocity());
-            telemetry.addData("launcher velocity2:", robot.getLauncher().getLauncherVelocity2());
+            //telemetry.addData("launcher velocity:", robot.getLauncher().getLauncherVelocity());
+            //telemetry.addData("launcher velocity2:", robot.getLauncher().getLauncherVelocity2());
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[0]);
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[1]);
             telemetry.addData("color:", robot.getIndexer().artifactColorArray[2]);
-            //RobotLog.d("launcher velocity: %f",
-                    //robot.getLauncher().getLauncherVelocity());
+
+            // TODO Measure Loop time and launcher velocity
+            // RobotLog.d("launcher velocity: %f",
+            //        robot.getLauncher().getLauncherVelocity());
+
+            // TODO spit it out to Panels graph
+            // telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
+            // telemetryM.update(telemetry);
 
             // Refresh the indicator lights
 //            robot.getHud().setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);
@@ -236,6 +285,11 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
             // Update turret angle so that it always point to the goal
             robot.updateTurretAngle();
+//
+//            //read oblisk if not ready yet
+//            if (!RobotStaticValuesClass.obliskReady){
+//                robot.getMotif();
+//            }
 
             telemetry.update();
         }
