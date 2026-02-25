@@ -65,8 +65,8 @@ public class DriveBase {
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // initialize the kick stand servos
-        //rightKickStand.setPosition(0.5);
-        //leftKickStand.setPosition(0.5);
+        rightKickStand.setPosition(0.5);
+        leftKickStand.setPosition(0.5);
 
         // ground lights OFF
         //kickStandLight.setPosition(0.0);
@@ -173,8 +173,8 @@ public class DriveBase {
     }
 
     public void setKickStand() {
-        rightKickStand.setPosition(0.0);
-        leftKickStand.setPosition(1.0);
+        rightKickStand.setPosition(0.86);
+        leftKickStand.setPosition(0.14);
     }
 
     public void resetKickStand() {
