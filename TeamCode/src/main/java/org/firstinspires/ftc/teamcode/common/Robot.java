@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
+@Configurable
 public class Robot {
 
     private DriveBase driveBase;
@@ -55,8 +57,8 @@ public class Robot {
     }
     private TargetPattern targetPattern = TargetPattern.NONE;
 
-    public final int WAIT_TIME_KICKER_UP = 170; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
-    public final int WAIT_TIME_KICKER_DOWN = 80; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
+    public static int WAIT_TIME_KICKER_UP = 100; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
+    public static int WAIT_TIME_KICKER_DOWN = 45; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
 
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
 //    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
