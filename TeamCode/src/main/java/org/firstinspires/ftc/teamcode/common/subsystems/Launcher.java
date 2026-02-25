@@ -694,13 +694,13 @@ public class Launcher {
         launcherServo.setPower(turretPower);
 
         // Set hood Servo position
-//        hoodPosition = shootingTable.getData2(shootingDistance);
-//        hoodServo.setPosition(hoodPosition);
+        hoodPosition = shootingTable.getData2(shootingDistance);
+        hoodServo.setPosition(hoodPosition);
 
         // Set launcher power
-//        launcherVelocity = shootingTable.getData1(shootingDistance);
-//        if (isLauncherActive())
-//            setLauncherVelocity(launcherVelocity);
+        launcherVelocity = shootingTable.getData1(shootingDistance);
+        if (isLauncherActive())
+            setLauncherVelocity(launcherVelocity);
 
         // Add telemetry data for debugging
 
