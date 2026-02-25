@@ -899,12 +899,32 @@ public class Indexer {
 //
     // Check to see if there is any ball by distance sensing
     public boolean isBallAtIntake() {
-        telemetry.addData("isBallAtIntake colorSensorIntakeLL",
-            ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM));
-        telemetry.addData("isBallAtIntake colorSensorIntakeLL",
-            ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
-        if (((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM) < 5.0
-            || ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM) < 5.0) {
+
+        double dis1 = ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM);
+        double dis2 = ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM);
+        NormalizedRGBA colorSensorNormalizedColors1 = colorSensorIntakeL.getNormalizedColors();;
+        NormalizedRGBA colorSensorNormalizedColors2 = colorSensorIntakeR.getNormalizedColors();;
+        double position = getIndexerPosition();
+        telemetry.addData("isBallAtIntake colorSensorIntakeLL", dis1);
+        telemetry.addData("isBallAtIntake colorSensorIntakeLL", dis2);
+
+        if ((dis1 < 2.5 || dis1 < 2.5) && (colorSensorNormalizedColors1.alpha > 0.75 || colorSensorNormalizedColors2.alpha > 0.75)) {
+            if (colorSensorNormalizedColors1.blue > colorSensorNormalizedColors1.green) {
+                if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE)
+                    artifactColorArray[0] = ArtifactColor.PURPLE;
+                else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE)
+                    artifactColorArray[1] = ArtifactColor.PURPLE;
+                else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
+                    artifactColorArray[1] = ArtifactColor.PURPLE;
+            }
+            else {
+                if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE)
+                    artifactColorArray[0] = ArtifactColor.GREEN;
+                else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE)
+                    artifactColorArray[1] = ArtifactColor.GREEN;
+                else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
+                    artifactColorArray[1] = ArtifactColor.GREEN;
+            }
             return true;
         } else {
             return false;
