@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import com.bylazar.configurables.PanelsConfigurables;
 
@@ -284,6 +285,11 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
             // Update turret angle so that it always point to the goal
             robot.updateTurretAngle();
+//
+//            //read oblisk if not ready yet
+//            if (!RobotStaticValuesClass.obliskReady){
+//                robot.getMotif();
+//            }
 
             telemetry.update();
         }

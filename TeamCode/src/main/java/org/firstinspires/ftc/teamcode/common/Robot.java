@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -13,6 +16,7 @@ import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
@@ -23,6 +27,7 @@ public class Robot {
     private Launcher launcher;
     private Intake intake;
     private Hud hud;
+    private Limelight3A limelight;
 
     //private ElapsedTime timeSinceIndex = new ElapsedTime();
     private ElapsedTime timeSinceKick = new ElapsedTime();
@@ -49,10 +54,12 @@ public class Robot {
         PPG
     }
     private TargetPattern targetPattern = TargetPattern.NONE;
-    boolean obliskReady = false;
 
     public final int WAIT_TIME_KICKER_UP = 170; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
     public final int WAIT_TIME_KICKER_DOWN = 80; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
+
+//    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
+//    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class
@@ -73,13 +80,34 @@ public class Robot {
         this.intake = new Intake(this.hardwareMap, this.telemetry);
         //this.hud = new Hud(this.hardwareMap, this.telemetry);
 
+//        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+//        limelight.pipelineSwitch(7);
+
+//        limelight.start();
+
+        // Initialize the map with calibration points.
+        // Distances in cm, velocities as motor power (0.0 to 1.0)
+        // Example values:
+    /*
+        LIMELIGHT PIPELINES:        TYPE:               STATUS:
+            0: PURPLE               COLOR               USED
+            1: YELLOW               COLOR               OPEN FOR CONFIGURATION
+            2: BLUE                 COLOR               OPEN FOR CONFIGURATION
+            3: APRIL_TAG            AprilTag            OPEN FOR CONFIGURATION
+            4: MOTIF                AprilTag            USED
+            5: RED_GOAL             AprilTag            USED
+            6: BLUE_GOAL            AprilTag            USED
+            7: OBELISK              AprilTag            USED
+
+     */
         // read the target pattern from autonomous
         if (RobotStaticValuesClass.autoCompleted) {
-            obliskReady = true;
+            RobotStaticValuesClass.obliskReady = true;
         }
-        //else {
-        // try to read the oblisk with limelight
-        // }
+        else {
+            // try to read the oblisk with limelight
+//            getMotif();
+        }
     }
 
     public enum AutoIntakeStates {
@@ -163,6 +191,7 @@ public class Robot {
                      telemetry.addLine("Robot: found empty slot");
                      RobotLog.d("RRobot: found empty slot");
                      autoIntakeState = AutoIntakeStates.TURN_EMPTY_SLOT_TO_INTAKE;
+                     break;
                  } else {
                      //No empty slot
                      // - update color double check
@@ -255,7 +284,8 @@ public class Robot {
                         noArtifacts = false;
                         telemetry.addLine("shootAllBalls: INIT");
                         RobotLog.d("shootAllBalls: INIT");
-                        if(indexer.findABall()) {
+                        if(findNextBall()) {
+                            RobotLog.d("shootAllBalls: findNextBall");
                             launchState = LaunchBallStates.TURN_TO_LAUNCH;
                             break;
                         }
@@ -263,6 +293,7 @@ public class Robot {
                             RobotLog.d("shootAllBalls: !indexer.atIntake())");
                             indexer.positionForIntake();
                             launchState = LaunchBallStates.READY_TO_INTAKE;
+                            RobotLog.d("shootAllBalls: INIT %s", launchState);
                             break;
                         }
                         else {
@@ -649,4 +680,33 @@ public class Robot {
         }
         return false;
     }
+//
+//    public void getMotif() {
+//        LLResult result = limelight.getLatestResult();
+//        if (result.isValid()) {
+//            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+//            if (fiducialResults != null) {
+//                for (LLResultTypes.FiducialResult fr : fiducialResults) {
+//                    if (fr.getFiducialId() == 21) {
+//                        RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.GPP;
+//                        RobotStaticValuesClass.obliskReady = true;
+//                    }
+//                    else if (fr.getFiducialId() == 22) {
+//                        RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.PGP;
+//                        RobotStaticValuesClass.obliskReady = true;
+//                    }
+//                    else if (fr.getFiducialId() == 23) {
+//                        RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.PPG;
+//                        RobotStaticValuesClass.obliskReady = true;
+//                    }
+//                }
+//            }
+//        }
+//        RobotLog.d("RobotStaticValuesClass.obliskReady %s", RobotStaticValuesClass.obliskReady);
+//    }
+//
+//    public void setTagPipeline(int pipeline) {
+//        limelight.pipelineSwitch(pipeline);
+//    }
+
 }

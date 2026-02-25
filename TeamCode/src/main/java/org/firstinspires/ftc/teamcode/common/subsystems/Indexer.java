@@ -595,47 +595,58 @@ public class Indexer {
 //
     public boolean checkEmptySlot() {
         telemetry.addLine("checkEmptySlot");
-        RobotLog.d("checkEmptySlot");
+
 
         //Check for empty slot according to current position
         double position = getIndexerPosition();
+        RobotLog.d("checkEmptySlot %.3f", position);
 
         if (position >= POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
             if (artifactColorArray[0] == ArtifactColor.NONE) {
                 nextEmptySlot = 0;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             } else if (artifactColorArray[1] == ArtifactColor.NONE) {
                 nextEmptySlot = 1;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             } else if (artifactColorArray[2] == ArtifactColor.NONE) {
                 nextEmptySlot = 2;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             }
         } else if (position >= POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
             if (artifactColorArray[1] == ArtifactColor.NONE) {
                 nextEmptySlot = 1;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             } else if (artifactColorArray[2] == ArtifactColor.NONE) {
                 nextEmptySlot = 2;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             } else if (artifactColorArray[0] == ArtifactColor.NONE) {
                 nextEmptySlot = 0;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             }
         } else if (position >= POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
             if (artifactColorArray[2] == ArtifactColor.NONE) {
                 nextEmptySlot = 2;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             } else if (artifactColorArray[1] == ArtifactColor.NONE) {
                 nextEmptySlot = 1;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             } else if (artifactColorArray[0] == ArtifactColor.NONE) {
                 nextEmptySlot = 0;
+                RobotLog.d("checkEmptySlot %d", nextEmptySlot);
                 return true;
             }
         }
 
         //telemetry.addLine("no empty slot");
+        RobotLog.d("NO EmptySlot %d", nextEmptySlot);
         return false;
     }
 

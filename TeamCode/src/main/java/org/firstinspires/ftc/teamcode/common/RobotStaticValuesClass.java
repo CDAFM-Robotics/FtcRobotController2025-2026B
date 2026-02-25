@@ -14,8 +14,9 @@ public class RobotStaticValuesClass {
 
     // Static variables persist between OpModes
     public static Pose2D savedPose = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0);
-    public static Oblisk savedOblisk = Oblisk.GPP;
+    public static Oblisk savedOblisk = Oblisk.GPP; //default value
     public static double turretAngleOffset = 0.0;
     public static boolean autoCompleted = true;
+    public static boolean obliskReady = false;
 
 }

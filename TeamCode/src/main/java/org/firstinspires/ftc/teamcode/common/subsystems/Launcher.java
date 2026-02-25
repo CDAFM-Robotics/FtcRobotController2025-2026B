@@ -51,8 +51,6 @@ public class Launcher {
     double hoodPosition;
     double kickerPosition;
 
-    private Limelight3A limelight;
-
     public Servo kickerServo;
     CRServo turretServo;
     Servo hoodServo;
@@ -87,8 +85,7 @@ public class Launcher {
     public final double LAUNCH_VELOCITY_NEAR= 1300;
     public final double LAUNCH_VELOCITY_FULL= 2200;
     public final double LAUNCH_VELOCITY_LOW= 1060;   // TODO find lowest valuable power and set this
-    public final double LIMELIGHT_OFFSET = 17.4;
-    public final double LIMELIGHT_HEIGHT_OFFSET = 436;
+
 
     //rotate autoaim PID Constants
     private double rotateIntegralSum = 0.0;
@@ -352,11 +349,19 @@ public class Launcher {
         // data1 = motor power,
         // data2 = shooter hood servo position
         shootingTable.add(35,1080,1.0);
-        shootingTable.add(45.29,1120,0.68);
-        shootingTable.add(60.02,1200,0.32);
-        shootingTable.add(74.84,1250,0.28);
+        shootingTable.add(40.03,1100,1.0);
+        shootingTable.add(45.29,1120,0.73);
+        shootingTable.add(50.03,1140,0.72);
+        shootingTable.add(55.25,1160,0.66);
+        shootingTable.add(60.17,1180,0.50);
+        shootingTable.add(64.89,1200,0.32);
+        shootingTable.add(69.98,1230,0.30);
+        shootingTable.add(74.92,1250,0.275);
+        shootingTable.add(80.08,1280,0.25);
         shootingTable.add(90,1320,0.15);
-        shootingTable.add(105.16,1380,0.14);
+        shootingTable.add(95.03,1350,0.11);
+        shootingTable.add(100.17,1370,0.10);
+        shootingTable.add(105.16,1380,0.10);
         shootingTable.add(122.54,1500,0.13);
         shootingTable.add(140,1560,0.0);
 
@@ -689,13 +694,13 @@ public class Launcher {
         launcherServo.setPower(turretPower);
 
         // Set hood Servo position
-        hoodPosition = shootingTable.getData2(shootingDistance);
-        hoodServo.setPosition(hoodPosition);
+//        hoodPosition = shootingTable.getData2(shootingDistance);
+//        hoodServo.setPosition(hoodPosition);
 
         // Set launcher power
-        launcherVelocity = shootingTable.getData1(shootingDistance);
-        if (isLauncherActive())
-            setLauncherVelocity(launcherVelocity);
+//        launcherVelocity = shootingTable.getData1(shootingDistance);
+//        if (isLauncherActive())
+//            setLauncherVelocity(launcherVelocity);
 
         // Add telemetry data for debugging
 
