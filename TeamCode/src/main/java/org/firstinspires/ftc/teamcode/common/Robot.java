@@ -57,8 +57,8 @@ public class Robot {
     }
     private TargetPattern targetPattern = TargetPattern.NONE;
 
-    public static int WAIT_TIME_KICKER_UP = 100; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
-    public static int WAIT_TIME_KICKER_DOWN = 45; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
+    public static int WAIT_TIME_KICKER_UP = 180; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
+    public static int WAIT_TIME_KICKER_DOWN = 80; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
 
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
 //    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
@@ -217,7 +217,8 @@ public class Robot {
                          telemetry.addLine("Robot: isBallAtIntake");
                          RobotLog.d("Robot: isBallAtIntake");
                          intake1Ball = true;
-                         indexer.updateColorAtIntakeOnly();
+                         //Reading color in isBallAtIntake. No need to read here anymore
+                         // indexer.updateColorAtIntakeOnly();
                          autoIntakeState = AutoIntakeStates.INIT;
                          break;
                      }
@@ -484,7 +485,7 @@ public class Robot {
             relativeAngle = (absoluteAngleDegree - robotHeading);
         }
         else {
-            relativeAngle = (absoluteAngleDegree - robotHeading);
+            relativeAngle = (absoluteAngleDegree - robotHeading) + 6; //off set on blue side
         }
 
         relativeAngle = normalizeAngle(relativeAngle);

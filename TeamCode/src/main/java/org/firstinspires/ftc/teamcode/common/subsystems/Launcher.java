@@ -362,8 +362,15 @@ public class Launcher {
         shootingTable.add(95.03,1350,0.11);
         shootingTable.add(100.17,1370,0.10);
         shootingTable.add(105.16,1380,0.10);
-        shootingTable.add(122.54,1500,0.13);
-        shootingTable.add(140,1560,0.0);
+        shootingTable.add(110.08,1420,0.10);
+        shootingTable.add(115.05,1480,0.09);
+        shootingTable.add(120.25,1500,0.08);
+        shootingTable.add(125.20,1520,0.06);
+        shootingTable.add(130.20,1550,0.04);
+        shootingTable.add(135.20,1580,0.03);
+        shootingTable.add(140.09,1600,0.01);
+        shootingTable.add(145.39,1640,0.00);
+        shootingTable.add(149.96,1660,0.00);
 
 
         //limelight = hardwareMap.get(Limelight3A.class, "limelight");
@@ -428,7 +435,7 @@ public class Launcher {
     }
 
     public void toggleLauncher() {
-        telemetry.addData("toggleLauncher", launcherMotor1.getPower());
+        //telemetry.addData("toggleLauncher", launcherMotor1.getPower());
        if (launcherMotor1.getPower() == 0) {
            startLauncher();
        }
@@ -471,7 +478,7 @@ public class Launcher {
         }
     }
     public void startLauncher() {
-        telemetry.addData("startLauncher",launcherVelocity);
+        //telemetry.addData("startLauncher",launcherVelocity);
         //launcherVelocity = shootingTable.getData1(shootingDistance);
         setLauncherVelocity(launcherVelocity);
         launcherActive = true;
@@ -540,8 +547,8 @@ public class Launcher {
         if (hoodPosition > 1.0) {
             hoodPosition = 1.0;
         }
-        else if (hoodPosition < 0.1) {
-            hoodPosition = 0.1;
+        else if (hoodPosition < 0.0) {
+            hoodPosition = 0.0;
         }
 
         hoodServo.setPosition(hoodPosition);
@@ -715,7 +722,9 @@ public class Launcher {
         telemetry.addData("Angle Offset", "%.2f", currentAngleOffset);
         telemetry.addData("Actual Servo Angle", "%.2f", actualAngle);
         telemetry.addData("launcherVelocity", "%.2f", launcherVelocity);
-        telemetry.addData("launcherVelocity from motor", "%.2f", launcherMotor1.getVelocity());
+        telemetry.addData("launcherVelocity from motor1", "%.2f", launcherMotor1.getVelocity());
+        telemetry.addData("launcherVelocity from motor2", "%.2f", launcherMotor2.getVelocity());
+        telemetry.addData("hood position", "%.2f", hoodPosition);
 
         // TODO don't do this here. one time per loooop
 //        telemetry.update();
