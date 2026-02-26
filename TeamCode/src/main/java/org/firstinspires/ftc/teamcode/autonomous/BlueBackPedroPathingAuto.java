@@ -379,6 +379,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 }
                 if (!follower.isBusy()) {
                     if (midDelay == 0) {
+                        follower.followPath(returnToPos);
                         driveState = DriveState.PICKUP_2_RETURN;
                     }
                     else if (!resetTimer) {
@@ -386,6 +387,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                         resetTimer = true;
                     }
                     else if (delayTimer.milliseconds() >= midDelay){
+                        follower.followPath(returnToPos);
                         driveState = DriveState.PICKUP_2_RETURN;
                     }
                 }
@@ -401,7 +403,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 }
 
                 if (!follower.isBusy()) {
-                    follower.followPath(returnToPos);
+
                     driveState = DriveState.FINISHED;
                 }
                 break;
@@ -409,6 +411,9 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 driveState = DriveState.PREP_FOR_SHOOT;
                 robot.getLauncher().setAutoVelocity(1610);
                 robot.getIntake().setIntakeMotorPower(0);
+                if (!follower.isBusy()) {
+                    follower.followPath(returnToPos);
+                }
                 break;
             case PREP_FOR_SHOOT:
 

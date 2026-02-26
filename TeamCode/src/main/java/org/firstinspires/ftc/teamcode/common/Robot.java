@@ -190,7 +190,7 @@ public class Robot {
              case INIT:
                  RobotLog.d("intakeWithIndexerTurn: INIT)");
                  if (indexer.checkEmptySlot()) {
-                     telemetry.addLine("Robot: found empty slot");
+                     // telemetry.addLine("Robot: found empty slot");
                      RobotLog.d("RRobot: found empty slot");
                      autoIntakeState = AutoIntakeStates.TURN_EMPTY_SLOT_TO_INTAKE;
                      break;
@@ -208,13 +208,13 @@ public class Robot {
                  autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
                  break;
              case WAIT_FOR_BALL:
-                 telemetry.addLine("Robot: WAIT_FOR_BALL");
+                 // telemetry.addLine("Robot: WAIT_FOR_BALL");
                  RobotLog.d("Robot: WAIT_FOR_BALLt");
                  if (indexer.indexerFinishedTurning()) {
-                     telemetry.addLine("Robot: indexerFinishedTurning");
+                     // telemetry.addLine("Robot: indexerFinishedTurning");
                      RobotLog.d("Robot: indexerFinishedTurning");
                      if (indexer.isBallAtIntake()) {
-                         telemetry.addLine("Robot: isBallAtIntake");
+                         // telemetry.addLine("Robot: isBallAtIntake");
                          RobotLog.d("Robot: isBallAtIntake");
                          intake1Ball = true;
                          //Reading color in isBallAtIntake. No need to read here anymore

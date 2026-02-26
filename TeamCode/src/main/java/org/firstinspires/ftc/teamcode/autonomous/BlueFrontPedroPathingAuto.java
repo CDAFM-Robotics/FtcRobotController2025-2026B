@@ -32,7 +32,9 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         MID_PICKUP_GATE,
         SHOOT,
         CLOSE_PICKUP,
-        FAR_PICKUP
+        FAR_PICKUP,
+        WAIT_SHOOT_POS,
+        FINISHED
     }
 
     private LinkedList<State> order = new LinkedList<>();
@@ -46,8 +48,12 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         if (currentState < order.size()) {
             return order.get(currentState++);
         }
-        else {
+        else if (endLoop.size() > 0) {
+            // TODO endloop appears  not to have any states
             return endLoop.get((currentState++ - order.size()) % endLoop.size());
+        }
+        else  {
+            return State.FINISHED;
         }
     }
 
@@ -94,7 +100,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         currentGamepad1.copy(gamepad1);
         currentGamepad2.copy(gamepad2);
 
-        robot.getLauncher().autoUpdateTurretPID(-45);
+        robot.getLauncher().autoUpdateTurretPID(-43);
 
         if (state == State.INIT) {
             for (int i = 0; i < maxRows; i++) {
@@ -131,6 +137,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 
             if (currentGamepad1.a || currentGamepad2.a) {
                 order.add(State.GO_TO_SHOOT_POS);
+                // order.add(State.WAIT_SHOOT_POS);
                 order.add(State.SHOOT_PRELOAD);
                 if (rows.get(0)) {
                     order.add(State.MID_PICKUP_GATE);
@@ -172,32 +179,43 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 
         switch (state) {
             case SHOOT_PRELOAD:
-                updateShoot(new Pose(60.000, 84.000, Math.toRadians(180)), -45);
+                RobotLog.d ("S: SHOOT_PRELOAD");
+                updateShoot(new Pose(60.000, 84.000, Math.toRadians(180)), -43);
                 break;
             case GO_TO_SHOOT_POS:
+                RobotLog.d ("S: GO_TO_SHOOT_POS");
                 follower.followPath(paths.getBlueCloseStartToShoot(), false);
-                if (!follower.isBusy()) {
+                state = state.WAIT_SHOOT_POS; // Wait for position
+//                if (!follower.isBusy()) {
+//                    state = getNextState();
+//                }
+                break;
+            case WAIT_SHOOT_POS:
+                RobotLog.d ("S: WAIT_SHOOT_POS");
+                if (!follower.isBusy()){
                     state = getNextState();
                 }
                 break;
             case MID_PICKUP_GATE:
-                updateDrive(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 0);
+                RobotLog.d ("S: MID_PICKUP_GATE");
+                updateDrive(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 150);
                 break;
 
             case SHOOT:
-                updateShoot(new Pose(60.000, 84.000, Math.toRadians(180)), -45);
+                RobotLog.d ("S: SHOOT");
+                updateShoot(new Pose(60.000, 84.000, Math.toRadians(180)), -43);
                 break;
             case FAR_PICKUP:
-                updateDrive(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 0);
+                RobotLog.d ("S: FAR_PICKUP");
+                updateDrive(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 150);
                 break;
             case CLOSE_PICKUP:
-                updateDrive(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 0);
+                RobotLog.d ("S: CLOSE_PICKUP");
+                updateDrive(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 150);
         }
 
         follower.update();
-
-        RobotLog.d("States: " + state + ", " + shootState + ", " + driveState + ", " + newState_Drive);
-
+        // RobotLog.d("States: " + state + ", " + shootState + ", " + driveState + ", " + newState_Drive);
         telemetry.update();
     }
 
@@ -217,7 +235,9 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 
         switch (shootState) {
             case INIT:
+                RobotLog.d ("SS: INIT");
                 robot.getLauncher().setAutoVelocity(1280);
+
                 robot.getLauncher().autoUpdateTurretPID(turretAngle);
 
                 follower.holdPoint(holdPose);
@@ -226,7 +246,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 
                 robot.getIndexer().autoFillColorArray();
 
-                if (robot.getLauncher().getLauncherVelocity() >= 1260 && Math.abs(robot.getLauncher().getTurretDegrees() - turretAngle) < 5) {
+                if (robot.getLauncher().getLauncherVelocity() >= 1280 && Math.abs(robot.getLauncher().getTurretDegrees() - turretAngle) < 2.5) {
                     shootState = ShootState.SHOOTING_0;
                 }
                 else {
@@ -235,16 +255,22 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 break;
             case PREPARING:
 
+                RobotLog.d ("SS: PREPARING LV:%.2f TA:%.2f", robot.getLauncher().getLauncherVelocity(), robot.getLauncher().getTurretDegrees());
                 telemetry.addData("Launcher Velocity", robot.getLauncher().getLauncherVelocity());
                 telemetry.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
 
+
                 robot.getLauncher().autoUpdateTurretPID(turretAngle);
-                if (robot.getLauncher().getLauncherVelocity() >= 1260 && Math.abs(robot.getLauncher().getTurretDegrees() - turretAngle) < 5) {
+
+                if (robot.getLauncher().getLauncherVelocity() >= 1280 && Math.abs(robot.getLauncher().getTurretDegrees() - turretAngle) < 2.5) {
                     shootState = ShootState.SHOOTING_0;
                 }
                 break;
             case SHOOTING_0:
+                RobotLog.d ("SS: SHOOTING_0");
+                // TODO jw
                 robot.getLauncher().autoUpdateTurretPID(turretAngle);
+
                 robot.shootAllBallsAuto();
 
                 if (robot.isNoArtifacts()) {
@@ -252,6 +278,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 }
                 break;
             case FINISHED:
+                RobotLog.d ("SS: FINISHED");
                 robot.getLauncher().setAutoVelocity(0);
                 telemetry.addData("Shoot State", shootState);
                 state = getNextState();
@@ -292,6 +319,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 
         switch (driveState) {
             case INIT:
+                RobotLog.d ("SD: INIT");
                 follower.followPath(pickup, 0.8, false);
                 resetTimer = false;
                 robot.getIntake().setIntakeMotorPower(1);
@@ -299,6 +327,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 driveState = DriveState.PREPARE;
                 break;
             case PREPARE:
+                RobotLog.d ("SD: PREPARE");
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE, 0.05)) {
                     driveState = DriveState.PICKUP_0;
                 }
@@ -318,6 +347,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 
                 break;
             case PICKUP_0:
+                RobotLog.d ("SD: PICKUP_0");
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE, 0.05)
                     && robot.getIndexer().isBallAtIntake()) {
 
@@ -340,6 +370,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 
                 break;
             case PICKUP_1:
+                RobotLog.d ("SD: PICKUP_1");
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE, 0.05) &&
                     robot.getIndexer().isBallAtIntake()) {
 
@@ -360,6 +391,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 }
                 break;
             case PICKUP_2:
+                RobotLog.d ("SD: PICKUP_2");
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE, 0.05)
                     && robot.getIndexer().isBallAtIntake()) {
 
@@ -370,6 +402,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 }
                 if (!follower.isBusy()) {
                     if (midDelay == 0) {
+                        follower.followPath(returnToPos);
                         driveState = DriveState.PICKUP_2_RETURN;
                     }
                     else if (!resetTimer) {
@@ -377,11 +410,13 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                         resetTimer = true;
                     }
                     else if (delayTimer.milliseconds() >= midDelay){
+                        follower.followPath(returnToPos);
                         driveState = DriveState.PICKUP_2_RETURN;
                     }
                 }
                 break;
             case PICKUP_2_RETURN:
+                RobotLog.d ("SD: PICKUP_2_RETURN");
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE, 0.05)
                     && robot.getIndexer().isBallAtIntake()) {
 
@@ -392,26 +427,30 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 }
 
                 if (!follower.isBusy()) {
-                    follower.followPath(returnToPos);
                     driveState = DriveState.FINISHED;
                 }
                 break;
             case PREP_FOR_SHOOT_INIT:
+                RobotLog.d ("SD: PREP_FOR_SHOOT_INIT");
                 driveState = DriveState.PREP_FOR_SHOOT;
                 robot.getLauncher().setAutoVelocity(1280);
                 robot.getIntake().setIntakeMotorPower(0);
+                if (!follower.isBusy()) {
+                    follower.followPath(returnToPos);
+                }
                 break;
             case PREP_FOR_SHOOT:
-
+                RobotLog.d ("SD: PREP_FOR_SHOOT");
                 if (!follower.isBusy()) {
                     driveState = DriveState.FINISHED;
                 }
 
-                robot.getLauncher().autoUpdateTurretPID(-45);
+                robot.getLauncher().autoUpdateTurretPID(-43);
 
 
                 break;
             case FINISHED:
+                RobotLog.d ("SD: FINISHED");
                 state = getNextState();
                 newState_Drive = true;
                 break;

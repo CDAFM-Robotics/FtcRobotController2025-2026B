@@ -558,7 +558,7 @@ public class Indexer {
 //        return false;
 //    }
 //
-//
+//apperas
 //    public Boolean rotateToTwoIntakePosition() {
 //        if (getIndexerPosition() != POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
 //            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE);
@@ -909,7 +909,7 @@ public class Indexer {
         //telemetry.addData("isBallAtIntake colorSensorIntakeLL", dis2);
         RobotLog.d("intake ball at %.2f, %.2f %.2f %.2f", dis1, dis2,colorSensorNormalizedColors1.alpha, colorSensorNormalizedColors2.alpha);
 
-        if ((dis1 < 2.5 || dis1 < 2.5) && (colorSensorNormalizedColors1.alpha > 0.75 || colorSensorNormalizedColors2.alpha > 0.75)) {
+        if ((dis1 < 2.5 || dis2 < 2.5) && (colorSensorNormalizedColors1.alpha > 0.75 || colorSensorNormalizedColors2.alpha > 0.75)) {
             if (colorSensorNormalizedColors1.blue > colorSensorNormalizedColors1.green) {
                 if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE)
                     artifactColorArray[0] = ArtifactColor.PURPLE;

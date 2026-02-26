@@ -131,7 +131,6 @@ public class Paths {
         blueCloseStartToShoot = follower.pathBuilder().addPath(
                 new BezierLine(
                     new Pose(18.194, 121.659),
-
                     new Pose(60.000, 84.000)
                 )
             ).setLinearHeadingInterpolation(Math.toRadians(143.5 - 180), Math.toRadians(180))
@@ -146,7 +145,7 @@ public class Paths {
                 new BezierLine(
                     new Pose(60.000, 84.000),
 
-                    new Pose(21.000, 84.000)
+                    new Pose(15.000, 84.000) // 21
                 )
             ).setConstantHeadingInterpolation(Math.toRadians(180))
 
@@ -158,7 +157,7 @@ public class Paths {
     public PathChain getBlueCloseReturnFromFirstMark() {
         blueCloseReturnFromFirstMark = follower.pathBuilder().addPath(
                 new BezierLine(
-                    new Pose(21.000, 84.000),
+                    new Pose(15.000, 84.000),
 
                     new Pose(60.000, 84.000)
                 )
@@ -174,7 +173,7 @@ public class Paths {
                 new BezierCurve(
                     new Pose(60.000, 84.000),
                     new Pose(66.000, 54.000),
-                    new Pose(21.000, 60.000)
+                    new Pose(17, 57.5) // x:21
                 )
             ).setConstantHeadingInterpolation(Math.toRadians(180))
 
@@ -200,8 +199,7 @@ public class Paths {
     public PathChain getBlueCloseReturnFromSecondMark() {
         blueCloseReturnFromSecondMark = follower.pathBuilder().addPath(
                 new BezierLine(
-                    new Pose(15.000, 72.000),
-
+                    new Pose(17, 57.5), // x:21, y=58 temp change no gate
                     new Pose(60.000, 84.000)
                 )
             ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180))
@@ -216,7 +214,7 @@ public class Paths {
                 new BezierCurve(
                     new Pose(60.000, 84.000),
                     new Pose(66.000, 30.000),
-                    new Pose(21.000, 36.000)
+                    new Pose(16.00, 36.000) // x:21
                 )
             ).setConstantHeadingInterpolation(Math.toRadians(180))
 
@@ -228,8 +226,7 @@ public class Paths {
     public PathChain getBlueCloseReturnFromThirdMark() {
         blueCloseReturnFromThirdMark = follower.pathBuilder().addPath(
                 new BezierLine(
-                    new Pose(21.000, 36.000),
-
+                    new Pose(16.000, 36.000), //x:21
                     new Pose(60.000, 84.000)
                 )
             ).setConstantHeadingInterpolation(Math.toRadians(180))

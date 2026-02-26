@@ -68,8 +68,8 @@ public class Launcher {
 
     double lastServoPosition;
 
-    public final double POSITION_KICKER_SERVO_KICK_BALL = 0.16; // 0.26
-    public final double POSITION_KICKER_SERVO_INIT = 0.51;
+    public final double POSITION_KICKER_SERVO_KICK_BALL = 0.06; // 0.16; // 0.26 reset due to kicker swap
+    public final double POSITION_KICKER_SERVO_INIT = 0.50; // 0.51; reset due to kicker swap (probably clock error on servo horn)
     public final double POSITION_TUREET_SERVO_INIT = 0.5;
 
     // Hood Servo
@@ -746,6 +746,7 @@ public class Launcher {
     }
 
     public void autoUpdateTurretPID (double target) {
+
         double turretTarget = target * 2;
         // Find the voltage returned and the angle of the servo
 
@@ -755,6 +756,7 @@ public class Launcher {
         // Find out whether the angle looped around
 
         double diff = Math.abs(currentAngle - lastAngle);
+        RobotLog.d("S: autp %.2f, %.2f, $.2f",target, currentAngle, diff);
 
         if (!firstLoop) {
             if (currentAngle > 180 && lastAngle < 180 && diff > 100) {

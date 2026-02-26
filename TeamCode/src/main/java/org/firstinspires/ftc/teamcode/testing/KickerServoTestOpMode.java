@@ -14,6 +14,7 @@ public class KickerServoTestOpMode extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap, telemetry,isRedSide);
+        robot.getIndexer().indexerServo.setPosition(0.176);
 
         //AnalogInput axon_position_V;
         //axon_position_V = hardwareMap.get(AnalogInput.class, "analog0");
