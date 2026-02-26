@@ -218,8 +218,9 @@ public class Robot {
                  RobotLog.d("Robot: WAIT_FOR_BALLt");
                  if (indexer.indexerFinishedTurning()) {
                      // telemetry.addLine("Robot: indexerFinishedTurning");
+                     indexer.updateColorAllSlots();
                      RobotLog.d("Robot: indexerFinishedTurning");
-                     if (indexer.isBallAtIntake()) {
+                     if (indexer.isBallAtIntakeFast()) {
                          // telemetry.addLine("Robot: isBallAtIntake");
                          RobotLog.d("Robot: isBallAtIntake");
                          intake1Ball = true;
@@ -312,7 +313,9 @@ public class Robot {
                     case TURN_TO_LAUNCH:
                         telemetry.addLine("shootAllBalls: TURN_TO_LAUNCH");
                         RobotLog.d("shootAllBalls: TURN_TO_LAUNCH");
-                        indexer.moveToOuttake();
+                        if (indexer.moveToOuttake()) {
+                            RobotLog.d("shootAllBalls: moveToOuttake()");
+                        }
                         launchState = LaunchBallStates.KICK_BALL;
                         break;
                     case KICK_BALL:
@@ -344,6 +347,7 @@ public class Robot {
                         if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER_DOWN) {
                             safeToStop = true;
                             indexer.updateAfterShoot();
+                            shootQueue.removeFirst();
                             launchState = LaunchBallStates.INIT;
                             RobotLog.d("shootAllBalls: UPDATE_INDEXER set init");
                         }
@@ -352,6 +356,10 @@ public class Robot {
                         RobotLog.d("shootAllBalls: READY_TO_INTAKE");
                         if (indexer.indexerFinishedTurning()) {
                             updateColorAllSlots();
+                            if (indexer.findABall()) {
+                                // for some reason, there is a ball in the indexer
+                                shootOrder();
+                            }
                             launchState = LaunchBallStates.INIT;
                         }
                         break;
@@ -756,7 +764,7 @@ public class Robot {
         if ( !shootQueue.isEmpty() ) {
             RobotLog.d("findNextBall:!shootQueue.isEmpty()");
             indexer.setNextShootSlot(shootQueue.getFirst());
-            shootQueue.removeFirst();
+            //shootQueue.removeFirst();
             return true;
         }
         return false;

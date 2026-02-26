@@ -173,8 +173,8 @@ public class DriveBase {
     }
 
     public void setKickStand() {
-        rightKickStand.setPosition(0.86);
-        leftKickStand.setPosition(0.14);
+        rightKickStand.setPosition(0.81);
+        leftKickStand.setPosition(0.19);
     }
 
     public void resetKickStand() {

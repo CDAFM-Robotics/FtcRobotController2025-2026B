@@ -210,6 +210,7 @@ public class Indexer {
     }
 
     public void rotateToPosition(double position) {
+        RobotLog.d("rotateToPosition %.3f", position);
         targetIndexerPosition = position;
         indexerServo.setPosition(position);
     }
@@ -763,7 +764,7 @@ public class Indexer {
 //
     public Boolean moveToOuttake() {
         //telemetry.addLine("moveToOuttake");
-
+        RobotLog.d("moveToOuttake %d", nextShootSlot);
         if (nextShootSlot == 0) {
             if (getIndexerPosition() != POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT) {
                 rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT);
@@ -1006,35 +1007,35 @@ public class Indexer {
 //        }
 //    }
 //
-    public void updateUnknowBall() {
-          double position = getIndexerPosition();
-          if (artifactColorArray[0] == ArtifactColor.UNKNOWN) {
-              if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
-                  updateBallColorAtIntake(position);
-              } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
-                  updateBallColorAtBackL(position);
-              } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
-                  updateBallColorAtBackR(position);
-              }
-          } else if (artifactColorArray[1] == ArtifactColor.UNKNOWN) {
-              if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
-                  updateBallColorAtBackR(position);
-              } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
-                  updateBallColorAtIntake(position);
-              } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
-                  updateBallColorAtBackL(position);
-              }
-          } else if (artifactColorArray[2] == ArtifactColor.UNKNOWN) {
-              if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
-                  updateBallColorAtBackL(position);
-              } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
-                  updateBallColorAtBackR(position);
-              } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
-                  updateBallColorAtIntake(position);
-              }
-          }
-
-    }
+//    public void updateUnknowBall() {
+//          double position = getIndexerPosition();
+//          if (artifactColorArray[0] == ArtifactColor.UNKNOWN) {
+//              if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
+//                  updateBallColorAtIntake(position);
+//              } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
+//                  updateBallColorAtBackL(position);
+//              } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
+//                  updateBallColorAtBackR(position);
+//              }
+//          } else if (artifactColorArray[1] == ArtifactColor.UNKNOWN) {
+//              if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
+//                  updateBallColorAtBackR(position);
+//              } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
+//                  updateBallColorAtIntake(position);
+//              } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
+//                  updateBallColorAtBackL(position);
+//              }
+//          } else if (artifactColorArray[2] == ArtifactColor.UNKNOWN) {
+//              if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
+//                  updateBallColorAtBackL(position);
+//              } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
+//                  updateBallColorAtBackR(position);
+//              } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
+//                  updateBallColorAtIntake(position);
+//              }
+//          }
+//
+//    }
 
     public void setNextShootSlot(int slot) {
         nextShootSlot = slot;
