@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.common;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -41,6 +43,10 @@ public class Robot {
     public boolean intake1Ball = false; //Picked up one ball
     private boolean safeToStop = true; //if kicker is down
     private boolean isRedSide = false;
+
+    // PID targets for use in Auto
+    public double last_TurretAngle_Target;
+    public double last_PIDShootingPower_Target;
 
     private ArtifactColor ballColor = ArtifactColor.NONE;
 
@@ -358,23 +364,32 @@ public class Robot {
 
     public void shootAllBallsAuto() {
 
+        RobotLog.d("shootAllBalls");
+        RobotLog.d("0 color: %s", indexer.artifactColorArray[0]);
+        RobotLog.d("1 color: %s", indexer.artifactColorArray[1]);
+        RobotLog.d("2 color: %s", indexer.artifactColorArray[2]);
     // check to see if flywheel motors are running
         switch (launchState) {
             case INIT:
+                RobotLog.d("shootAllBalls: INIT");
                 noArtifacts = false;
                 if(indexer.findABall()) {
+                    RobotLog.d("shootAllBalls: findABall");
                     launchState = LaunchBallStates.TURN_TO_LAUNCH;
                     break;
                 }
                 else {
+                    RobotLog.d("shootAllBalls: NOT findABall");
                     noArtifacts = true;
                     break;
                 }
             case TURN_TO_LAUNCH:
+                RobotLog.d("shootAllBalls: TURN_TO_LAUNCH");
                 indexer.moveToOuttake();
                 launchState = LaunchBallStates.KICK_BALL;
                 break;
             case KICK_BALL:
+                RobotLog.d("shootAllBalls: KICK_BALL");
                 if (indexer.indexerFinishedTurning()) {
                     safeToStop = false;
                     launcher.kickBall();
@@ -385,6 +400,7 @@ public class Robot {
                     break;
                 }
             case RESET_KICKER:
+                RobotLog.d("shootAllBalls: RESET_KICKER");
                 if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER_UP) {
                     launcher.resetKicker();
                     timeSinceKickReset.reset();
@@ -394,6 +410,7 @@ public class Robot {
                     break;
                 }
             case UPDATE_INDEXER:
+                RobotLog.d("Update_indexer");
                 if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER_DOWN) {
                     safeToStop = true;
                     indexer.updateAfterShoot();
@@ -401,12 +418,14 @@ public class Robot {
                 }
                 break;
             case READY_TO_INTAKE:
+                RobotLog.d("Ready to Intake");
                 if (indexer.indexerFinishedTurning()) {
                     updateColorAllSlots();
                     launchState = LaunchBallStates.INIT;
                 }
                 break;
             default:
+                RobotLog.d("Exception illegal");
                 throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
         }
     }
@@ -453,6 +472,65 @@ public class Robot {
         double robotY = driveBase.getPinPointPosY();
         //read the current robot heading
         double pinPointHeading = driveBase.getPinPointHeading();
+        pinPointHeading = normalizeAngle(pinPointHeading);
+        double robotHeading = Math.toDegrees(pinPointHeading);
+
+        //calculate the relative angle of the turret to the robot
+        double blueGoalX;
+        double blueGoalY;
+        // coordinates of the blue goal
+        if (isRedSide) {
+            blueGoalX = -64;
+            blueGoalY = 64;
+        }
+        else {
+            blueGoalX = -64;
+            blueGoalY = -64;
+        }
+
+
+        // calculate vector to blue goal
+        double deltaX = blueGoalX - robotX;
+        double deltaY = blueGoalY - robotY;
+        double distanceToGoal = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+        launcher.setShootingDistance(distanceToGoal);
+
+        //calculates the angle in radians between the positive x-axis and a point
+        double absoluteAngleRadians = Math.atan2(deltaY, deltaX);
+        double absoluteAngleDegree = Math.toDegrees(absoluteAngleRadians);
+
+        double relativeAngle;
+        if (isRedSide) {
+            relativeAngle = (absoluteAngleDegree - robotHeading);
+        }
+        else {
+            relativeAngle = (absoluteAngleDegree - robotHeading) + 6; //off set on blue side
+        }
+
+        relativeAngle = normalizeAngle(relativeAngle);
+
+        telemetry.addData("deltaX:", deltaX);
+        telemetry.addData("deltaY:", deltaY);
+        telemetry.addData("robotX:", robotX);
+        telemetry.addData("robotY:", robotY);
+        telemetry.addData("absoluteAngleRadians:", absoluteAngleRadians);
+        telemetry.addData("absoluteAngleDegree:", absoluteAngleDegree);
+        telemetry.addData("pinPointHeading:", pinPointHeading);
+        telemetry.addData("relativeAngle:", relativeAngle);
+        telemetry.addData("distance to goal",distanceToGoal);
+
+        launcher.setTurretRelativeAngle(relativeAngle);
+    }
+
+    //updating the turret every loop
+    public void updateTurretAngleAuto(){
+        //read the current pose
+        Pose FTCPose = new Pose();
+        FTCPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(new Pose(driveBase.getPinPointPosX(), driveBase.getPinPointPosY(), driveBase.getPinPointHeading()));
+        double robotX = FTCPose.getX();
+        double robotY = FTCPose.getY();
+        //read the current robot heading
+        double pinPointHeading = FTCPose.getHeading();
         pinPointHeading = normalizeAngle(pinPointHeading);
         double robotHeading = Math.toDegrees(pinPointHeading);
 

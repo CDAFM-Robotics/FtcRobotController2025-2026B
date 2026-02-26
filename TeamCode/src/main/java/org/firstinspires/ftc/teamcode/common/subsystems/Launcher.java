@@ -756,7 +756,7 @@ public class Launcher {
         // Find out whether the angle looped around
 
         double diff = Math.abs(currentAngle - lastAngle);
-        RobotLog.d("S: autp %.2f, %.2f, $.2f",target, currentAngle, diff);
+        // RobotLog.d("S: autp %.2f, %.2f, %.2f",target, currentAngle, diff);
 
         if (!firstLoop) {
             if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
@@ -775,6 +775,13 @@ public class Launcher {
         launcherServo.setPower(turretPower);
 
         // Set last variables for next loop
+
+
+        // TODO jw - testing hood position updating and launcher velocity must first updateTurrentAng
+
+
+
+        // TODO jw
 
         lastAngle = currentAngle;
         lastVoltage = currentVoltage;

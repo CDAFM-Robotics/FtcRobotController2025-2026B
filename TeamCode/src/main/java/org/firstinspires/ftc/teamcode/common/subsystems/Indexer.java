@@ -933,6 +933,42 @@ public class Indexer {
         }
     }
 
+    // Check to see if there is any ball by distance sensing
+    public boolean isBallAtIntakeFast() {
+
+        double dis1 = ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM);
+        double dis2 = ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM);
+        //NormalizedRGBA colorSensorNormalizedColors1 = colorSensorIntakeL.getNormalizedColors();;
+        //NormalizedRGBA colorSensorNormalizedColors2 = colorSensorIntakeR.getNormalizedColors();;
+        double position = getIndexerPosition();
+        //telemetry.addData("isBallAtIntake colorSensorIntakeLL", dis1);
+        //telemetry.addData("isBallAtIntake colorSensorIntakeLL", dis2);
+        //RobotLog.d("intake ball at %.2f, %.2f %.2f %.2f", dis1, dis2,colorSensorNormalizedColors1.alpha, colorSensorNormalizedColors2.alpha);
+
+        if ((dis1 < 2 || dis2 < 2) /*&& (colorSensorNormalizedColors1.alpha > 0.75 || colorSensorNormalizedColors2.alpha > 0.75)*/) {
+            /*if (colorSensorNormalizedColors1.blue > colorSensorNormalizedColors1.green) {*/
+                if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE)
+                    artifactColorArray[0] = ArtifactColor.UNKNOWN;
+                else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE)
+                    artifactColorArray[1] = ArtifactColor.UNKNOWN;
+                else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
+                    artifactColorArray[2] = ArtifactColor.UNKNOWN;
+            /*}
+            else {
+                if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE)
+                    artifactColorArray[0] = ArtifactColor.GREEN;
+                else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE)
+                    artifactColorArray[1] = ArtifactColor.GREEN;
+                else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
+                    artifactColorArray[2] = ArtifactColor.GREEN;
+            }*/
+            //RobotLog.d("intake ball at %.2f color %s %s %s", position, artifactColorArray[0],artifactColorArray[1], artifactColorArray[2]);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 
 //
 //    private ArtifactColor getPredictedColorTeleOp(NormalizedRGBA sensor1RGBA, NormalizedRGBA sensor2RGBA, double sensor1Distance, double sensor2Distance) {
