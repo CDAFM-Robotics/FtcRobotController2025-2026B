@@ -672,6 +672,11 @@ public class Launcher {
 
     // Turret Methods
     public void setTurretRelativeAngle(double relativeTargetAngle){
+
+        double turretLastTime = turretTime;
+        turretTime = System.nanoTime() / 1000000000.0;
+        double dt = turretTime - turretLastTime;
+
         double turretTarget = relativeTargetAngle * 2;
         // Find the voltage returned and the angle of the servo
 
@@ -680,14 +685,14 @@ public class Launcher {
 
         // Find out whether the angle looped around
 
-        double diff = Math.abs(currentAngle - lastAngle);
+        double diff = Math.abs(currentAngle - lastAngle) / dt;
 
         if (!firstLoop) {
-            if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 2800) {
                 currentAngleOffset -= 360;
             }
 
-            if (currentAngle < 180 && lastAngle > 180 && diff > 100) {
+            if (currentAngle < 180 && lastAngle > 180 && diff > 2800) {
                 currentAngleOffset += 360;
             }
         }
@@ -697,7 +702,7 @@ public class Launcher {
         greatestDiff = Math.max(greatestDiff, diff);
 
         // Set Servo power
-        double turretPower = updateTurretPID(turretTarget, actualAngle);
+        double turretPower = updateTurretPID(turretTarget, actualAngle, dt);
         launcherServo.setPower(turretPower);
 
         // Set hood Servo position
@@ -747,6 +752,11 @@ public class Launcher {
 
     public void autoUpdateTurretPID (double target) {
 
+        double turretLastTime = turretTime;
+        turretTime = System.nanoTime() / 1000000000.0;
+        double dt = turretTime - turretLastTime;
+
+
         double turretTarget = target * 2;
         // Find the voltage returned and the angle of the servo
 
@@ -755,15 +765,14 @@ public class Launcher {
 
         // Find out whether the angle looped around
 
-        double diff = Math.abs(currentAngle - lastAngle);
-        // RobotLog.d("S: autp %.2f, %.2f, %.2f",target, currentAngle, diff);
+        double diff = Math.abs(currentAngle - lastAngle) / dt;
 
         if (!firstLoop) {
-            if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 2800) {
                 currentAngleOffset -= 360;
             }
 
-            if (currentAngle < 180 && lastAngle > 180 && diff > 100) {
+            if (currentAngle < 180 && lastAngle > 180 && diff > 2800) {
                 currentAngleOffset += 360;
             }
         }
@@ -771,7 +780,7 @@ public class Launcher {
         actualAngle = currentAngle + currentAngleOffset;
 
         // Set Servo power
-        double turretPower = updateTurretPID(turretTarget, actualAngle);
+        double turretPower = updateTurretPID(turretTarget, actualAngle, dt);
         launcherServo.setPower(turretPower);
 
         // Set last variables for next loop
@@ -789,10 +798,7 @@ public class Launcher {
         firstLoop = false;
     }
 
-    public double updateTurretPID(double target, double current) {
-        double turretLastTime = turretTime;
-        turretTime = System.nanoTime() / 1000000000.0;
-        double dt = turretTime - turretLastTime;
+    public double updateTurretPID(double target, double current, double dt) {
 
         double error = target - current;
 
