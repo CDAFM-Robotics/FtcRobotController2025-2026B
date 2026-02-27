@@ -1,8 +1,14 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import static com.pedropathing.paths.HeadingInterpolator.lazy;
+import static com.pedropathing.paths.HeadingInterpolator.linear;
+
 import android.provider.Settings;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -14,6 +20,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
@@ -40,22 +47,34 @@ public class BlueBackPedroPathingAuto extends OpMode {
         SHOOT,
         ZONE_PICKUP,
         MID_PICKUP,
-        CLOSE_PICKUP
+        CLOSE_PICKUP,
+        WAIT_SHOOT_POS, // Not Needed?
+        LEAVE,
+        FINISHED
     }
 
     private LinkedList<State> order = new LinkedList<>();
     private LinkedList<State> endLoop = new LinkedList<>();
 
-    private State state;
+    ArtifactColor[] motif = new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+    ArtifactColor[] motif_new = null;
+    boolean motifFound = false;
+    boolean staticDataSaved = false;
 
+    ElapsedTime leaveTimer = new ElapsedTime();
+
+    private State state;
     int currentState = 0;
 
     private State getNextState() {
         if (currentState < order.size()) {
             return order.get(currentState++);
         }
-        else {
+        else if (endLoop.size() > 0) {
             return endLoop.get((currentState++ - order.size()) % endLoop.size());
+        }
+        else {
+            return State.FINISHED; // TODO added during cleanup
         }
     }
 
@@ -67,6 +86,9 @@ public class BlueBackPedroPathingAuto extends OpMode {
 
         follower = Constants.createFollower(hardwareMap);
         robot = new Robot(hardwareMap, telemetry, false);
+
+        // Limelight
+        robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
 
         follower.setStartingPose(new Pose(56, 8, Math.toRadians(90)));
 
@@ -157,6 +179,8 @@ public class BlueBackPedroPathingAuto extends OpMode {
                     endLoop.add(State.ZONE_PICKUP);
                     endLoop.add(State.SHOOT);
                 }
+                // TODO direct call to Leave (but need a Auto timer to break the zone loop)
+                leaveTimer.reset();
                 state = State.READY;
             }
         }
@@ -165,10 +189,30 @@ public class BlueBackPedroPathingAuto extends OpMode {
     @Override
     public void start() {
         if (state != State.READY) {
-            throw new RuntimeException("Program was not locked in before running");
+            // throw new RuntimeException("Program was not locked in before running");
+            RobotLog.d("Program was not locked in before Running");
+            telemetry.addData("Program was not locked in before Running", state);
+            order.add(State.SHOOT_PRELOAD);
+            if (rows.get(0)) {
+                order.add(State.FAR_PICKUP);
+                order.add(State.SHOOT);
+            }
+            if (rows.get(1)) {
+                order.add(State.MID_PICKUP);
+                order.add(State.SHOOT);
+            }
+            if (rows.get(2)) {
+                order.add(State.CLOSE_PICKUP);
+                order.add(State.SHOOT);
+            }
+            if (rows.get(3)) {
+                endLoop.add(State.ZONE_PICKUP);
+                endLoop.add(State.SHOOT);
+            }
+            // TODO direct call to Leave (but need a Auto timer to break the zone loop)
+            leaveTimer.reset();
+            state = State.READY;
         }
-
-
         state = getNextState();
     }
 
@@ -177,33 +221,82 @@ public class BlueBackPedroPathingAuto extends OpMode {
 
     @Override
     public void loop() {
-        telemetry.addData("Status", "Running");
-
-        telemetry.addData("State", state);
-        telemetry.addData("Shoot State", shootState);
-        telemetry.addData("Drive State", driveState);
+//        telemetry.addData("Status", "Running");
+//
+//        telemetry.addData("State", state);
+//        telemetry.addData("Shoot State", shootState);
+//        telemetry.addData("Drive State", driveState);
 
         switch (state) {
             case SHOOT_PRELOAD:
                 updateShoot(new Pose(56, 8.5, Math.toRadians(90)), 25);
+                if (!motifFound) {
+                    motif_new = robot.getLauncher().getMotifPattern(false);
+                    if (motif_new != null) {
+                        motif = motif_new;
+                        RobotLog.d("Motif Pattern Found %s:%s:%s", motif[0].toString(), motif[1].toString(), motif[2].toString());
+                        motifFound = true;
+                    }
+                }
                 break;
 
             case FAR_PICKUP:
-                updateDrive(paths.getBlueFarPickupThirdMark(), paths.getBlueFarReturnFromThirdMark(), 0);
+                updateDrive(paths.getBlueFarPickupThirdMark(), paths.getBlueFarReturnFromThirdMark(), 150);
                 break;
 
             case SHOOT:
                 updateShoot(new Pose(56, 14, Math.toRadians(180)), -63);
+                if (!motifFound) {
+                    motif_new = robot.getLauncher().getMotifPattern(false);
+                    if (motif_new != null) {
+                        motif = motif_new;
+                        RobotLog.d("Motif Pattern Found %s:%s:%s", motif[0].toString(), motif[1].toString(), motif[2].toString());
+                        motifFound = true;
+                    }
+                }
                 break;
 
             case ZONE_PICKUP:
                 updateDrive(paths.getBlueFarPickupHumanPlayerZone(), paths.getBlueFarReturnFromHumanPlayerZone(), 1000);
+                if (leaveTimer.seconds() >= 27) {
+                    state = State.LEAVE;
+               }
+                break;
+            case LEAVE:
+                follower.followPath(follower.pathBuilder()
+                        .addPath(new BezierLine(() -> follower.getPose(), new Pose(57, 35)))
+                        .setHeadingInterpolation(lazy(() -> linear(follower.getHeading(), Math.toRadians(180),0.8)))
+                        .build(), false);
                 break;
         }
 
         follower.update();
 
-        RobotLog.d("States: " + state + ", " + shootState + ", " + driveState + ", " + newState_Drive);
+
+        // convert the and update the current pose to global
+        // RobotStaticValuesClass.savedPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
+
+        RobotStaticValuesClass.savedPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
+        RobotStaticValuesClass.turretAngleOffset = robot.getLauncher().getCurrentAngleOffset();
+//        RobotLog.d("L:fx:" + RobotStaticValuesClass.savedPose.getX(DistanceUnit.INCH) + ", y:" + RobotStaticValuesClass.savedPose.getY(DistanceUnit.INCH) + ", h:" + RobotStaticValuesClass.savedPose.getHeading(AngleUnit.RADIANS));
+//        RobotLog.d("L:px:"+ follower.getPose().getX() + ", y:" + follower.getPose().getY() + ", h:" + follower.getPose().getHeading());
+//        RobotLog.d("L:ta:"+ robot.getLauncher().getCurrentAngleOffset());
+
+        if (!staticDataSaved){
+            if (motif[0]==ArtifactColor.PURPLE && motif[1]==ArtifactColor.GREEN && motif[2]==ArtifactColor.PURPLE){
+                RobotStaticValuesClass.savedOblisk =    RobotStaticValuesClass.Oblisk.PGP;
+            }
+            else if (motif[0]==ArtifactColor.PURPLE && motif[1]==ArtifactColor.PURPLE && motif[2]==ArtifactColor.GREEN){
+                RobotStaticValuesClass.savedOblisk =    RobotStaticValuesClass.Oblisk.PPG;
+            }
+            else
+            {
+                RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.GPP;
+            }
+            RobotStaticValuesClass.autoCompleted = true;
+            staticDataSaved = true;
+        }
+        // RobotLog.d("States: " + state + ", " + shootState + ", " + driveState + ", " + newState_Drive);
 
         telemetry.update();
     }
@@ -212,8 +305,6 @@ public class BlueBackPedroPathingAuto extends OpMode {
         INIT,
         PREPARING,
         SHOOTING_0,
-        SHOOTING_1,
-        SHOOTING_2,
         FINISHED
     }
 
@@ -227,15 +318,16 @@ public class BlueBackPedroPathingAuto extends OpMode {
         switch (shootState) {
             case INIT:
                 robot.getLauncher().setAutoVelocity(1610);
-                robot.getLauncher().autoUpdateTurretPID(turretAngle);
 
+                // robot.getLauncher().autoUpdateTurretPID(turretAngle);
+                robot.updateTurretAngleAuto();
                 follower.holdPoint(holdPose);
 
                 robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
 
                 robot.getIndexer().autoFillColorArray();
 
-                if (robot.getLauncher().getLauncherVelocity() >= 1580 && Math.abs(robot.getLauncher().getTurretDegrees() - turretAngle) < 5) {
+                if (robot.getLauncher().getLauncherVelocity() >= (robot.getLauncher().getLauncherTargetVelocity()-20)) {
                     shootState = ShootState.SHOOTING_0;
                 }
                 else {
@@ -244,16 +336,20 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 break;
             case PREPARING:
 
-                telemetry.addData("Launcher Velocity", robot.getLauncher().getLauncherVelocity());
-                telemetry.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
+                // telemetry.addData("Launcher Velocity", robot.getLauncher().getLauncherVelocity());
+                // telemetry.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
 
-                robot.getLauncher().autoUpdateTurretPID(turretAngle);
-                if (robot.getLauncher().getLauncherVelocity() >= 1580 && Math.abs(robot.getLauncher().getTurretDegrees() - turretAngle) < 5) {
+                // robot.getLauncher().autoUpdateTurretPID(turretAngle);
+                robot.updateTurretAngleAuto();
+
+                if (robot.getLauncher().getLauncherVelocity() >= (robot.getLauncher().getLauncherTargetVelocity()-20)) {
                     shootState = ShootState.SHOOTING_0;
                 }
                 break;
             case SHOOTING_0:
-                robot.getLauncher().autoUpdateTurretPID(turretAngle);
+                // robot.getLauncher().autoUpdateTurretPID(turretAngle);
+                robot.updateTurretAngleAuto();
+
                 robot.shootAllBallsAuto();
 
                 if (robot.isNoArtifacts()) {
@@ -262,18 +358,14 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 break;
             case FINISHED:
                 robot.getLauncher().setAutoVelocity(0);
-                telemetry.addData("Shoot State", shootState);
+                // telemetry.addData("Shoot State", shootState);
                 state = getNextState();
                 newState_Shoot = true;
         }
 
-        // TODO
         if (shootState != ShootState.FINISHED) {
             newState_Shoot = false;
         }
-
-
-
     }
 
     private enum DriveState {
@@ -291,6 +383,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
     DriveState driveState = DriveState.INIT;
 
     ElapsedTime delayTimer = new ElapsedTime();
+    ElapsedTime intakeHoldTimer = new ElapsedTime();
 
     private boolean resetTimer;
 
@@ -328,7 +421,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 break;
             case PICKUP_0:
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE, 0.05)
-                    && robot.getIndexer().isBallAtIntake()) {
+                    && robot.getIndexer().isBallAtIntakeFast()) {
 
                     driveState = DriveState.PICKUP_1;
                     robot.getIndexer().rotateToPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE);
@@ -350,7 +443,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 break;
             case PICKUP_1:
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE, 0.05) &&
-                    robot.getIndexer().isBallAtIntake()) {
+                    robot.getIndexer().isBallAtIntakeFast()) {
 
                     driveState = DriveState.PICKUP_2;
                     robot.getIndexer().rotateToPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE);
@@ -370,7 +463,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 break;
             case PICKUP_2:
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE, 0.05)
-                    && robot.getIndexer().isBallAtIntake()) {
+                    && robot.getIndexer().isBallAtIntakeFast()) {
 
                     driveState = DriveState.PREP_FOR_SHOOT_INIT;
                     robot.getIndexer().rotateToPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT);
@@ -381,6 +474,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                     if (midDelay == 0) {
                         follower.followPath(returnToPos);
                         driveState = DriveState.PICKUP_2_RETURN;
+                        intakeHoldTimer.reset(); // start the holdover timer for intake
                     }
                     else if (!resetTimer) {
                         delayTimer.reset();
@@ -389,12 +483,13 @@ public class BlueBackPedroPathingAuto extends OpMode {
                     else if (delayTimer.milliseconds() >= midDelay){
                         follower.followPath(returnToPos);
                         driveState = DriveState.PICKUP_2_RETURN;
+                        intakeHoldTimer.reset(); // start the holdover timer for intake
                     }
                 }
                 break;
             case PICKUP_2_RETURN:
                 if (robot.getIndexer().getIndexerServoAtPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE, 0.05)
-                    && robot.getIndexer().isBallAtIntake()) {
+                    && robot.getIndexer().isBallAtIntakeFast()) {
 
                     driveState = DriveState.PREP_FOR_SHOOT_INIT;
                     robot.getIndexer().rotateToPosition(Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT);
@@ -403,27 +498,28 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 }
 
                 if (!follower.isBusy()) {
-
                     driveState = DriveState.FINISHED;
                 }
                 break;
             case PREP_FOR_SHOOT_INIT:
                 driveState = DriveState.PREP_FOR_SHOOT;
                 robot.getLauncher().setAutoVelocity(1610);
-                robot.getIntake().setIntakeMotorPower(0);
                 if (!follower.isBusy()) {
                     follower.followPath(returnToPos);
                 }
                 break;
             case PREP_FOR_SHOOT:
 
+                if (intakeHoldTimer.milliseconds() >= 2000) {
+                    intakeHoldTimer.reset();
+                    robot.getIntake().setIntakeMotorPower(0);
+                }
                 if (!follower.isBusy()) {
                     driveState = DriveState.FINISHED;
                 }
 
-                robot.getLauncher().autoUpdateTurretPID(-63);
-
-
+                // robot.getLauncher().autoUpdateTurretPID(turretAngle);
+                robot.updateTurretAngleAuto();
                 break;
             case FINISHED:
                 state = getNextState();

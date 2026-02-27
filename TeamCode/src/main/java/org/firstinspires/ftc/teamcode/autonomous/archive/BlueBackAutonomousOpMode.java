@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.autonomous.archive;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -18,24 +19,24 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
-
-@Autonomous(name = "Red Back Autonomous", group = "Competition")
-public class RedBackAutonomousOpMode extends LinearOpMode {
+@Disabled
+@Autonomous(name = "Blue Back Autonomous", group = "zArchived")
+public class BlueBackAutonomousOpMode extends LinearOpMode {
 
     Supplier<Action>[] otherActions;
     Action[] trajectories;
 
     AutonomousActionBuilder autonomousActionBuilder;
-    boolean isRedSide = false;
 
+    boolean isRedSide = false;
     @Override
     public void runOpMode() throws InterruptedException {
-        MecanumDrive md = new MecanumDrive(hardwareMap, /*new Pose2d(new Vector2d(61, 11.5), Math.toRadians(180))*/ new Pose2d(new Vector2d(61, 11.75), Math.toRadians(-90)));
+        MecanumDrive md = new MecanumDrive(hardwareMap, /*new Pose2d(new Vector2d(61, 11.5), Math.toRadians(180))*/ new Pose2d(new Vector2d(61, -11.75), Math.toRadians(-90)));
         Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
         //robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
         autonomousActionBuilder = new AutonomousActionBuilder(md, robot);
 
-        trajectories = autonomousActionBuilder.getRedFarTrajectories();
+        trajectories = autonomousActionBuilder.getBlueFarTrajectories();
 
 
 
@@ -64,7 +65,7 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
 
         while(opModeInInit()) {
 
-            motif = robot.getLauncher().getMotifPattern(true);
+            motif = robot.getLauncher().getMotifPattern(false);
 
             if (motif == null) {
                 telemetry.addData("  Motif Pattern", "Not Detected");
@@ -237,34 +238,25 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
 
         sleep((long) (delay * 1000));
 
-
-
         //start always with G in launcher
-
-
 
         if (motif == null) {
             motif = new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
         }
 
 
-
-
-
-
-
         // Go to the Launch Pose
 
         Actions.runBlocking(new ParallelAction(
+            trajectories[0],
             new SequentialAction(
                 new SleepAction(0.5),
                 autonomousActionBuilder.getSpinLauncherFar()
-            ),
-            trajectories[0]
+            )
         ));
 
-        //Actions.runBlocking(launchInMotifOrder(motif));
 
+        // Launch first 3
         launchInMotifOrder(motif, 0);
 
         // Pickup third mark
@@ -282,9 +274,8 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
                         autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
                         autonomousActionBuilder.getIndexIntakeAction(2),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
-
+                        autonomousActionBuilder.getSpinLauncherFar(),
+                        autonomousActionBuilder.getStopIntake()
                     )
                 )
             ));
@@ -301,14 +292,15 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
                     trajectories[2],
                     autonomousActionBuilder.getIndexIntakeAction(0),
                     new SequentialAction(
+                        new SleepAction(0.5),
                         autonomousActionBuilder.getStartIntake(),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(4),
                         autonomousActionBuilder.getIndexIntakeAction(1),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
                         autonomousActionBuilder.getIndexIntakeAction(2),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
+                        autonomousActionBuilder.getSpinLauncherFar(),
+                        autonomousActionBuilder.getStopIntake()
                     )
                 )
             ));
@@ -318,75 +310,66 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
 
         }
 
-
         if (loadingZone) {
-
             Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
-                    autonomousActionBuilder.getRedFarPickupLoadingZone(),
+                    trajectories[5],
                     autonomousActionBuilder.getIndexIntakeAction(0),
                     new SequentialAction(
+                        new SleepAction(1.0),
                         autonomousActionBuilder.getStartIntake(),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(4),
                         autonomousActionBuilder.getIndexIntakeAction(1),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
                         autonomousActionBuilder.getIndexIntakeAction(2),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
+                        autonomousActionBuilder.getSpinLauncherFar(),
+                        autonomousActionBuilder.getStopIntake()
                     )
                 )
             ));
+            launchInMotifOrder(motif, 2);
 
+            if (!thirdMark && !secondMark) {
+                Actions.runBlocking(new SequentialAction(
+                    new ParallelAction(
+                        autonomousActionBuilder.getBlueFarPickupLoadingZone(),
+                        autonomousActionBuilder.getIndexIntakeAction(0),
+                        new SequentialAction(
+                            new SleepAction(1.0),
+                            autonomousActionBuilder.getStartIntake(),
+                            autonomousActionBuilder.getWaitUntilBallInIndexer(4),
+                            autonomousActionBuilder.getIndexIntakeAction(1),
+                            autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
+                            autonomousActionBuilder.getIndexIntakeAction(2),
+                            autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
+                            autonomousActionBuilder.getSpinLauncherFar(),
+                            autonomousActionBuilder.getStopIntake()
+                        )
+                    )
+                ));
+                launchInMotifOrder(motif, 2);
+            }
 
-            launchInMotifOrder(new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE}, 0);
-
-        }
-
-        if (loadingZone && !(thirdMark || secondMark)) {
+            // Run Pickup again so drivers may have balls
 
             Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
-                    autonomousActionBuilder.getRedFarPickupLoadingZone(),
+                    autonomousActionBuilder.getBlueFarPickupLoadingZoneLeave(),
                     autonomousActionBuilder.getIndexIntakeAction(0),
                     new SequentialAction(
-                        new SleepAction(0.5),
+                        new SleepAction(1.0),
                         autonomousActionBuilder.getStartIntake(),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(4),
                         autonomousActionBuilder.getIndexIntakeAction(1),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
                         autonomousActionBuilder.getIndexIntakeAction(2),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
+                        autonomousActionBuilder.getSpinLauncherFar(),
+                        autonomousActionBuilder.getStopIntake()
                     )
                 )
             ));
-
-            launchInMotifOrder(new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE}, 0);
-        }
-
-        if (loadingZone && !(thirdMark || secondMark)) {
-
-            Actions.runBlocking(new SequentialAction(
-                new ParallelAction(
-                    autonomousActionBuilder.getRedFarPickupLoadingZoneLeave(),
-                    autonomousActionBuilder.getIndexIntakeAction(0),
-                    new SequentialAction(
-                        new SleepAction(0.5),
-                        autonomousActionBuilder.getStartIntake(),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(4),
-                        autonomousActionBuilder.getIndexIntakeAction(1),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getIndexIntakeAction(2),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
-                    )
-                )
-            ));
-
-            launchInMotifOrder(new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE}, 0);
         }
 
         // LEave

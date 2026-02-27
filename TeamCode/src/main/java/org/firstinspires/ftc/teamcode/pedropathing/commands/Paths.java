@@ -8,23 +8,39 @@ import com.pedropathing.paths.PathChain;
 
 public class Paths {
     private PathChain blueFarPickupFirstMark;
-    private PathChain blueFarReturnFromFirstMark;
-    private PathChain blueFarPickupSecondMark;
-    private PathChain blueFarReturnFromSecondMark;
+    private PathChain redFarPickupFirstMark; // TODO not done
+
+    private PathChain blueFarReturnFromFirstMark; // TODO not done
+    private PathChain blueFarPickupSecondMark; // TODO not DONE
+    private PathChain blueFarReturnFromSecondMark; // TODO not DONE
     private PathChain blueFarPickupThirdMark;
+    private PathChain redFarPickupThirdMark;
     private PathChain blueFarReturnFromThirdMark;
+    private PathChain redFarReturnFromThirdMark;
     private PathChain blueFarPickupHumanPlayerZone;
+    private PathChain redFarPickupHumanPlayerZone;
     private PathChain blueFarReturnFromHumanPlayerZone;
+    private PathChain redFarReturnFromHumanPlayerZone;
 
     private PathChain blueCloseStartToShoot;
-    private PathChain blueCloseStartToShoot2; // TODO jw test
+    private PathChain blueCloseStartToShoot2;
+    private PathChain redCloseStartToShoot2;
     private PathChain blueClosePickupFirstMark;
     private PathChain blueCloseReturnFromFirstMark;
+    private PathChain redClosePickupFirstMark;
+    private PathChain redCloseReturnFromFirstMark;
     private PathChain blueClosePickupSecondMark;
+    private PathChain redClosePickupSecondMark;
     private PathChain blueCloseHitGate;
     private PathChain blueCloseReturnFromSecondMark;
+    private PathChain redCloseReturnFromSecondMark;
     private PathChain blueClosePickupThirdMark;
     private PathChain blueCloseReturnFromThirdMark;
+    private PathChain redClosePickupThirdMark;
+    private PathChain redCloseReturnFromThirdMark;
+
+
+
 
     Follower follower;
 
@@ -80,7 +96,7 @@ public class Paths {
                 new BezierCurve(
                     new Pose(56.000, 8.5),
                     new Pose(57.314, 38.264),
-                    new Pose(11.000, 36.000)
+                    new Pose(16.000, 36.000)
                 )
             ).setTangentHeadingInterpolation()
 
@@ -89,10 +105,25 @@ public class Paths {
         return blueFarPickupThirdMark;
     }
 
+    // TODO OK TO TEST
+    public PathChain getRedFarPickupThirdMark() {
+        redFarPickupThirdMark = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(88.000, 8.5),
+                                new Pose(87, 38),
+                                new Pose(128.000, 36.000)
+                        )
+                ).setTangentHeadingInterpolation()
+
+                .build();
+
+        return redFarPickupThirdMark;
+    }
+
     public PathChain getBlueFarReturnFromThirdMark() {
         blueFarReturnFromThirdMark = follower.pathBuilder().addPath(
                 new BezierLine(
-                    new Pose(11.000, 36.000),
+                    new Pose(16.000, 36.000),
 
                     new Pose(56.000, 14)
                 )
@@ -101,6 +132,20 @@ public class Paths {
             .build();
 
         return blueFarReturnFromThirdMark;
+    }
+    // TODO OK TO TEST
+    public PathChain getRedFarReturnFromThirdMark() {
+        redFarReturnFromThirdMark = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(128.000, 36.000),
+
+                                new Pose(88.000, 14)
+                        )
+                ).setLinearHeadingInterpolation(Math.toRadians(-176), Math.toRadians(180))
+
+                .build();
+
+        return redFarReturnFromThirdMark;
     }
 
     public PathChain getBlueFarPickupHumanPlayerZone() {
@@ -115,6 +160,22 @@ public class Paths {
 
         return blueFarPickupHumanPlayerZone;
     }
+
+    // TODO OK to TEST
+    public PathChain getRedFarPickupHumanPlayerZone() {
+        redFarPickupHumanPlayerZone = follower.pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                new Pose(88.000, 14),
+                                new Pose(136, 10)
+                        )).setConstantHeadingInterpolation(Math.toRadians(0))
+
+                .build();
+
+        return redFarPickupHumanPlayerZone;
+    }
+
+
     public PathChain getBlueFarReturnFromHumanPlayerZone() {
         blueFarReturnFromHumanPlayerZone = follower.pathBuilder()
             .addPath(
@@ -126,6 +187,20 @@ public class Paths {
             .build();
 
         return blueFarReturnFromHumanPlayerZone;
+    }
+
+    // TODO OK to TEST
+    public PathChain getRedFarReturnFromHumanPlayerZone() {
+        redFarReturnFromHumanPlayerZone = follower.pathBuilder()
+                .addPath(
+                        new BezierLine(
+                                new Pose(136.000, 10),
+                                new Pose(88.000, 14)
+                        )).setConstantHeadingInterpolation(Math.toRadians(0))
+
+                .build();
+
+        return redFarReturnFromHumanPlayerZone;
     }
 
     public PathChain getBlueCloseStartToShoot() {
@@ -170,6 +245,19 @@ public class Paths {
         return blueCloseStartToShoot2;
     }
 
+    // TODO OK TO TEST
+    public PathChain getRedCloseStartToShoot2() {
+        redCloseStartToShoot2 = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(126.234, 120.935),
+
+                                new Pose(90.0, 84.000)
+                        )
+                ).setLinearHeadingInterpolation(Math.toRadians(-53.5), Math.toRadians(90))
+                .build();
+        return redCloseStartToShoot2;
+    }
+
 
 
 
@@ -188,6 +276,20 @@ public class Paths {
         return blueClosePickupFirstMark;
     }
 
+    public PathChain getRedClosePickupFirstMark() {
+        redClosePickupFirstMark = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(84.000, 84.000),
+
+                                new Pose(129.000, 84.000)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
+
+                .build();
+
+        return redClosePickupFirstMark;
+    }
+
     public PathChain getBlueCloseReturnFromFirstMark() {
         blueCloseReturnFromFirstMark = follower.pathBuilder().addPath(
                 new BezierLine(
@@ -202,6 +304,21 @@ public class Paths {
         return blueCloseReturnFromFirstMark;
     }
 
+    // TODO OK TO TEST
+    public PathChain getRedCloseReturnFromFirstMark() {
+        redCloseReturnFromFirstMark = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(129.000, 84.000),
+
+                                new Pose(84.000, 84.000)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
+
+                .build();
+
+        return redCloseReturnFromFirstMark;
+    }
+
     public PathChain getBlueClosePickupSecondMark() {
         blueClosePickupSecondMark = follower.pathBuilder().addPath(
                 new BezierCurve(
@@ -214,6 +331,21 @@ public class Paths {
             .build();
 
         return blueClosePickupSecondMark;
+    }
+
+    // TODO OK to TEST
+    public PathChain getRedClosePickupSecondMark() {
+        redClosePickupSecondMark = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(84.000, 84.000),
+                                new Pose(78.000, 54.000),
+                                new Pose(128, 57.5)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
+
+                .build();
+
+        return redClosePickupSecondMark;
     }
 
     public PathChain getBlueCloseHitGate() {
@@ -243,6 +375,21 @@ public class Paths {
         return blueCloseReturnFromSecondMark;
     }
 
+
+    //TODO ok to test
+    public PathChain getRedCloseReturnFromSecondMark() {
+        redCloseReturnFromSecondMark = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(128, 57.5), // x:21, y=58 temp change no gate
+                                new Pose(84.000, 84.000)
+                        )
+                ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(0)) //TODO angle seems weird? reversd?
+
+                .build();
+
+        return redCloseReturnFromSecondMark;
+    }
+
     public PathChain getBlueClosePickupThirdMark() {
         blueClosePickupThirdMark = follower.pathBuilder().addPath(
                 new BezierCurve(
@@ -257,6 +404,22 @@ public class Paths {
         return blueClosePickupThirdMark;
     }
 
+    // OK to TEST
+    public PathChain getRedClosePickupThirdMark() {
+        redClosePickupThirdMark = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(84.000, 84.000),
+                                new Pose(78.000, 30.000),
+                                new Pose(128.00, 36.000)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
+
+                .build();
+
+        return redClosePickupThirdMark;
+    }
+
+
     public PathChain getBlueCloseReturnFromThirdMark() {
         blueCloseReturnFromThirdMark = follower.pathBuilder().addPath(
                 new BezierLine(
@@ -269,5 +432,19 @@ public class Paths {
 
         return blueCloseReturnFromThirdMark;
     }
+
+    public PathChain getRedCloseReturnFromThirdMark() {
+        redCloseReturnFromThirdMark = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(128.000, 36.000), //x:21
+                                new Pose(84.000, 84.000)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
+
+                .build();
+
+        return redCloseReturnFromThirdMark;
+    }
+
 }
 

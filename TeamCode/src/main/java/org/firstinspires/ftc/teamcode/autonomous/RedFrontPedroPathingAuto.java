@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import static com.pedropathing.paths.HeadingInterpolator.lazy;
 import static com.pedropathing.paths.HeadingInterpolator.linear;
 
-import com.acmerobotics.roadrunner.Pose2d;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.PoseConverter;
@@ -16,9 +15,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
@@ -30,8 +26,8 @@ import org.firstinspires.ftc.teamcode.pedropathing.commands.SubsystemCommands;
 import java.util.HashMap;
 import java.util.LinkedList;
 
-@Autonomous(name = "Blue Front Pedro Pathing", group = "0Comp")
-public class BlueFrontPedroPathingAuto extends OpMode {
+@Autonomous(name = "Red Front Pedro Pathing", group = "0Comp")
+public class RedFrontPedroPathingAuto extends OpMode {
 
     Follower follower;
     Robot robot;
@@ -85,12 +81,12 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         state = State.INIT;
 
         follower = Constants.createFollower(hardwareMap);
-        robot = new Robot(hardwareMap, telemetry, false);
+        robot = new Robot(hardwareMap, telemetry, true);
 
         // Limelight
         robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
 
-        follower.setStartingPose(new Pose(17.766, 120.935, Math.toRadians(53.5)));
+        follower.setStartingPose(new Pose(126.24, 120.935, Math.toRadians(-53.5)));
 
         SubsystemCommands subsystemCommands = new SubsystemCommands(robot);
         paths = new Paths(follower);
@@ -222,21 +218,18 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         switch (state) {
             case SHOOT_PRELOAD:
                 // RobotLog.d ("S: SHOOT_PRELOAD");
-                updateShoot(new Pose(60.000, 84.000, Math.toRadians(180)), -43);
+                updateShoot(new Pose(84.000, 84.000, Math.toRadians(0)), -43);
                 break;
             case GO_TO_SHOOT_POS:
                 // RobotLog.d ("S: GO_TO_SHOOT_POS");
-                follower.followPath(paths.getBlueCloseStartToShoot2(), false);
+                follower.followPath(paths.getRedCloseStartToShoot2(), false);
                 state = state.WAIT_SHOOT_POS; // Wait for position
-//                if (!follower.isBusy()) {
-//                    state = getNextState();
-//                }
                 break;
             case WAIT_SHOOT_POS:
                 // RobotLog.d ("S: WAIT_SHOOT_POS");
                 // Let's read Limelight in here
                 if (!motifFound) {
-                    motif_new = robot.getLauncher().getMotifPattern(false);
+                    motif_new = robot.getLauncher().getMotifPattern(true);
                     if (motif_new != null) {
                         motif = motif_new;
                         RobotLog.d("Motif Pattern Found %s:%s:%s", motif[0].toString(), motif[1].toString(), motif[2].toString());
@@ -249,25 +242,25 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 break;
             case MID_PICKUP_GATE:
                 RobotLog.d ("S: MID_PICKUP_GATE");
-                updateDrive(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 150);
+                updateDrive(paths.getRedClosePickupSecondMark(), paths.getRedCloseReturnFromSecondMark(), 150);
                 break;
 
             case SHOOT:
                 RobotLog.d ("S: SHOOT");
-                updateShoot(new Pose(60.000, 84.000, Math.toRadians(180)), -43);
+                updateShoot(new Pose(84.000, 84.000, Math.toRadians(0)), -43);
                 break;
             case FAR_PICKUP:
                 RobotLog.d ("S: FAR_PICKUP");
-                updateDrive(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 150);
+                updateDrive(paths.getRedClosePickupThirdMark(), paths.getRedCloseReturnFromThirdMark(), 150);
                 break;
             case CLOSE_PICKUP:
                 RobotLog.d ("S: CLOSE_PICKUP");
-                updateDrive(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 150);
+                updateDrive(paths.getRedClosePickupFirstMark(), paths.getRedCloseReturnFromFirstMark(), 150);
                 break;
             case LEAVE:
                 follower.followPath(follower.pathBuilder()
-                    .addPath(new BezierLine(() -> follower.getPose(), new Pose(54, 126)))
-                    .setHeadingInterpolation(lazy(() -> linear(follower.getHeading(), Math.toRadians(180),0.8)))
+                    .addPath(new BezierLine(() -> follower.getPose(), new Pose(90, 126)))
+                    .setHeadingInterpolation(lazy(() -> linear(follower.getHeading(), Math.toRadians(0),0.8)))
                     .build(), false);
                 break;
         }
