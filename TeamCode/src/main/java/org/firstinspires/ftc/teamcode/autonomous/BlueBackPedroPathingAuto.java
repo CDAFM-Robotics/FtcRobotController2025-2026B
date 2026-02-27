@@ -136,7 +136,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 || (currentGamepad2.dpad_left && !previousGamepad2.dpad_left)
                 || (currentGamepad1.dpad_right && !previousGamepad1.dpad_right)
                 || (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
-                rows.put(currentRow, rows.get(currentRow));
+                rows.put(currentRow, !rows.get(currentRow));
             }
 
             if (currentGamepad1.a || currentGamepad2.a) {

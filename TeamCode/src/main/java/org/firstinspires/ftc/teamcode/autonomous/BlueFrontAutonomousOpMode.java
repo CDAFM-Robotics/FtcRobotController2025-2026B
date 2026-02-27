@@ -261,7 +261,7 @@ public class BlueFrontAutonomousOpMode extends LinearOpMode {
             ));
 
             for (int i = 0; i < 1000; i++) {
-                motif = robot.getLauncher().getMotifPattern();
+                motif = robot.getLauncher().getMotifPattern(false);
 
                 if (motif == null) {
                     telemetry.addData("Motif Pattern", "Not Detected");

@@ -17,6 +17,7 @@ public class Paths {
     private PathChain blueFarReturnFromHumanPlayerZone;
 
     private PathChain blueCloseStartToShoot;
+    private PathChain blueCloseStartToShoot2; // TODO jw test
     private PathChain blueClosePickupFirstMark;
     private PathChain blueCloseReturnFromFirstMark;
     private PathChain blueClosePickupSecondMark;
@@ -133,12 +134,45 @@ public class Paths {
                     new Pose(18.194, 121.659),
                     new Pose(60.000, 84.000)
                 )
-            ).setLinearHeadingInterpolation(Math.toRadians(143.5 - 180), Math.toRadians(180))
+            ).setLinearHeadingInterpolation(Math.toRadians(143.5 - 180), Math.toRadians(180)).setReversed()
 
             .build();
 
         return blueCloseStartToShoot;
     }
+
+
+
+//    public PathChain getBlueCloseStartToShoot2() {
+//        blueCloseStartToShoot2 = follower.pathBuilder().addPath(
+//                        new BezierLine(
+//                                new Pose(17.766, 119.169),
+//
+//                                new Pose(53.519, 100.325)
+//                        )
+//                ).setLinearHeadingInterpolation(Math.toRadians(48), Math.toRadians(-36.51231))
+//                .setReversed()
+//                .build();
+//        return blueCloseStartToShoot2;
+//    }
+
+
+
+    public PathChain getBlueCloseStartToShoot2() {
+        blueCloseStartToShoot2 = follower.pathBuilder().addPath(
+            new BezierLine(
+                new Pose(17.766, 120.935),
+
+                new Pose(54.000, 84.000)
+            )
+            ).setLinearHeadingInterpolation(Math.toRadians(53.5), Math.toRadians(90))
+            .build();
+        return blueCloseStartToShoot2;
+    }
+
+
+
+
 
     public PathChain getBlueClosePickupFirstMark() {
         blueClosePickupFirstMark = follower.pathBuilder().addPath(

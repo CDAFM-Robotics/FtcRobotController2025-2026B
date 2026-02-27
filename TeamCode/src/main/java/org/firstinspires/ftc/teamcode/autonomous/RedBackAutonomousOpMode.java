@@ -64,7 +64,7 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
 
         while(opModeInInit()) {
 
-            motif = robot.getLauncher().getMotifPattern();
+            motif = robot.getLauncher().getMotifPattern(true);
 
             if (motif == null) {
                 telemetry.addData("  Motif Pattern", "Not Detected");

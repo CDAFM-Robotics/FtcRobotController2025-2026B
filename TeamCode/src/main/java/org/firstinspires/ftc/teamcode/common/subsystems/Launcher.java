@@ -11,6 +11,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -32,6 +33,7 @@ import org.firstinspires.ftc.teamcode.common.util.InterpolationTable;
 import org.firstinspires.ftc.teamcode.common.util.RunTimeoutAction;
 import org.firstinspires.ftc.teamcode.common.util.WaitUntilAction;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -59,6 +61,12 @@ public class Launcher {
     // turret servo
     CRServo launcherServo;
     AnalogInput launcherAnalogInput;
+
+    private Limelight3A limelight;
+
+    public void setLimelightPipeline(int ordinal) {
+        limelight.pipelineSwitch(ordinal);
+    }
 
     public enum QuadrantRotatorServo{
         POSITIVE, NEGATIVE, ZERO
@@ -225,13 +233,13 @@ public class Launcher {
         private ArtifactColor[] motifPattern;
 
         public AprilTagAction(int pipeline) {
-            //limelight.pipelineSwitch(pipeline);
+            limelight.pipelineSwitch(pipeline);
         }
 
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            ArtifactColor[] result = getMotifPattern();
+            ArtifactColor[] result = getMotifPattern(true);
 
             if (result != null) {
                 motifPattern = result;
@@ -373,10 +381,11 @@ public class Launcher {
         shootingTable.add(149.96,1660,0.00);
 
 
-        //limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        //limelight.pipelineSwitch(0);
 
-        //limelight.start();
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(0);
+
+        limelight.start();
 
         // Initialize the map with calibration points.
         // Distances in cm, velocities as motor power (0.0 to 1.0)
@@ -395,24 +404,51 @@ public class Launcher {
 
      */
 
-    public ArtifactColor[] getMotifPattern() {
-//        LLResult result = limelight.getLatestResult();
-//        if (result.isValid()) {
-//            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-//            if (fiducialResults != null) {
-//                for (LLResultTypes.FiducialResult fr : fiducialResults) {
-//                    if (fr.getFiducialId() == 21) {
-//                        return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
-//                    }
-//                    else if (fr.getFiducialId() == 22) {
-//                        return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE};
-//                    }
-//                    else if (fr.getFiducialId() == 23) {
-//                        return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
-//                    }
-//                }
-//            }
-//        }
+    public ArtifactColor[] getMotifPattern(boolean isRed) {
+        LLResult result = limelight.getLatestResult();
+        if (result.isValid()) {
+            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+            if (fiducialResults != null) {
+                if (fiducialResults.size() > 1) {
+                    int[] ids = new int[2];
+
+                    ids[0] = fiducialResults.get(0).getFiducialId();
+                    ids[1] = fiducialResults.get(1).getFiducialId();
+
+                    if (isRed) {
+                        if (Arrays.stream(ids).anyMatch((int i) -> i == 21) && Arrays.stream(ids).anyMatch((int i) -> i == 22)) {
+                            return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+                        }
+                        else if (Arrays.stream(ids).anyMatch((int i) -> i == 23) && Arrays.stream(ids).anyMatch((int i) -> i == 22)) {
+                            return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE};
+                        }
+                        else if (Arrays.stream(ids).anyMatch((int i) -> i == 21) && Arrays.stream(ids).anyMatch((int i) -> i == 23)) {
+                            return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
+                        }
+                    }
+                    else {
+                        if (Arrays.stream(ids).anyMatch((int i) -> i == 21) && Arrays.stream(ids).anyMatch((int i) -> i == 22)) {
+                            return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE};
+                        }
+                        else if (Arrays.stream(ids).anyMatch((int i) -> i == 23) && Arrays.stream(ids).anyMatch((int i) -> i == 22)) {
+                            return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
+                        }
+                        else if (Arrays.stream(ids).anyMatch((int i) -> i == 21) && Arrays.stream(ids).anyMatch((int i) -> i == 23)) {
+                            return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+                        }
+                    }
+                }
+                else {
+                    if (fiducialResults.get(0).getFiducialId() == 21) {
+                        return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+                    } else if (fiducialResults.get(0).getFiducialId() == 22) {
+                        return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE};
+                    } else if (fiducialResults.get(0).getFiducialId() == 23) {
+                        return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
+                    }
+                }
+            }
+        }
         return null;
     }
 
@@ -731,13 +767,10 @@ public class Launcher {
         telemetry.addData("launcherVelocity from motor2", "%.2f", launcherMotor2.getVelocity());
         telemetry.addData("hood position", "%.2f", hoodPosition);
 
-        // TODO don't do this here. one time per loooop
-//        telemetry.update();
 
         // Logging
 
         RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
-
         // Set last variables for next loop
 
         lastAngle = currentAngle;
@@ -784,14 +817,6 @@ public class Launcher {
         launcherServo.setPower(turretPower);
 
         // Set last variables for next loop
-
-
-        // TODO jw - testing hood position updating and launcher velocity must first updateTurrentAng
-
-
-
-        // TODO jw
-
         lastAngle = currentAngle;
         lastVoltage = currentVoltage;
 

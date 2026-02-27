@@ -1,8 +1,12 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
+import static com.pedropathing.paths.HeadingInterpolator.lazy;
+import static com.pedropathing.paths.HeadingInterpolator.linear;
+
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -12,8 +16,10 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
+import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import org.firstinspires.ftc.teamcode.pedropathing.commands.Paths;
 import org.firstinspires.ftc.teamcode.pedropathing.commands.SubsystemCommands;
@@ -37,16 +43,23 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         CLOSE_PICKUP,
         FAR_PICKUP,
         WAIT_SHOOT_POS,
+        LEAVE,
         FINISHED
     }
 
     private LinkedList<State> order = new LinkedList<>();
     private LinkedList<State> endLoop = new LinkedList<>();
 
-    private State state;
 
     private Pose FtcPose = new Pose();
+    ArtifactColor[] motif = new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+    ArtifactColor[] motif_new = null;
+    boolean motifFound = false;
 
+
+
+
+    private State state;
     int currentState = 0;
 
     private State getNextState() {
@@ -71,7 +84,10 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         follower = Constants.createFollower(hardwareMap);
         robot = new Robot(hardwareMap, telemetry, false);
 
-        follower.setStartingPose(new Pose(18.194, 121.659, Math.toRadians(143.5 - 180)));
+        // Limelight
+        robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
+
+        follower.setStartingPose(new Pose(17.766, 120.935, Math.toRadians(53.5)));
 
         SubsystemCommands subsystemCommands = new SubsystemCommands(robot);
         paths = new Paths(follower);
@@ -137,7 +153,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 || (currentGamepad2.dpad_left && !previousGamepad2.dpad_left)
                 || (currentGamepad1.dpad_right && !previousGamepad1.dpad_right)
                 || (currentGamepad2.dpad_right && !previousGamepad2.dpad_right)) {
-                rows.put(currentRow, rows.get(currentRow));
+                rows.put(currentRow, !rows.get(currentRow));
             }
 
             if (currentGamepad1.a || currentGamepad2.a) {
@@ -156,6 +172,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                     order.add(State.FAR_PICKUP);
                     order.add(State.SHOOT);
                 }
+                order.add(State.LEAVE);
                 state = State.READY;
             }
         }
@@ -167,6 +184,22 @@ public class BlueFrontPedroPathingAuto extends OpMode {
             // throw new RuntimeException("Program was not locked in before running");
             RobotLog.d("Program was not locked in before Running");
             telemetry.addData("Program was not locked in before Running", state);
+            order.add(State.GO_TO_SHOOT_POS);
+            // order.add(State.WAIT_SHOOT_POS);
+            order.add(State.SHOOT_PRELOAD);
+            if (rows.get(0)) {
+                order.add(State.MID_PICKUP_GATE);
+                order.add(State.SHOOT);
+            }
+            if (rows.get(1)) {
+                order.add(State.CLOSE_PICKUP);
+                order.add(State.SHOOT);
+            }
+            if (rows.get(2)) {
+                order.add(State.FAR_PICKUP);
+                order.add(State.SHOOT);
+            }
+            order.add(State.LEAVE);
             state = State.READY;
         }
         state = getNextState();
@@ -190,7 +223,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 break;
             case GO_TO_SHOOT_POS:
                 RobotLog.d ("S: GO_TO_SHOOT_POS");
-                follower.followPath(paths.getBlueCloseStartToShoot(), false);
+                follower.followPath(paths.getBlueCloseStartToShoot2(), false);
                 state = state.WAIT_SHOOT_POS; // Wait for position
 //                if (!follower.isBusy()) {
 //                    state = getNextState();
@@ -198,6 +231,15 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 break;
             case WAIT_SHOOT_POS:
                 RobotLog.d ("S: WAIT_SHOOT_POS");
+                // Let's read Limelight in here
+                if (!motifFound) {
+                    motif_new = robot.getLauncher().getMotifPattern(false);
+                    if (motif_new != null) {
+                        motif = motif_new;
+                        RobotLog.d("Motif Pattern Found %s:%s:%s", motif[0].toString(), motif[1].toString(), motif[2].toString());
+                        motifFound = true;
+                    }
+                }
                 if (!follower.isBusy()){
                     state = getNextState();
                 }
@@ -218,6 +260,13 @@ public class BlueFrontPedroPathingAuto extends OpMode {
             case CLOSE_PICKUP:
                 RobotLog.d ("S: CLOSE_PICKUP");
                 updateDrive(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 150);
+                break;
+            case LEAVE:
+                follower.followPath(follower.pathBuilder()
+                    .addPath(new BezierLine(() -> follower.getPose(), new Pose(54, 126)))
+                    .setHeadingInterpolation(lazy(() -> linear(follower.getHeading(), Math.toRadians(180),0.8)))
+                    .build(), false);
+                break;
         }
 
         follower.update();

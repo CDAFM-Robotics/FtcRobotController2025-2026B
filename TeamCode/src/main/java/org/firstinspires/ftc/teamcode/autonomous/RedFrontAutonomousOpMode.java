@@ -271,7 +271,7 @@ public class RedFrontAutonomousOpMode extends LinearOpMode {
             ));
 
             for (int i = 0; i < 50; i++) {
-                motif = robot.getLauncher().getMotifPattern();
+                motif = robot.getLauncher().getMotifPattern(true);
 
                 if (motif == null) {
                     telemetry.addData("Motif Pattern", "Not Detected");

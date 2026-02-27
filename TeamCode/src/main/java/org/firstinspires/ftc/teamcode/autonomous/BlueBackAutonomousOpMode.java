@@ -64,7 +64,7 @@ public class BlueBackAutonomousOpMode extends LinearOpMode {
 
         while(opModeInInit()) {
 
-            motif = robot.getLauncher().getMotifPattern();
+            motif = robot.getLauncher().getMotifPattern(false);
 
             if (motif == null) {
                 telemetry.addData("  Motif Pattern", "Not Detected");
