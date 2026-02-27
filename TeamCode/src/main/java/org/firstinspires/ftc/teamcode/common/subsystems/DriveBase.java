@@ -83,8 +83,12 @@ public class DriveBase {
         // if the auto completed, use the value from end of auto
         if (RobotStaticValuesClass.autoCompleted) {
             startPose2D = RobotStaticValuesClass.savedPose;
-        } else {
-            startPose2D = new Pose2D(DistanceUnit.INCH, 63, -12, AngleUnit.RADIANS, -1.57);
+        }
+        else if (isRed) {
+            startPose2D = new Pose2D(DistanceUnit.INCH, 63, 12, AngleUnit.RADIANS, -3.14);
+        }
+        else {
+            startPose2D = new Pose2D(DistanceUnit.INCH, 63, -12, AngleUnit.RADIANS, -3.14);
         }
 
         // Set the location of the robot - this should be the place you are starting the robot from

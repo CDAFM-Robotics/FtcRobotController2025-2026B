@@ -33,7 +33,7 @@ public class Robot {
     private Hud hud;
     private Limelight3A limelight;
 
-    //private ElapsedTime timeSinceIndex = new ElapsedTime();
+    private ElapsedTime timeSinceIndex = new ElapsedTime();
     private ElapsedTime timeSinceKick = new ElapsedTime();
     private ElapsedTime timeSinceKickReset  = new ElapsedTime();
     private ElapsedTime reverseIntakeTimer  = new ElapsedTime();
@@ -73,6 +73,7 @@ public class Robot {
         // Create an instance of the hardware map and telemetry in the Robot class
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
+        timeSinceIndex.startTime();
         timeSinceKick.startTime();
         timeSinceKickReset.startTime();
         reverseIntakeTimer.startTime();
@@ -211,6 +212,7 @@ public class Robot {
              case TURN_EMPTY_SLOT_TO_INTAKE:
                  RobotLog.d("intakeWithIndexerTurn: TURN_EMPTY_SLOT_TO_INTAKE)");
                  indexer.turnEmptySlotToIntake();
+                 timeSinceIndex.reset();
                  autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
                  break;
              case WAIT_FOR_BALL:
@@ -218,14 +220,15 @@ public class Robot {
                  RobotLog.d("Robot: WAIT_FOR_BALLt");
                  if (indexer.indexerFinishedTurning()) {
                      // telemetry.addLine("Robot: indexerFinishedTurning");
-                     indexer.updateColorAllSlots();
+                     // removed to make intake faster
+                     //indexer.updateColorAllSlots();
                      RobotLog.d("Robot: indexerFinishedTurning");
                      if (indexer.isBallAtIntakeFast()) {
                          // telemetry.addLine("Robot: isBallAtIntake");
                          RobotLog.d("Robot: isBallAtIntake");
                          intake1Ball = true;
                          //Reading color in isBallAtIntake. No need to read here anymore
-                         // indexer.updateColorAtIntakeOnly();
+                         indexer.updateColorAtIntakeOnly();
                          autoIntakeState = AutoIntakeStates.INIT;
                          break;
                      }
@@ -299,16 +302,14 @@ public class Robot {
                             launchState = LaunchBallStates.TURN_TO_LAUNCH;
                             break;
                         }
-                        else if (!indexer.atIntake()){
-                            RobotLog.d("shootAllBalls: !indexer.atIntake())");
-                            indexer.positionForIntake();
-                            launchState = LaunchBallStates.READY_TO_INTAKE;
-                            RobotLog.d("shootAllBalls: INIT %s", launchState);
-                            break;
-                        }
                         else {
-                            noArtifacts = true;
-                            break;
+                            if (!indexer.atIntake()) {
+                                RobotLog.d("shootAllBalls: !indexer.atIntake())");
+                                indexer.positionForIntake();
+                            }
+                                launchState = LaunchBallStates.READY_TO_INTAKE;
+                                RobotLog.d("shootAllBalls: INIT %s", launchState);
+                                break;
                         }
                     case TURN_TO_LAUNCH:
                         //telemetry.addLine("shootAllBalls: TURN_TO_LAUNCH");
@@ -512,7 +513,7 @@ public class Robot {
             relativeAngle = (absoluteAngleDegree - robotHeading);
         }
         else {
-            relativeAngle = (absoluteAngleDegree - robotHeading) + 6; //off set on blue side
+            relativeAngle = (absoluteAngleDegree - robotHeading) + 2; //off set on blue side
         }
 
         relativeAngle = normalizeAngle(relativeAngle);
