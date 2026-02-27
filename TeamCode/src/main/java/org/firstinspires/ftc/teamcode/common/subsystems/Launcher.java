@@ -68,6 +68,10 @@ public class Launcher {
         limelight.pipelineSwitch(ordinal);
     }
 
+    public double getCurrentAngleOffset() {
+        return currentAngleOffset;
+    }
+
     public enum QuadrantRotatorServo{
         POSITIVE, NEGATIVE, ZERO
     }

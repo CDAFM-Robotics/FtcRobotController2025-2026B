@@ -3,11 +3,11 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import static com.pedropathing.paths.HeadingInterpolator.lazy;
 import static com.pedropathing.paths.HeadingInterpolator.linear;
 
+import com.acmerobotics.roadrunner.Pose2d;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
 import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.PedroCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -16,8 +16,11 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
@@ -55,6 +58,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
     ArtifactColor[] motif = new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
     ArtifactColor[] motif_new = null;
     boolean motifFound = false;
+    boolean staticDataSaved = false;
 
 
 
@@ -270,6 +274,33 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         }
 
         follower.update();
+
+        // convert the and update the current pose to global
+        // RobotStaticValuesClass.savedPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
+
+        RobotStaticValuesClass.savedPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
+        RobotStaticValuesClass.turretAngleOffset = robot.getLauncher().getCurrentAngleOffset();
+        RobotLog.d("L:fx:" + RobotStaticValuesClass.savedPose.getX(DistanceUnit.INCH) + ", y:" + RobotStaticValuesClass.savedPose.getY(DistanceUnit.INCH) + ", h:" + RobotStaticValuesClass.savedPose.getHeading(AngleUnit.RADIANS));
+        RobotLog.d("L:px:"+ follower.getPose().getX() + ", y:" + follower.getPose().getY() + ", h:" + follower.getPose().getHeading());
+        RobotLog.d("L:ta:"+ robot.getLauncher().getCurrentAngleOffset());
+
+        if (!staticDataSaved){
+            if (motif[0]==ArtifactColor.PURPLE && motif[1]==ArtifactColor.GREEN && motif[2]==ArtifactColor.PURPLE){
+                RobotStaticValuesClass.savedOblisk =    RobotStaticValuesClass.Oblisk.PGP;
+            }
+            else if (motif[0]==ArtifactColor.PURPLE && motif[1]==ArtifactColor.PURPLE && motif[2]==ArtifactColor.GREEN){
+                RobotStaticValuesClass.savedOblisk =    RobotStaticValuesClass.Oblisk.PPG;
+            }
+            else
+            {
+                RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.GPP;
+            }
+            RobotStaticValuesClass.autoCompleted = true;
+            staticDataSaved = true;
+        }
+
+
+
         // RobotLog.d("States: " + state + ", " + shootState + ", " + driveState + ", " + newState_Drive);
 
         // TODO this bit doesn't give right ftc coords
@@ -321,6 +352,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 robot.getIndexer().autoFillColorArray();
 
                 if (robot.getLauncher().getLauncherVelocity() >= (robot.getLauncher().getLauncherTargetVelocity()-20) /*&& Math.abs(robot.getLauncher().getTurretDegrees() - turretAngle) < 2.5*/) {
+
                     shootState = ShootState.SHOOTING_0;
                 }
                 else {
