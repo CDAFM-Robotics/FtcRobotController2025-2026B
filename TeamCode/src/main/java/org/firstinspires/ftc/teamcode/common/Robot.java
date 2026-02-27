@@ -190,7 +190,7 @@ public class Robot {
 
      // Auto-Indexing for intake
      public void intakeWithIndexerTurn(){
-         telemetry.addData("intakeWithIndexerTurn", autoIntakeState);
+         //telemetry.addData("intakeWithIndexerTurn", autoIntakeState);
 
          switch (autoIntakeState) {
              case INIT:
@@ -276,11 +276,11 @@ public class Robot {
     boolean noArtifacts = false;
 
     public void shootAllBalls() {
-        telemetry.addLine("shootAllBalls");
+        //telemetry.addLine("shootAllBalls");
 
-        telemetry.addData("color:", indexer.artifactColorArray[0]);
-        telemetry.addData("color:", indexer.artifactColorArray[1]);
-        telemetry.addData("color:", indexer.artifactColorArray[2]);
+//        telemetry.addData("color:", indexer.artifactColorArray[0]);
+//        telemetry.addData("color:", indexer.artifactColorArray[1]);
+//        telemetry.addData("color:", indexer.artifactColorArray[2]);
 
         // check to see if flywheel motors are running
         if(launcher.isLauncherActive() && robotInOutState == RobotInOutStates.OUTTAKE) {
@@ -292,7 +292,7 @@ public class Robot {
                 switch (launchState) {
                     case INIT:
                         noArtifacts = false;
-                        telemetry.addLine("shootAllBalls: INIT");
+                        //telemetry.addLine("shootAllBalls: INIT");
                         RobotLog.d("shootAllBalls: INIT");
                         if(findNextBall()) {
                             RobotLog.d("shootAllBalls: findNextBall");
@@ -311,7 +311,7 @@ public class Robot {
                             break;
                         }
                     case TURN_TO_LAUNCH:
-                        telemetry.addLine("shootAllBalls: TURN_TO_LAUNCH");
+                        //telemetry.addLine("shootAllBalls: TURN_TO_LAUNCH");
                         RobotLog.d("shootAllBalls: TURN_TO_LAUNCH");
                         if (indexer.moveToOuttake()) {
                             RobotLog.d("shootAllBalls: moveToOuttake()");
@@ -319,7 +319,7 @@ public class Robot {
                         launchState = LaunchBallStates.KICK_BALL;
                         break;
                     case KICK_BALL:
-                        telemetry.addLine("shootAllBalls: KICK_BALL");
+                        //telemetry.addLine("shootAllBalls: KICK_BALL");
                         RobotLog.d("shootAllBalls: KICK_BALL");
                         if (indexer.indexerFinishedTurning()) {
                             safeToStop = false;
@@ -331,7 +331,7 @@ public class Robot {
                             break;
                         }
                     case RESET_KICKER:
-                        telemetry.addLine("shootAllBalls: RESET_KICKER");
+                        //telemetry.addLine("shootAllBalls: RESET_KICKER");
                         RobotLog.d("shootAllBalls: RESET_KICKER");
                         if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER_UP) {
                             launcher.resetKicker();
@@ -342,7 +342,7 @@ public class Robot {
                             break;
                         }
                     case UPDATE_INDEXER:
-                        telemetry.addLine("shootAllBalls: UPDATE_INDEXER");
+                        //telemetry.addLine("shootAllBalls: UPDATE_INDEXER");
                         RobotLog.d("shootAllBalls: UPDATE_INDEXER");
                         if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER_DOWN) {
                             safeToStop = true;

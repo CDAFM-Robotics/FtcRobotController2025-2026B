@@ -724,11 +724,11 @@ public class Launcher {
         double diff = Math.abs(currentAngle - lastAngle) / dt;
 
         if (!firstLoop) {
-            if (currentAngle > 180 && lastAngle < 180 && diff > 2800) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 2200) {
                 currentAngleOffset -= 360;
             }
 
-            if (currentAngle < 180 && lastAngle > 180 && diff > 2800) {
+            if (currentAngle < 180 && lastAngle > 180 && diff > 2200) {
                 currentAngleOffset += 360;
             }
         }
