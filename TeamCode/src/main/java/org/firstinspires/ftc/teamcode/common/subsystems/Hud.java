@@ -68,9 +68,9 @@ public class Hud {
         ledstripRear = hardwareMap.get(QwiicLEDStick.class, "ledstrip");
         ledstripRear.changeLength(LED_STICK_TOTAL_LEDS); // limit addressable LED to number of LED installed
         ledstripRear.setBrightness(LED_STICK_BRIGHTNESS);// 10 LEDs at brightness 31 generates 660ma current
-        ledstripFront = hardwareMap.get(QwiicLEDStick.class, "ledstripFront");
-        ledstripFront.changeLength(LED_STICK_TOTAL_LEDS);
-        ledstripFront.setBrightness(LED_STICK_BRIGHTNESS);
+//        ledstripFront = hardwareMap.get(QwiicLEDStick.class, "ledstripFront");
+//        ledstripFront.changeLength(LED_STICK_TOTAL_LEDS);
+//        ledstripFront.setBrightness(LED_STICK_BRIGHTNESS);
         timeSinceLastHUDChange.reset();
 
         // Set LAST to an unused and different color to ensure it gets updated once at init to clear carry-over.
@@ -120,7 +120,7 @@ public class Hud {
 //                    colors_all[9]);
 
             ledstripRear.setColors(colors_all);
-            ledstripFront.setColors(colors_all);
+//             ledstripFront.setColors(colors_all);
             timeSinceLastHUDChange.reset();
         }
 
@@ -141,16 +141,16 @@ public class Hud {
             // Ball1 (bottom) LEDs 0-2
             ledstripRear.setColor(0, Balls[ball1.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(0, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(0, Balls[ball1.ordinal()]);
+//            sleep(ms_delay);
             ledstripRear.setColor(1, Balls[ball1.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(1, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(1, Balls[ball1.ordinal()]);
+//            sleep(ms_delay);
             ledstripRear.setColor(2, Balls[ball1.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(2, Balls[ball1.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(2, Balls[ball1.ordinal()]);
+//            sleep(ms_delay);
         }
 
         if (ball2 != last2) {
@@ -158,16 +158,16 @@ public class Hud {
             // Ball2
             ledstripRear.setColor(3, Balls[ball2.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(3, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(3, Balls[ball2.ordinal()]);
+//            sleep(ms_delay);
             ledstripRear.setColor(4, Balls[ball2.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(4, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(4, Balls[ball2.ordinal()]);
+//            sleep(ms_delay);
             ledstripRear.setColor(5, Balls[ball2.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(5, Balls[ball2.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(5, Balls[ball2.ordinal()]);
+//            sleep(ms_delay);
 
         }
         if (ball3 != last3) {
@@ -175,24 +175,24 @@ public class Hud {
             last3 = ball3;
             ledstripRear.setColor(6, Balls[ball3.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(6, Balls[ball3.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(6, Balls[ball3.ordinal()]);
+//            sleep(ms_delay);
             ledstripRear.setColor(7, Balls[ball3.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(7, Balls[ball3.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(7, Balls[ball3.ordinal()]);
+//            sleep(ms_delay);
             ledstripRear.setColor(8, Balls[ball3.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(8, Balls[ball3.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(8, Balls[ball3.ordinal()]);
+//            sleep(ms_delay);
         }
         // set aiming led
         if (aimLED != lastAimLED) {
             lastAimLED = aimLED;
             ledstripRear.setColor(9, Balls[aimLED.ordinal()]);
             sleep(ms_delay);
-            ledstripFront.setColor(9, Balls[aimLED.ordinal()]);
-            sleep(ms_delay);
+//            ledstripFront.setColor(9, Balls[aimLED.ordinal()]);
+//            sleep(ms_delay);
         }
 
     }

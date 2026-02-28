@@ -89,7 +89,7 @@ public class ColorSensorTestOpMode extends LinearOpMode {
         // TODO: ~15 = No Ball
         // TODO: BUT having detect distance too high may cause false-trigger on intake slot causing ball-stuck (sugg: ~3-4.5)
 
-        if (sensorADistance > 6.5) {
+        if (sensorADistance > 2) {
             colorSensorADetectedColor = ArtifactColor.NONE;
         }
         else if (colorSensorANormalizedColors.blue > colorSensorANormalizedColors.green) {
@@ -102,7 +102,7 @@ public class ColorSensorTestOpMode extends LinearOpMode {
         colorSensorBNormalizedColors = colorSensorB.getNormalizedColors();
         sensorBDistance = ((DistanceSensor) colorSensorB).getDistance(DistanceUnit.CM);
 
-        if (sensorBDistance > 6.5) {
+        if (sensorBDistance > 2) {
             colorSensorBDetectedColor = ArtifactColor.NONE;
         }
         else if (colorSensorBNormalizedColors.blue > colorSensorBNormalizedColors.green) {
