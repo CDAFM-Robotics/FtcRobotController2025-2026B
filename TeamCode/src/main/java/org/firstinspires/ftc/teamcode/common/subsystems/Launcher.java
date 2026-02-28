@@ -725,14 +725,14 @@ public class Launcher {
 
         // Find out whether the angle looped around
 
-        double diff = Math.abs(currentAngle - lastAngle) / dt;
+        double diff = Math.abs(currentAngle - lastAngle);
 
         if (!firstLoop) {
-            if (currentAngle > 180 && lastAngle < 180 && diff > 2200) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
                 currentAngleOffset -= 360;
             }
 
-            if (currentAngle < 180 && lastAngle > 180 && diff > 2200) {
+            if (currentAngle < 180 && lastAngle > 180 && diff > 100) {
                 currentAngleOffset += 360;
             }
         }
@@ -802,14 +802,14 @@ public class Launcher {
 
         // Find out whether the angle looped around
 
-        double diff = Math.abs(currentAngle - lastAngle) / dt;
+        double diff = Math.abs(currentAngle - lastAngle);
 
         if (!firstLoop) {
-            if (currentAngle > 180 && lastAngle < 180 && diff > 2800) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
                 currentAngleOffset -= 360;
             }
 
-            if (currentAngle < 180 && lastAngle > 180 && diff > 2800) {
+            if (currentAngle < 180 && lastAngle > 180 && diff > 100) {
                 currentAngleOffset += 360;
             }
         }

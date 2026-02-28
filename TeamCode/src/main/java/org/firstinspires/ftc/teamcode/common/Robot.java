@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.common;
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.geometry.Pose;
-import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -19,9 +17,6 @@ import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 
 @Configurable
 public class Robot {
@@ -371,6 +366,9 @@ public class Robot {
         }
     }
 
+    public void shootAllBallsOrder() {}
+
+
     public void shootAllBallsAuto() {
 
         RobotLog.d("shootAllBalls");
@@ -456,7 +454,7 @@ public class Robot {
         return intake3Balls;
     }
 
-    public void setIntak3BallsOff () {
+    public void setIntake3BallsOff() {
         intake3Balls = false;
     }
 
@@ -464,7 +462,7 @@ public class Robot {
         return intake1Ball;
     }
 
-    public void setIntak1BallOff () {
+    public void setIntake1BallOff() {
         intake1Ball = false;
     }
 
