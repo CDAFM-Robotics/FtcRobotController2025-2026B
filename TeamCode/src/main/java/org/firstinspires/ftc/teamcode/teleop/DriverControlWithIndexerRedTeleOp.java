@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.internal.camera.delegating.DelegatingCaptureSequence;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
+import org.firstinspires.ftc.teamcode.common.subsystems.Hud;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import com.bylazar.configurables.PanelsConfigurables;
 
@@ -23,6 +24,9 @@ import com.bylazar.configurables.PanelsConfigurables;
 @TeleOp(name = "RED Bot2 ", group = "0teleop")
 public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     public boolean isRedSide = true;
+
+    // Make a local HUD
+    private Hud hud;
 
 
     // TODO add Data to Panels
@@ -57,6 +61,9 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         ElapsedTime reverseIntakeTimer  = new ElapsedTime();
         reverseIntakeTimer.reset();
         //robot.getLauncher().setLimelightPipeline(isRedSide);
+
+        hud = new Hud(hardwareMap, telemetry);
+
         telemetry.update();
 
         waitForStart();
@@ -263,7 +270,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             // telemetryM.update(telemetry);
 
             // Refresh the indicator lights
-//            robot.getHud().setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);
+            hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);
 //            if (llLastIsValid == true)
 //            {
 //                // RobotLog.d("Aim PID X: %f", xAngle);
@@ -275,7 +282,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 //            else {
 //                robot.getHud().setAimIndicator(false);
 //            }
-//            robot.getHud().UpdateBallUI();
+            hud.UpdateBallUI();
 
             // TODO Add timing Log at end of loop
 //            RobotLog.d("c0: %s c1: %s c2: %s",
