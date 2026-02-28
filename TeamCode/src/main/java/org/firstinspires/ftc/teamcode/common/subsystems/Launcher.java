@@ -369,18 +369,18 @@ public class Launcher {
         shootingTable.add(64.89,1200,0.32);
         shootingTable.add(69.98,1230,0.30);
         shootingTable.add(74.92,1250,0.275);
-        shootingTable.add(80.08,1280,0.25);
-        shootingTable.add(90,1320,0.15);
+        shootingTable.add(80.08,1280,0.24);
+        shootingTable.add(90,1320,0.13);
         shootingTable.add(95.03,1350,0.11);
         shootingTable.add(100.17,1370,0.10);
         shootingTable.add(105.16,1380,0.10);
         shootingTable.add(110.08,1420,0.10);
-        shootingTable.add(115.05,1480,0.09);
-        shootingTable.add(120.25,1500,0.08);
-        shootingTable.add(125.20,1520,0.06);
-        shootingTable.add(130.20,1550,0.04);
-        shootingTable.add(135.20,1580,0.03);
-        shootingTable.add(140.09,1600,0.01);
+        shootingTable.add(115.05,1480,0.08);
+        shootingTable.add(120.25,1500,0.03);
+        shootingTable.add(125.20,1520,0.025);
+        shootingTable.add(130.20,1550,0.02);
+        shootingTable.add(135.20,1580,0.01);
+        shootingTable.add(140.09,1600,0.00);
         shootingTable.add(145.39,1640,0.00);
         shootingTable.add(149.96,1660,0.00);
 

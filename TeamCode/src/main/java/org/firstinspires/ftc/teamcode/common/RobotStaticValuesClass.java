@@ -16,7 +16,7 @@ public class RobotStaticValuesClass {
     public static Pose2D savedPose = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0);
     public static Oblisk savedOblisk = Oblisk.GPP; //default value
     public static double turretAngleOffset = 0.0;
-    public static boolean autoCompleted = true;
+    public static boolean autoCompleted = false;
     public static boolean obliskReady = false;
 
 }

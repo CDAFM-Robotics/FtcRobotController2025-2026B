@@ -46,12 +46,12 @@ public class Indexer {
 
     public ArtifactColor[] artifactColorArray = new ArtifactColor[]{ArtifactColor.NONE, ArtifactColor.NONE, ArtifactColor.NONE};
 
-    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.176;
-    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.938;
-    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.555;
-    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.746;
-    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.365;
-    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.0;
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.188; //0.176
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.944; //0.938
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.566; //0.555
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.757; //0.746
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.380; // 0.365
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.00; //0.0
 
     public static final double AXON_SERVO_VOLTAGE_OFFSET = 0.228;
     public static final double AXON_SERVO_VOLTAGE_SCALER = 0.1 / 0.2815;
@@ -201,7 +201,7 @@ public class Indexer {
     public boolean indexerFinishedTurning() {
         //telemetry.addData("indexerFinishedTurning start", targetIdexerPosition);
         //TODO: 0.02 is used to start with. Is 0.02 the best value to use here?
-        if (getIndexerServoAtPosition(targetIndexerPosition, 0.05)) {
+        if (getIndexerServoAtPosition(targetIndexerPosition, 0.02)) {
             return true;
         }
         else {
@@ -218,10 +218,16 @@ public class Indexer {
     public ArtifactColor getPredictedColor(NormalizedRGBA sensor1RGBA, NormalizedRGBA sensor2RGBA, double sensor1Distance, double sensor2Distance) {
 
         ArtifactColor sensor1DetectedColor;
-        //telemetry.addData("sensor1Distance", sensor1Distance);
-        //telemetry.addData("sensor2Distance", sensor2Distance);
+//        telemetry.addData("sensor1Distance", sensor1Distance);
+//        telemetry.addData("sensor1Distance alpha, ", sensor1RGBA.alpha);
+        RobotLog.d("sensor1Distance %.2f", sensor1Distance);
+        RobotLog.d("sensor1RGBA.alpha %.2f, ", sensor1RGBA.alpha);
+//        telemetry.addData("sensor2Distance", sensor2Distance);
+//        telemetry.addData("sensor2Distance alpha, ", sensor2RGBA.alpha);
+        RobotLog.d("sensor2Distance %.2f ", sensor2Distance);
+        RobotLog.d("sensor2RGBA.alpha  %.2f ", sensor2RGBA.alpha);
 
-        if (sensor1Distance > 5) {
+        if (sensor1Distance > 2.5 || sensor1RGBA.alpha < 0.75) {
             sensor1DetectedColor = ArtifactColor.NONE;
         }
         else if (sensor1RGBA.blue > sensor1RGBA.green) {
@@ -233,7 +239,7 @@ public class Indexer {
 
         ArtifactColor sensor2DetectedColor;
 
-        if (sensor2Distance > 5) {
+        if (sensor2Distance > 2.5 || sensor2RGBA.alpha < 0.75) {
             sensor2DetectedColor = ArtifactColor.NONE;
         }
         else if (sensor2RGBA.blue > sensor2RGBA.green) {
@@ -257,49 +263,50 @@ public class Indexer {
         }
     }
 
-    private ArtifactColor getPredictedColorAtIntake(NormalizedRGBA sensor1RGBA, NormalizedRGBA sensor2RGBA, double sensor1Distance, double sensor2Distance) {
+//    private ArtifactColor getPredictedColorAtIntake(NormalizedRGBA sensor1RGBA, NormalizedRGBA sensor2RGBA, double sensor1Distance, double sensor2Distance) {
+//
+//        ArtifactColor sensor1DetectedColor;
+//        //telemetry.addData("sensor1Distance", sensor1Distance);
+//        //telemetry.addData("sensor2Distance", sensor2Distance);
+//
+//        if (sensor1Distance > 5) {
+//            sensor1DetectedColor = ArtifactColor.UNKNOWN;
+//        }
+//        else if (sensor1RGBA.blue > sensor1RGBA.green) {
+//            sensor1DetectedColor = ArtifactColor.PURPLE;
+//        }
+//        else {
+//            sensor1DetectedColor = ArtifactColor.GREEN;
+//        }
+//
+//        ArtifactColor sensor2DetectedColor;
+//
+//        if (sensor2Distance > 5) {
+//            sensor2DetectedColor = ArtifactColor.UNKNOWN;
+//        }
+//        else if (sensor2RGBA.blue > sensor2RGBA.green) {
+//            sensor2DetectedColor = ArtifactColor.PURPLE;
+//        }
+//        else {
+//            sensor2DetectedColor = ArtifactColor.GREEN;
+//        }
+//
+//        if (sensor1DetectedColor == sensor2DetectedColor) {
+//            return sensor1DetectedColor;
+//        }
+//        else if (sensor2DetectedColor != ArtifactColor.UNKNOWN) {
+//            return sensor2DetectedColor;
+//        }
+//        else if (sensor1DetectedColor != ArtifactColor.UNKNOWN) {
+//            return sensor1DetectedColor;
+//        }
+//        else {
+//            return ArtifactColor.UNKNOWN;
+//        }
+//    }
 
-        ArtifactColor sensor1DetectedColor;
-        //telemetry.addData("sensor1Distance", sensor1Distance);
-        //telemetry.addData("sensor2Distance", sensor2Distance);
-
-        if (sensor1Distance > 5) {
-            sensor1DetectedColor = ArtifactColor.UNKNOWN;
-        }
-        else if (sensor1RGBA.blue > sensor1RGBA.green) {
-            sensor1DetectedColor = ArtifactColor.PURPLE;
-        }
-        else {
-            sensor1DetectedColor = ArtifactColor.GREEN;
-        }
-
-        ArtifactColor sensor2DetectedColor;
-
-        if (sensor2Distance > 5) {
-            sensor2DetectedColor = ArtifactColor.UNKNOWN;
-        }
-        else if (sensor2RGBA.blue > sensor2RGBA.green) {
-            sensor2DetectedColor = ArtifactColor.PURPLE;
-        }
-        else {
-            sensor2DetectedColor = ArtifactColor.GREEN;
-        }
-
-        if (sensor1DetectedColor == sensor2DetectedColor) {
-            return sensor1DetectedColor;
-        }
-        else if (sensor2DetectedColor != ArtifactColor.UNKNOWN) {
-            return sensor2DetectedColor;
-        }
-        else if (sensor1DetectedColor != ArtifactColor.UNKNOWN) {
-            return sensor1DetectedColor;
-        }
-        else {
-            return ArtifactColor.UNKNOWN;
-        }
-    }
     public void updateBallColorAtBackL(double position) {
-        //telemetry.addLine("updateBallColorAtOuttake() start");
+        telemetry.addLine("updateBallColorAtOuttake() start");
         RobotLog.d("Indexer: updateBallColorAtOuttake() start");
         //telemetry.addData("updateBallColors Color 0", artifactColorArray[0]);
         //telemetry.addData("updateBallColors Color 1", artifactColorArray[1]);
@@ -331,7 +338,7 @@ public class Indexer {
     }
 
     public void updateBallColorAtIntake(double position) {
-        //telemetry.addLine("updateBallColorAtIntake() start");
+        telemetry.addLine("updateBallColorAtIntake() start");
         RobotLog.d("Indexer: updateBallColorAtIntake() start");
         //telemetry.addData("updateBallColors Color 0", artifactColorArray[0]);
         //telemetry.addData("updateBallColors Color 1", artifactColorArray[1]);
@@ -361,7 +368,7 @@ public class Indexer {
     }
 
     public void updateColorAtIntakeOnly() {
-        //telemetry.addLine("updateBallColorAtIntakeLeft() start");
+        telemetry.addLine("updateBallColorAtIntakeLeft() start");
         RobotLog.d("Indexer: updateBallColorAtIntakeLeft() start");
         //telemetry.addData("updateBallColors Color 0", artifactColorArray[0]);
         //telemetry.addData("updateBallColors Color 1", artifactColorArray[1]);
@@ -379,7 +386,7 @@ public class Indexer {
             telemetry.addLine("ERROR: updateBallColors");
         }
 
-        artifactColorArray[i] = getPredictedColorAtIntake(
+        artifactColorArray[i] = getPredictedColor(
             colorSensorIntakeL.getNormalizedColors(),
             colorSensorIntakeR.getNormalizedColors(),
             ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM),
@@ -391,7 +398,7 @@ public class Indexer {
     }
 
     public void updateBallColorAtBackR(double position) {
-        //telemetry.addLine("updateBallColorAtBackR() start");
+        telemetry.addLine("updateBallColorAtBackR() start");
         RobotLog.d("Indexer: updateBallColorAtBackR() start");
         //telemetry.addData("updateBallColors Color 0", artifactColorArray[0]);
         //telemetry.addData("updateBallColors Color 1", artifactColorArray[1]);
