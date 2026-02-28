@@ -78,12 +78,12 @@ public class RedBackPedroPathingAuto extends OpMode {
         state = State.INIT;
 
         follower = Constants.createFollower(hardwareMap);
-        robot = new Robot(hardwareMap, telemetry, false);
+        robot = new Robot(hardwareMap, telemetry, true);
 
         // Limelight
         robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
 
-        follower.setStartingPose(new Pose(88, 8, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(88, 8.5, Math.toRadians(90)));
 
         SubsystemCommands subsystemCommands = new SubsystemCommands(robot);
         paths = new Paths(follower);
@@ -238,7 +238,7 @@ public class RedBackPedroPathingAuto extends OpMode {
                 break;
 
             case SHOOT:
-                updateShoot(new Pose(88, 14, Math.toRadians(180)), -63); //TODO -63 might be weird but auto aim should fix
+                updateShoot(new Pose(88, 14, Math.toRadians(0)), -63); //TODO -63 might be weird but auto aim should fix
                 if (!motifFound) {
                     motif_new = robot.getLauncher().getMotifPattern(true);
                     if (motif_new != null) {
@@ -258,7 +258,7 @@ public class RedBackPedroPathingAuto extends OpMode {
             case LEAVE:
                 follower.followPath(follower.pathBuilder()
                         .addPath(new BezierLine(() -> follower.getPose(), new Pose(87, 35)))
-                        .setHeadingInterpolation(lazy(() -> linear(follower.getHeading(), Math.toRadians(180),0.8)))
+                        .setHeadingInterpolation(lazy(() -> linear(follower.getHeading(), Math.toRadians(0),0.8)))
                         .build(), false);
                 break;
         }

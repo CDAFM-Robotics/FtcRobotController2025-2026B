@@ -86,7 +86,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
         // Limelight
         robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
 
-        follower.setStartingPose(new Pose(126.24, 120.935, Math.toRadians(-53.5)));
+        follower.setStartingPose(new Pose(125.4, 120.8, Math.toRadians(126)));
 
         SubsystemCommands subsystemCommands = new SubsystemCommands(robot);
         paths = new Paths(follower);
@@ -218,7 +218,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
         switch (state) {
             case SHOOT_PRELOAD:
                 // RobotLog.d ("S: SHOOT_PRELOAD");
-                updateShoot(new Pose(84.000, 84.000, Math.toRadians(0)), -43);
+                updateShoot(follower.getPose(), 43);
                 break;
             case GO_TO_SHOOT_POS:
                 // RobotLog.d ("S: GO_TO_SHOOT_POS");
@@ -247,7 +247,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
 
             case SHOOT:
                 RobotLog.d ("S: SHOOT");
-                updateShoot(new Pose(84.000, 84.000, Math.toRadians(0)), -43);
+                updateShoot(follower.getPose(), 43);
                 break;
             case FAR_PICKUP:
                 RobotLog.d ("S: FAR_PICKUP");
