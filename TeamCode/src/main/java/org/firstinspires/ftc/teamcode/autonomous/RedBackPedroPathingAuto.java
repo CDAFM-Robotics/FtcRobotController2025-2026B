@@ -83,7 +83,7 @@ public class RedBackPedroPathingAuto extends OpMode {
         // Limelight
         robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
 
-        follower.setStartingPose(new Pose(88, 8.5, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(84, 8.5, Math.toRadians(90)));
 
         SubsystemCommands subsystemCommands = new SubsystemCommands(robot);
         paths = new Paths(follower);
@@ -98,6 +98,7 @@ public class RedBackPedroPathingAuto extends OpMode {
         labels.put(1, "Middle Mark");
         labels.put(2, "Close Mark");
         labels.put(3, "Repeat Zone End");
+        follower.update();
     }
 
     private int maxRows = 4;
@@ -222,7 +223,7 @@ public class RedBackPedroPathingAuto extends OpMode {
 
         switch (state) {
             case SHOOT_PRELOAD:
-                updateShoot(new Pose(88, 8.5, Math.toRadians(90)), -25); // TODO 8.5 here starting pos was 8?
+                updateShoot(follower.getPose(), -25);
                 if (!motifFound) {
                     motif_new = robot.getLauncher().getMotifPattern(true);
                     if (motif_new != null) {
@@ -232,13 +233,12 @@ public class RedBackPedroPathingAuto extends OpMode {
                     }
                 }
                 break;
-
             case FAR_PICKUP:
                 updateDrive(paths.getRedFarPickupThirdMark(), paths.getRedFarReturnFromThirdMark(), 150);
                 break;
 
             case SHOOT:
-                updateShoot(new Pose(88, 14, Math.toRadians(0)), -63); //TODO -63 might be weird but auto aim should fix
+                updateShoot(follower.getPose(), -63);
                 if (!motifFound) {
                     motif_new = robot.getLauncher().getMotifPattern(true);
                     if (motif_new != null) {
@@ -251,7 +251,7 @@ public class RedBackPedroPathingAuto extends OpMode {
 
             case ZONE_PICKUP:
                 updateDrive(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000);
-                if (leaveTimer.seconds() >= 27) {
+                if (leaveTimer.seconds() >= 26) {
                     state = State.LEAVE;
                }
                 break;
@@ -275,7 +275,7 @@ public class RedBackPedroPathingAuto extends OpMode {
 //        RobotLog.d("L:px:"+ follower.getPose().getX() + ", y:" + follower.getPose().getY() + ", h:" + follower.getPose().getHeading());
 //        RobotLog.d("L:ta:"+ robot.getLauncher().getCurrentAngleOffset());
 
-        if (!staticDataSaved){
+        // if (!staticDataSaved){
             if (motif[0]==ArtifactColor.PURPLE && motif[1]==ArtifactColor.GREEN && motif[2]==ArtifactColor.PURPLE){
                 RobotStaticValuesClass.savedOblisk =    RobotStaticValuesClass.Oblisk.PGP;
             }
@@ -288,7 +288,7 @@ public class RedBackPedroPathingAuto extends OpMode {
             }
             RobotStaticValuesClass.autoCompleted = true;
             staticDataSaved = true;
-        }
+        // }
         // RobotLog.d("States: " + state + ", " + shootState + ", " + driveState + ", " + newState_Drive);
 
         telemetry.update();
@@ -467,6 +467,9 @@ public class RedBackPedroPathingAuto extends OpMode {
                     if (midDelay == 0) {
                         follower.followPath(returnToPos);
                         driveState = DriveState.PICKUP_2_RETURN;
+                        if (state == State.ZONE_PICKUP) {
+                            robot.getIntake().setIntakeMotorPower(-1);
+                        }
                         intakeHoldTimer.reset(); // start the holdover timer for intake
                     }
                     else if (!resetTimer) {
@@ -476,6 +479,9 @@ public class RedBackPedroPathingAuto extends OpMode {
                     else if (delayTimer.milliseconds() >= midDelay){
                         follower.followPath(returnToPos);
                         driveState = DriveState.PICKUP_2_RETURN;
+                        if (state == State.ZONE_PICKUP) {
+                            robot.getIntake().setIntakeMotorPower(-1);
+                        }
                         intakeHoldTimer.reset(); // start the holdover timer for intake
                     }
                 }
@@ -503,7 +509,7 @@ public class RedBackPedroPathingAuto extends OpMode {
                 break;
             case PREP_FOR_SHOOT:
 
-                if (intakeHoldTimer.milliseconds() >= 2000) {
+                if (intakeHoldTimer.milliseconds() >= 3000) {
                     intakeHoldTimer.reset();
                     robot.getIntake().setIntakeMotorPower(0);
                 }

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous.archive;
+package org.firstinspires.ftc.teamcode.autonomous.archived;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;

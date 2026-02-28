@@ -54,7 +54,6 @@ public class BlueFrontPedroPathingAuto extends OpMode {
     private LinkedList<State> endLoop = new LinkedList<>();
 
 
-    // private Pose FtcPose = new Pose();
     ArtifactColor[] motif = new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
     ArtifactColor[] motif_new = null;
     boolean motifFound = false;
@@ -103,6 +102,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         labels.put(0, "Middle Mark + Gate"); // TODO add Gate
         labels.put(1, "Close Mark");
         labels.put(2, "Far Mark");
+        follower.update();
     }
 
     private int maxRows = 3;
@@ -188,7 +188,6 @@ public class BlueFrontPedroPathingAuto extends OpMode {
             RobotLog.d("Program was not locked in before Running");
             telemetry.addData("Program was not locked in before Running", state);
             order.add(State.GO_TO_SHOOT_POS);
-            // order.add(State.WAIT_SHOOT_POS);
             order.add(State.SHOOT_PRELOAD);
             if (rows.get(0)) {
                 order.add(State.MID_PICKUP_GATE);
@@ -222,18 +221,13 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         switch (state) {
             case SHOOT_PRELOAD:
                 // RobotLog.d ("S: SHOOT_PRELOAD");
-                updateShoot(new Pose(60.000, 84.000, Math.toRadians(180)), -43);
+                updateShoot(follower.getPose(), -43);
                 break;
             case GO_TO_SHOOT_POS:
-                // RobotLog.d ("S: GO_TO_SHOOT_POS");
                 follower.followPath(paths.getBlueCloseStartToShoot2(), false);
                 state = state.WAIT_SHOOT_POS; // Wait for position
-//                if (!follower.isBusy()) {
-//                    state = getNextState();
-//                }
                 break;
             case WAIT_SHOOT_POS:
-                // RobotLog.d ("S: WAIT_SHOOT_POS");
                 // Let's read Limelight in here
                 if (!motifFound) {
                     motif_new = robot.getLauncher().getMotifPattern(false);
@@ -254,7 +248,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 
             case SHOOT:
                 RobotLog.d ("S: SHOOT");
-                updateShoot(new Pose(60.000, 84.000, Math.toRadians(180)), -43);
+                updateShoot(follower.getPose(), -43);
                 break;
             case FAR_PICKUP:
                 RobotLog.d ("S: FAR_PICKUP");
@@ -283,7 +277,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
 //        RobotLog.d("L:px:"+ follower.getPose().getX() + ", y:" + follower.getPose().getY() + ", h:" + follower.getPose().getHeading());
 //        RobotLog.d("L:ta:"+ robot.getLauncher().getCurrentAngleOffset());
 
-        if (!staticDataSaved){
+        // if (!staticDataSaved){
             if (motif[0]==ArtifactColor.PURPLE && motif[1]==ArtifactColor.GREEN && motif[2]==ArtifactColor.PURPLE){
                 RobotStaticValuesClass.savedOblisk =    RobotStaticValuesClass.Oblisk.PGP;
             }
@@ -296,7 +290,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
             }
             RobotStaticValuesClass.autoCompleted = true;
             staticDataSaved = true;
-        }
+        // }
 
 
 
@@ -526,7 +520,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 break;
             case PREP_FOR_SHOOT:
                 // RobotLog.d ("SD: PREP_FOR_SHOOT");
-                if (intakeHoldTimer.milliseconds() >= 2000) {
+                if (intakeHoldTimer.milliseconds() >= 3000) {
                     intakeHoldTimer.reset();
                     robot.getIntake().setIntakeMotorPower(0);
                 }

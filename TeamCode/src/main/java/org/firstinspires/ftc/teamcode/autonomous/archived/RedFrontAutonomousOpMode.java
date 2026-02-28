@@ -1,11 +1,10 @@
-package org.firstinspires.ftc.teamcode.autonomous.archive;
+package org.firstinspires.ftc.teamcode.autonomous.archived;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
-import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -14,29 +13,34 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.autonomous.actions.AutonomousActionBuilder;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
+import org.firstinspires.ftc.teamcode.common.util.RunTimeoutAction;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
-import java.util.function.Supplier;
+import java.util.Arrays;
 @Disabled
-@Autonomous(name = "Red Back Autonomous", group = "Competition")
-public class RedBackAutonomousOpMode extends LinearOpMode {
+@Autonomous(name = "Red Front Autonomous", group = "Competition")
+public class RedFrontAutonomousOpMode extends LinearOpMode {
 
-    Supplier<Action>[] otherActions;
     Action[] trajectories;
+
+
 
     AutonomousActionBuilder autonomousActionBuilder;
     boolean isRedSide = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        MecanumDrive md = new MecanumDrive(hardwareMap, /*new Pose2d(new Vector2d(61, 11.5), Math.toRadians(180))*/ new Pose2d(new Vector2d(61, 11.75), Math.toRadians(-90)));
+
         Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
         //robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
+        MecanumDrive md = new MecanumDrive(hardwareMap, new Pose2d(-50.5, 50.5, Math.toRadians(-143)));
         autonomousActionBuilder = new AutonomousActionBuilder(md, robot);
 
-        trajectories = autonomousActionBuilder.getRedFarTrajectories();
+        trajectories = autonomousActionBuilder.getRedCloseTrajectories();
+
 
 
 
@@ -46,17 +50,18 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
 
         int selectedRow = 0;
         double delay = 0;
-        int play = 2;
+        int play = 1;
 
         ArrayList<String> names = new ArrayList<>();
-        names.add(0, "Third And Second Mark");
-        names.add(1, "Third Mark");
-        names.add(2, "Third Mark And Pickup Loading Zone");
-        names.add(3, "Pickup Loading Zone");
+        names.add(0, "First Mark");
+        names.add(1, "First And Second Mark");
+        names.add(2, "Second Mark And Gate And First Mark");
+        names.add(3, "12 ball, other corner pocket");
 
-        boolean thirdMark = true;
-        boolean secondMark = false;
-        boolean loadingZone = true;
+        boolean secondMarkGate = false;
+        boolean firstMark = true;
+        boolean secondMark = true;
+        boolean thirdMark = false;
 
         Gamepad currentGamepad1 = new Gamepad();
         Gamepad previousGamepad1 = new Gamepad();
@@ -64,16 +69,6 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
         Gamepad previousGamepad2 = new Gamepad();
 
         while(opModeInInit()) {
-
-            motif = robot.getLauncher().getMotifPattern(true);
-
-            if (motif == null) {
-                telemetry.addData("  Motif Pattern", "Not Detected");
-            }
-            else {
-                telemetry.addData("  Motif Pattern", motif[0].toString() + ", " + motif[1].toString() + ", " + motif[2].toString());
-            }
-
             previousGamepad1.copy(currentGamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
@@ -81,14 +76,14 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
 
             if ((currentGamepad1.dpad_down && !previousGamepad1.dpad_down) || (currentGamepad2.dpad_down && !previousGamepad2.dpad_down)) {
                 selectedRow++;
-                if (selectedRow > 4) {
+                if (selectedRow > 5) {
                     selectedRow = 0;
                 }
             }
             if ((currentGamepad1.dpad_up && !previousGamepad1.dpad_up) || (currentGamepad2.dpad_up && !previousGamepad2.dpad_up)) {
                 selectedRow--;
                 if (selectedRow < 0) {
-                    selectedRow = 4;
+                    selectedRow = 5;
                 }
             }
 
@@ -106,35 +101,45 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
                         play = 0;
                     }
                     if (play == 0) {
-                        thirdMark = true;
-                        secondMark = true;
-                        loadingZone = false;
+                        firstMark = true;
+                        secondMark = false;
+                        secondMarkGate = false;
+                        thirdMark = false;
                     }
                     if (play == 1) {
-                        thirdMark = true;
-                        secondMark = false;
-                        loadingZone = false;
+                        firstMark = true;
+                        secondMark = true;
+                        secondMarkGate = false;
+                        thirdMark = false;
                     }
                     if (play == 2) {
-                        thirdMark = true;
+                        firstMark = true;
                         secondMark = false;
-                        loadingZone = true;
+                        secondMarkGate = true;
+                        thirdMark = false;
                     }
                     if (play == 3) {
-                        thirdMark = false;
-                        secondMark = false;
-                        loadingZone = true;
+                        firstMark = true;
+                        secondMark = true;
+                        secondMarkGate = false;
+                        thirdMark = true;
                     }
                 }
 
                 else if (selectedRow == 4) {
                     secondMark = !secondMark;
+                    if (secondMark && secondMarkGate) {
+                        secondMarkGate = false;
+                    }
                 }
                 else if (selectedRow == 3) {
-                    thirdMark = !thirdMark;
+                    firstMark = !firstMark;
                 }
                 else if (selectedRow == 2) {
-                    loadingZone = !loadingZone;
+                    secondMarkGate = !secondMarkGate;
+                    if (secondMark && secondMarkGate) {
+                        secondMark = false;
+                    }
                 }
             }
 
@@ -152,39 +157,43 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
                         play = 3;
                     }
                     if (play == 0) {
-                        thirdMark = true;
-                        secondMark = true;
-                        loadingZone = false;
+                        firstMark = true;
+                        secondMark = false;
+                        secondMarkGate = false;
+                        thirdMark = false;
                     }
                     if (play == 1) {
-                        thirdMark = true;
-                        secondMark = false;
-                        loadingZone = false;
+                        firstMark = true;
+                        secondMark = true;
+                        secondMarkGate = false;
+                        thirdMark = false;
                     }
                     if (play == 2) {
-                        thirdMark = true;
+                        firstMark = true;
                         secondMark = false;
-                        loadingZone = true;
+                        secondMarkGate = true;
+                        thirdMark = false;
                     }
                     if (play == 3) {
-                        thirdMark = false;
-                        secondMark = false;
-                        loadingZone = true;
+                        firstMark = true;
+                        secondMark = true;
+                        secondMarkGate = false;
+                        thirdMark = true;
                     }
                 }
 
                 else if (selectedRow == 4) {
                     secondMark = !secondMark;
-                    if (secondMark && loadingZone) {
-                        loadingZone = false;
+                    if (secondMark && secondMarkGate) {
+                        secondMarkGate = false;
                     }
                 }
                 else if (selectedRow == 3) {
-                    thirdMark = !thirdMark;
+                    firstMark = !firstMark;
                 }
                 else if (selectedRow == 2) {
-                    loadingZone = !loadingZone;
-                    if (secondMark && loadingZone) {
+                    secondMarkGate = !secondMarkGate;
+                    if (secondMark && secondMarkGate) {
                         secondMark = false;
                     }
                 }
@@ -207,17 +216,17 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
             telemetry.addData("    Play Name", names.get(play));
 
             if (selectedRow == 2) {
-                telemetry.addData("> Pickup in loading zone after", loadingZone);
+                telemetry.addData("> Pickup Second Mark And Hit Gate", secondMarkGate);
             }
             else {
-                telemetry.addData("    Pickup in loading zone after", loadingZone);
+                telemetry.addData("    Pickup Second Mark And Hit Gate", secondMarkGate);
             }
 
             if (selectedRow == 3) {
-                telemetry.addData("> Pickup Third Mark", thirdMark);
+                telemetry.addData("> Pickup First Mark", firstMark);
             }
             else {
-                telemetry.addData("    Pickup Third Mark", thirdMark);
+                telemetry.addData("    Pickup First Mark", firstMark);
             }
 
             if (selectedRow == 4) {
@@ -227,177 +236,209 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
                 telemetry.addData("    Pickup Second Mark", secondMark);
             }
 
+            if (selectedRow == 5) {
+                telemetry.addData("> Pickup Third Mark", thirdMark);
+            }
+            else {
+                telemetry.addData("    Pickup Third Mark", thirdMark);
+            }
+
 
 
             telemetry.update();
 
 
         }
+        if (!thirdMark) {
+
+            md = new MecanumDrive(hardwareMap, !thirdMark ? new Pose2d(-50.5, 50.5, Math.toRadians(37)) : new Pose2d(-50.5, 50.5, Math.toRadians(-143)));
+            autonomousActionBuilder = new AutonomousActionBuilder(md, robot);
+
+            trajectories = autonomousActionBuilder.getRedCloseTrajectories();
+        }
 
         waitForStart();
 
         sleep((long) (delay * 1000));
 
+        //start always with PGP
 
+        // Go to the Launch Pose and april tag
 
-        //start always with G in launcher
+        if (!thirdMark) {
 
-
-
-        if (motif == null) {
-            motif = new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
-        }
-
-
-
-
-
-
-
-        // Go to the Launch Pose
-
-        Actions.runBlocking(new ParallelAction(
-            new SequentialAction(
-                new SleepAction(0.5),
-                autonomousActionBuilder.getSpinLauncherFar()
-            ),
-            trajectories[0]
-        ));
-
-        //Actions.runBlocking(launchInMotifOrder(motif));
-
-        launchInMotifOrder(motif, 0);
-
-        // Pickup third mark
-
-        if (thirdMark) {
-
-            Actions.runBlocking(new SequentialAction(
-                new ParallelAction(
-                    trajectories[1],
-                    autonomousActionBuilder.getIndexIntakeAction(0),
-                    new SequentialAction(
-                        autonomousActionBuilder.getStartIntake(),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(4),
-                        autonomousActionBuilder.getIndexIntakeAction(1),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getIndexIntakeAction(2),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
-
-                    )
-                )
+            Actions.runBlocking(new ParallelAction(
+                trajectories[0]
             ));
 
+            for (int i = 0; i < 50; i++) {
+                motif = robot.getLauncher().getMotifPattern(true);
 
+                if (motif == null) {
+                    telemetry.addData("Motif Pattern", "Not Detected");
+                } else {
+                    telemetry.addData("Motif Pattern", motif[0].toString() + ", " + motif[1].toString() + ", " + motif[2].toString());
+                }
+                telemetry.update();
+                sleep(1);
+            }
+
+            if (motif == null) {
+                motif = new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
+            }
+
+            if (motif[0] != ArtifactColor.GREEN) {
+                Actions.runBlocking(autonomousActionBuilder.getIndexOutputAction(1));
+            }
+
+            Actions.runBlocking(new ParallelAction(
+                trajectories[1],
+                autonomousActionBuilder.getSpinLauncherClose()
+            ));
 
             launchInMotifOrder(motif, 0);
         }
+        else {
+            Actions.runBlocking(new ParallelAction(
+                trajectories[6],
+                autonomousActionBuilder.getSpinLauncherClose()
+            ));
+            launchInMotifOrder(new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE}, 0);
 
-        if (secondMark) {
+            RunTimeoutAction aprilTagAction = (RunTimeoutAction) autonomousActionBuilder.getAprilTagAction();
+
+            Actions.runBlocking(new ParallelAction(
+                trajectories[7],
+                aprilTagAction
+            ));
+
+            motif = ((Launcher.AprilTagAction) aprilTagAction.getAction()).getPattern();
+
+            if (motif != null) {
+
+                telemetry.addData("motif", Arrays.toString(motif));
+                telemetry.update();
+            }
+            else {
+                telemetry.addData("motif", "not detected");
+                telemetry.update();
+            }
+        }
+
+        if (motif==null) {
+            motif = new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+        }
+
+        if (secondMarkGate) {
+            Actions.runBlocking(
+                new ParallelAction(
+                    trajectories[5],
+                    autonomousActionBuilder.getIndexIntakeAction(0),
+                    new SequentialAction(
+                        new SleepAction(0.5),
+                        autonomousActionBuilder.getStartIntake(),
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(4),
+                        autonomousActionBuilder.getIndexIntakeAction(1),
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.2),
+                        autonomousActionBuilder.getIndexIntakeAction(2),
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.2),
+                        autonomousActionBuilder.getSpinLauncherClose(),
+                        autonomousActionBuilder.getStopIntake()
+                    )
+            ));
+
+            launchInMotifOrder(motif, 1);
+        }
+
+        if (firstMark) {
+
+            // Pickup first mark
 
             Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
                     trajectories[2],
                     autonomousActionBuilder.getIndexIntakeAction(0),
                     new SequentialAction(
+                        new SleepAction(0.5),
                         autonomousActionBuilder.getStartIntake(),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(4),
                         autonomousActionBuilder.getIndexIntakeAction(1),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.2),
                         autonomousActionBuilder.getIndexIntakeAction(2),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.2),
+                        autonomousActionBuilder.getSpinLauncherClose(),
+                        autonomousActionBuilder.getStopIntake()
                     )
                 )
             ));
 
+            //Actions.runBlocking(trajectories[1]);
+
+            launchInMotifOrder(motif, 2);
+        }
+
+        if (secondMark) {
+
+            // Pickup second mark
+
+            Actions.runBlocking(new SequentialAction(
+                new ParallelAction(
+                    trajectories[3],
+                    autonomousActionBuilder.getIndexIntakeAction(0),
+                    new SequentialAction(
+                        new SleepAction(0.5),
+                        autonomousActionBuilder.getStartIntake(),
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(4),
+                        autonomousActionBuilder.getIndexIntakeAction(1),
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.2),
+                        autonomousActionBuilder.getIndexIntakeAction(2),
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.2),
+                        autonomousActionBuilder.getSpinLauncherClose(),
+                        autonomousActionBuilder.getStopIntake()
+                    )
+                )
+            ));
+
+            //Actions.runBlocking(trajectories[1]);
 
             launchInMotifOrder(motif, 1);
-
         }
 
+        if (thirdMark) {
 
-        if (loadingZone) {
+            // Pickup third mark
 
             Actions.runBlocking(new SequentialAction(
                 new ParallelAction(
-                    autonomousActionBuilder.getRedFarPickupLoadingZone(),
-                    autonomousActionBuilder.getIndexIntakeAction(0),
-                    new SequentialAction(
-                        autonomousActionBuilder.getStartIntake(),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(4),
-                        autonomousActionBuilder.getIndexIntakeAction(1),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getIndexIntakeAction(2),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
-                    )
-                )
-            ));
-
-
-            launchInMotifOrder(new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE}, 0);
-
-        }
-
-        if (loadingZone && !(thirdMark || secondMark)) {
-
-            Actions.runBlocking(new SequentialAction(
-                new ParallelAction(
-                    autonomousActionBuilder.getRedFarPickupLoadingZone(),
+                    trajectories[8],
                     autonomousActionBuilder.getIndexIntakeAction(0),
                     new SequentialAction(
                         new SleepAction(0.5),
                         autonomousActionBuilder.getStartIntake(),
                         autonomousActionBuilder.getWaitUntilBallInIndexer(4),
                         autonomousActionBuilder.getIndexIntakeAction(1),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.2),
                         autonomousActionBuilder.getIndexIntakeAction(2),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
+                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.2),
+                        autonomousActionBuilder.getSpinLauncherClose(),
+                        autonomousActionBuilder.getStopIntake()
                     )
                 )
             ));
 
-            launchInMotifOrder(new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE}, 0);
-        }
+            //Actions.runBlocking(trajectories[1]);
 
-        if (loadingZone && !(thirdMark || secondMark)) {
 
-            Actions.runBlocking(new SequentialAction(
-                new ParallelAction(
-                    autonomousActionBuilder.getRedFarPickupLoadingZoneLeave(),
-                    autonomousActionBuilder.getIndexIntakeAction(0),
-                    new SequentialAction(
-                        new SleepAction(0.5),
-                        autonomousActionBuilder.getStartIntake(),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(4),
-                        autonomousActionBuilder.getIndexIntakeAction(1),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getIndexIntakeAction(2),
-                        autonomousActionBuilder.getWaitUntilBallInIndexer(1.5),
-                        autonomousActionBuilder.getStopIntake(),
-                        autonomousActionBuilder.getSpinLauncherFar()
-                    )
-                )
-            ));
 
-            launchInMotifOrder(new ArtifactColor[] {ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE}, 0);
+            launchInMotifOrder(motif, 0);
         }
 
         // LEave
 
         Actions.runBlocking(new ParallelAction(
-            trajectories[4]
+            trajectories[4],
+            autonomousActionBuilder.getStopLauncher()
         ));
-
-
-
     }
 
     public void launchInMotifOrder(ArtifactColor[] motifPattern, int greenLocation) {
