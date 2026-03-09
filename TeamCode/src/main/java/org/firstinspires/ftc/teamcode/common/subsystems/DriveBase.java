@@ -76,7 +76,8 @@ public class DriveBase {
 
         // Configure the sensor
         configurePinpoint();
-        pinpoint.update();
+        // TODO will defer to the single pinpoint.update below.
+        // pinpoint.update();
 
         //read the pose value from autonomous or initialized it at start up location
         Pose2D startPose2D;
@@ -108,7 +109,6 @@ public class DriveBase {
 
     public void configurePinpoint() {
 
-        // TODO TESTING Orientation may be wrong.
         pinpoint.setOffsets(8, -3.25, DistanceUnit.INCH); //Tuned for 2026 Bot2 17Feb26 OK
 
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
@@ -121,7 +121,7 @@ public class DriveBase {
     }
 
     public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
-//        RobotLog.d("pinpoint heading1 %.2f", pinpoint.getHeading(AngleUnit.DEGREES));
+        RobotLog.d("pinpoint heading1 %.2f", pinpoint.getHeading(AngleUnit.RADIANS));
 //        telemetry.addData("X", pinpoint.getPosX(DistanceUnit.INCH));
 //        telemetry.addData("y", pinpoint.getPosY(DistanceUnit.INCH));
         pinpoint.update();
@@ -164,9 +164,9 @@ public class DriveBase {
         backLeftMotor.setPower(backLeftPower);
         frontRightMotor.setPower(frontRightPower);
         backRightMotor.setPower(backRightPower);
-        telemetry.addData("Pinpoint", "Heading %.2f, Pos %.2f", heading, pos.getX(DistanceUnit.MM));
+        telemetry.addData("Pinpoint", "Heading %.2f, PosX,Y %.2f,%.2f", heading, pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM));
         telemetry.addData("fieldCentric", fieldCentric);
-        telemetry.addData("powers", "front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f", frontLeftPower * speed * 100, frontRightPower * speed * 100, backLeftPower * speed * 100, backRightPower * speed * 100);
+        // telemetry.addData("powers", "front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f", frontLeftPower * speed * 100, frontRightPower * speed * 100, backLeftPower * speed * 100, backRightPower * speed * 100);
     }
 
     public void setIndividualMotorPowers(double frontLeftPower, double frontRightPower, double backRightPower, double backLeftPower) {
@@ -210,4 +210,13 @@ public class DriveBase {
         return pinpoint.getHeading(AngleUnit.RADIANS);
     }
 
+    public Pose2D getPinPointPose() { return pinpoint.getPosition();}
+
+    public boolean reinitializePinpoint() {
+        while (!pinpoint.initialize()) {
+            RobotLog.d("pinpoint re-init: looping");
+            sleep(300);
+        }
+        return true;
+    }
 }
