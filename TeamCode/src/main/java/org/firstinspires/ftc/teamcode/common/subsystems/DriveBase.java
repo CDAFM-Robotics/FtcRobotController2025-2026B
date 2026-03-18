@@ -15,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 
@@ -35,6 +36,8 @@ public class DriveBase {
     // private IMU imu;
 
     GoBildaPinpointDriver pinpoint;
+    private GoBildaPinpointDriver.DeviceStatus lastStatus;
+
     private Pose2D pos;
     private boolean isRedSide;
 
@@ -87,6 +90,8 @@ public class DriveBase {
         // if the auto completed, use the value from end of auto
         if (RobotStaticValuesClass.autoCompleted) {
             startPose2D = RobotStaticValuesClass.savedPose;
+            // TODO temp fix invalidate the static data (next run must be start at zero)
+            RobotStaticValuesClass.autoCompleted = false;
         }
         else if (isRed) {
             startPose2D = new Pose2D(DistanceUnit.INCH, 63, 12, AngleUnit.RADIANS, -3.14);
@@ -113,6 +118,14 @@ public class DriveBase {
         resetPinpointIMU();
     }
 
+    public void recalibratePinpoint() {
+        pinpoint.recalibrateIMU();
+    }
+
+    public void setPinpointYScalar(double val) {
+        pinpoint.setYawScalar(val);
+    }
+
     public void resetPinpointIMU() {
         pinpoint.resetPosAndIMU();
     }
@@ -130,12 +143,34 @@ public class DriveBase {
         sleep(300);
     }
 
-    public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
-//        debugManager.pinpoint("pinpoint heading1 %.2f", pinpoint.getHeading(AngleUnit.RADIANS));
-//        debugManager.pinpoint("X", pinpoint.getPosX(DistanceUnit.INCH));
-//        debugManager.pinpoint("y", pinpoint.getPosY(DistanceUnit.INCH));
-        pinpoint.update();
+    public void updateSafePinpoint()
+    {
+//        telemetry.addData("X", pinpoint.getPosX(DistanceUnit.INCH));
+//        telemetry.addData("y", pinpoint.getPosY(DistanceUnit.INCH));
+
+        try {
+            pinpoint.update();
+            lastStatus = pinpoint.getDeviceStatus();
+        }
+        catch (Exception e) {
+            RobotLog.e("PINPOINT ERROR DURING UPDATE", e.getMessage());
+            RobotLog.d("pinpoint status: %s", pinpoint.getDeviceStatus());
+        }
+
+        if (Math.abs(1.0 - pinpoint.getYawScalar()) > 0.1 )
+        {
+            // TODO Pinpoint driver issue.  reset Yaw Scalar to good value and REload the lastgood heading
+            pinpoint.setYawScalar(1.00333595); // initial Factory Yaw Scalar for Pinpoint from Bot1
+        }
         pos = pinpoint.getPosition();
+        RobotLog.d("pinpoint heading1 %.2f, yawScalar: %.8f, lastStatus: %s", pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getYawScalar(), lastStatus);
+
+
+    }
+    public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
+
+        // TODO pinpoint update moved out
+        updateSafePinpoint();
 
         double heading = 0;
         double driverOffset;
@@ -240,11 +275,5 @@ public class DriveBase {
 
     public Pose2D getPinPointPose() { return pinpoint.getPosition();}
 
-    public boolean reinitializePinpoint() {
-        while (!pinpoint.initialize()) {
-            debugManager.log("pinpoint re-init: looping");
-            sleep(300);
-        }
-        return true;
-    }
+
 }

@@ -64,11 +64,12 @@ public class Launcher {
     CRServo launcherServo;
     AnalogInput launcherAnalogInput;
 
-    private Limelight3A limelight;
+    public Limelight3A limelight;
 
     public void setLimelightPipeline(int ordinal) {
         limelight.pipelineSwitch(ordinal);
     }
+    public Limelight3A getLimeiight() { return this.limelight; }
 
     public double getCurrentAngleOffset() {
         return currentAngleOffset;
@@ -390,6 +391,9 @@ public class Launcher {
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
+
+        // TODO faster poll speed for localization
+        limelight.setPollRateHz(50);
 
         limelight.start();
 

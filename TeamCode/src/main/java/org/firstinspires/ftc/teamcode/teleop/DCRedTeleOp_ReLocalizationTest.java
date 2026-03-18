@@ -73,13 +73,15 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
 
 
         // TODO localization pipeline test
-        Limelight3A limelight;
+        // Limelight3A limelight;
 
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        // limelight = hardwareMap.get(Limelight3A.class, "limelight");
         // polling rate 100 hz? 50hz maps to loop time (25ms)
-        limelight.setPollRateHz(50); // This sets how often we ask Limelight for data (50 times per second)
-        limelight.start();
-        limelight.pipelineSwitch(Robot.LLPipelines.APRIL_TAG.ordinal()); // set Pipeline 3 for April Tags (all)
+        // limelight.setPollRateHz(50); // This sets how often we ask Limelight for data (50 times per second)
+        // limelight.start();
+
+        // limelight.pipelineSwitch(Robot.LLPipelines.APRIL_TAG.ordinal()); // set Pipeline 3 for April Tags (all)
+        robot.getLauncher().setLimelightPipeline((Robot.LLPipelines.APRIL_TAG.ordinal()));
 
 
         hud = new Hud(hardwareMap, telemetry);
@@ -91,9 +93,9 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
         while (opModeIsActive()){
 
             // TODO LOCALIZATION UPDATE TEST
-            limelight.updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
+            robot.getLauncher().getLimeiight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
 
-            result = limelight.getLatestResult();
+            result = robot.getLauncher().getLimeiight().getLatestResult();
             if (result != null && result.isValid()) {
                 botpose_mt2 = result.getBotpose_MT2();
                 if (botpose_mt2 != null) {
@@ -136,7 +138,11 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
             // since we are keeping the heading from autonomous
             if (currentGamepad1.start && !previousGamepad1.start){
                 // robot.getDriveBase().resetIMU();
-                RobotLog.d("reinit pinpoint %s", robot.getDriveBase().reinitializePinpoint());
+                // RobotLog.d("reinit pinpoint %s", robot.getDriveBase().reinitializePinpoint());
+                // robot.getDriveBase().recalibratePinpoint();
+                // robot.getDriveBase().resetIMU();
+                robot.getDriveBase().setPinpointYScalar(1.0);
+                sleep(500);
                 gamepad1.rumble(300);
             }
 
