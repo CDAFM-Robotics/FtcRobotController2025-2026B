@@ -16,11 +16,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
+import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 
 public class DriveBase {
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
+    private final DebugManager debugManager;
 
     private DcMotor frontLeftMotor = null;
     private DcMotor frontRightMotor = null;
@@ -40,6 +42,7 @@ public class DriveBase {
     public DriveBase(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
+        debugManager = new DebugManager(telemetry, "DRIVE");
         isRedSide = isRed;
 
         initializeDriveBaseDevices(isRed);
@@ -95,7 +98,14 @@ public class DriveBase {
         // Set the location of the robot - this should be the place you are starting the robot from
         pinpoint.setPosition(startPose2D);
         pinpoint.update();
-        RobotLog.d("Pos x: %.2f, y: %2f, heading: %.2f", startPose2D.getX(DistanceUnit.INCH), startPose2D.getY(DistanceUnit.INCH), startPose2D.getHeading(AngleUnit.RADIANS));
+        debugManager.addData("DriveBase Pos x, y, heading", "%.2f, %.2f, %.2f",
+            startPose2D.getX(DistanceUnit.INCH),
+            startPose2D.getY(DistanceUnit.INCH),
+            startPose2D.getHeading(AngleUnit.RADIANS));
+        debugManager.log("Pos x: %.2f, y: %2f, heading: %.2f",
+            startPose2D.getX(DistanceUnit.INCH),
+            startPose2D.getY(DistanceUnit.INCH),
+            startPose2D.getHeading(AngleUnit.RADIANS));
 
     }
 
@@ -121,9 +131,9 @@ public class DriveBase {
     }
 
     public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
-        RobotLog.d("pinpoint heading1 %.2f", pinpoint.getHeading(AngleUnit.RADIANS));
-//        telemetry.addData("X", pinpoint.getPosX(DistanceUnit.INCH));
-//        telemetry.addData("y", pinpoint.getPosY(DistanceUnit.INCH));
+//        debugManager.pinpoint("pinpoint heading1 %.2f", pinpoint.getHeading(AngleUnit.RADIANS));
+//        debugManager.pinpoint("X", pinpoint.getPosX(DistanceUnit.INCH));
+//        debugManager.pinpoint("y", pinpoint.getPosY(DistanceUnit.INCH));
         pinpoint.update();
         pos = pinpoint.getPosition();
 
@@ -164,9 +174,27 @@ public class DriveBase {
         backLeftMotor.setPower(backLeftPower);
         frontRightMotor.setPower(frontRightPower);
         backRightMotor.setPower(backRightPower);
-        telemetry.addData("Pinpoint", "Heading %.2f, PosX,Y %.2f,%.2f", heading, pos.getX(DistanceUnit.MM), pos.getY(DistanceUnit.MM));
-        telemetry.addData("fieldCentric", fieldCentric);
-        // telemetry.addData("powers", "front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f", frontLeftPower * speed * 100, frontRightPower * speed * 100, backLeftPower * speed * 100, backRightPower * speed * 100);
+
+        debugManager.addData("DrvieBase", " Heading %.2f, PosX,Y %.2f,%.2f",
+            heading,
+            pos.getX(DistanceUnit.MM),
+            pos.getY(DistanceUnit.MM));
+        debugManager.addData("DrvieBase fieldCentric", "%s", fieldCentric);
+        debugManager.addData("DrvieBase powers", "front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f",
+            frontLeftPower * speed * 100,
+            frontRightPower * speed * 100,
+            backLeftPower * speed * 100,
+            backRightPower * speed * 100);
+        debugManager.log("Heading %.2f, PosX,Y %.2f,%.2f",
+            heading,
+            pos.getX(DistanceUnit.MM),
+            pos.getY(DistanceUnit.MM));
+        debugManager.log("fieldCentric", fieldCentric);
+        debugManager.log("powers front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f",
+            frontLeftPower * speed * 100,
+            frontRightPower * speed * 100,
+            backLeftPower * speed * 100,
+            backRightPower * speed * 100);
     }
 
     public void setIndividualMotorPowers(double frontLeftPower, double frontRightPower, double backRightPower, double backLeftPower) {
@@ -214,7 +242,7 @@ public class DriveBase {
 
     public boolean reinitializePinpoint() {
         while (!pinpoint.initialize()) {
-            RobotLog.d("pinpoint re-init: looping");
+            debugManager.log("pinpoint re-init: looping");
             sleep(300);
         }
         return true;
