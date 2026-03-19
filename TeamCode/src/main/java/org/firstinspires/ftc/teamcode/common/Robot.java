@@ -188,17 +188,24 @@ public class Robot {
     }
 
      // Auto-Indexing for intake
-     public void intakeWithIndexerTurn(){
+    public void intakeWithIndexerTurn(){
          debugManager.robot("intakeWithIndexerTurn", "%s",autoIntakeState);
 
          switch (autoIntakeState) {
              case INIT:
-                 RobotLog.d("intakeWithIndexerTurn: INIT)");
+                 debugManager.log("intakeWithIndexerTurn: INIT)");
                  if (indexer.checkEmptySlot()) {
-                     debugManager.robot("Robot: found empty slot", "");
+                     debugManager.robot("Robot: found empty slot");
                      debugManager.log("RRobot: found empty slot");
-                     autoIntakeState = AutoIntakeStates.TURN_EMPTY_SLOT_TO_INTAKE;
-                     break;
+                     if(indexer.turnEmptySlotToIntake()) {
+                         intake.stopIntake();
+                         autoIntakeState = AutoIntakeStates.TURN_EMPTY_SLOT_TO_INTAKE;
+                         break;
+                     }
+                     else {
+                         autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
+                         break;
+                     }
                  } else {
                      //No empty slot
                      // - update color double check
@@ -208,28 +215,22 @@ public class Robot {
                      break;
                  }
              case TURN_EMPTY_SLOT_TO_INTAKE:
-                 RobotLog.d("intakeWithIndexerTurn: TURN_EMPTY_SLOT_TO_INTAKE)");
-                 indexer.turnEmptySlotToIntake();
-                 timeSinceIndex.reset();
-                 autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
+                 debugManager.log("Robot: TURN_EMPTY_SLOT_TO_INTAKE");
+                 if (indexer.indexerFinishedTurning()) {
+                     debugManager.robot("Robot: indexerFinishedTurning");
+                     intake.startIntake();
+                     autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
+                 }
                  break;
              case WAIT_FOR_BALL:
-                 debugManager.robot("Robot: WAIT_FOR_BALL", "");
                  debugManager.log("Robot: WAIT_FOR_BALLt");
-                 if (indexer.indexerFinishedTurning()) {
-                     // debugManager.robot("Robot: indexerFinishedTurning");
-                     // removed to make intake faster
-                     //indexer.updateColorAllSlots();
-                     debugManager.log("Robot: indexerFinishedTurning");
-                     if (indexer.isBallAtIntakeFast()) {
-                         // debugManager.robot("Robot: isBallAtIntake");
+
+                 if (indexer.isBallAtIntakeFast()) {
                          debugManager.log("Robot: isBallAtIntake");
                          intake1Ball = true;
-                         //Reading color in isBallAtIntake. No need to read here anymore
-                         indexer.updateColorAtIntakeOnly();
+                         intake.stopIntake();
                          autoIntakeState = AutoIntakeStates.INIT;
                          break;
-                     }
                  }
                  break;
              default:

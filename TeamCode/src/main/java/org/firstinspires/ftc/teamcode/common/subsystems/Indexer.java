@@ -204,7 +204,7 @@ public class Indexer {
     public boolean indexerFinishedTurning() {
         debugManager.spindexer("indexerFinishedTurning start", targetIndexerPosition);
         //TODO: 0.02 is used to start with. Is 0.02 the best value to use here?
-        if (getIndexerServoAtPosition(targetIndexerPosition, 0.02)) {
+        if (getIndexerServoAtPosition(targetIndexerPosition, 0.03)) {
             return true;
         }
         else {
@@ -603,7 +603,7 @@ public class Indexer {
         debugManager.spindexer("checkEmptySlot", "%.2f", position);
         debugManager.log("checkEmptySlot %.3f", position);
 
-        if (position >= POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
+        if (position >= POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT) {
             if (artifactColorArray[0] == ArtifactColor.NONE) {
                 nextEmptySlot = 0;
                 debugManager.log("checkEmptySlot %d", nextEmptySlot);
@@ -631,7 +631,7 @@ public class Indexer {
                 debugManager.log("checkEmptySlot %d", nextEmptySlot);
                 return true;
             }
-        } else if (position >= POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
+        } else {
             if (artifactColorArray[2] == ArtifactColor.NONE) {
                 nextEmptySlot = 2;
                 debugManager.log("checkEmptySlot %d", nextEmptySlot);
@@ -658,7 +658,7 @@ public class Indexer {
         artifactColorArray[2] = ArtifactColor.PURPLE;
     }
 
-    public Boolean turnEmptySlotToIntake() {
+    public boolean turnEmptySlotToIntake() {
         debugManager.spindexer("turnEmptySlotToIntake", "%d", nextEmptySlot);
         debugManager.log("RRobot: turnEmptySlotToIntake %s", nextEmptySlot);
         double position = getIndexerPosition();
@@ -937,34 +937,25 @@ public class Indexer {
 
     // Check to see if there is any ball by distance sensing
     public boolean isBallAtIntakeFast() {
-
         double dis1 = ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM);
         double dis2 = ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM);
-        //NormalizedRGBA colorSensorNormalizedColors1 = colorSensorIntakeL.getNormalizedColors();;
-        //NormalizedRGBA colorSensorNormalizedColors2 = colorSensorIntakeR.getNormalizedColors();;
         double position = getIndexerPosition();
         debugManager.spindexer("isBallAtIntake colorSensorIntakeL", "%.2f", dis1);
         debugManager.spindexer("isBallAtIntake colorSensorIntakeR", "%.2f", dis2);
-        //debugManager.log("intake ball at %.2f, %.2f %.2f %.2f", dis1, dis2, colorSensorNormalizedColors1.alpha, colorSensorNormalizedColors2.alpha);
+        debugManager.log("intake ball at %.2f, %.2f", dis1, dis2);
 
-        if ((dis1 < 2 || dis2 < 2) /*&& (colorSensorNormalizedColors1.alpha > 0.75 || colorSensorNormalizedColors2.alpha > 0.75)*/) {
-            /*if (colorSensorNormalizedColors1.blue > colorSensorNormalizedColors1.green) {*/
+        if (dis1 < 3.5 || dis2 < 3.5) {
                 if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE)
                     artifactColorArray[0] = ArtifactColor.UNKNOWN;
                 else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE)
                     artifactColorArray[1] = ArtifactColor.UNKNOWN;
                 else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
                     artifactColorArray[2] = ArtifactColor.UNKNOWN;
-            /*}
-            else {
-                if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE)
-                    artifactColorArray[0] = ArtifactColor.GREEN;
-                else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE)
-                    artifactColorArray[1] = ArtifactColor.GREEN;
-                else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
-                    artifactColorArray[2] = ArtifactColor.GREEN;
-            }*/
-            //RobotLog.d("intake ball at %.2f color %s %s %s", position, artifactColorArray[0],artifactColorArray[1], artifactColorArray[2]);
+           debugManager.log("intake ball at %.2f color %s %s %s",
+               position,
+               artifactColorArray[0],
+               artifactColorArray[1],
+               artifactColorArray[2]);
             return true;
         } else {
             return false;

@@ -48,14 +48,18 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // One line to set up — pass your telemetry and a tag name
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
-        debugManager.LOG_DRIVEBASE  = true;
-        debugManager.LOG_PINPOINT   = true;
-        debugManager.LOG_VISION     = true;
-        debugManager.LOG_LAUNCHER   = true;
-        debugManager.LOG_SPINDEXER  = true;
-        debugManager.LOG_INTAKE     = true;
-        debugManager.LOG_HUD        = true;
-        debugManager.LOG_ROBOT      = true;
+        // ─── Master switches ───────────────────────────────────────────
+        debugManager.TELEMETRY_ENABLED = false;
+        debugManager.ROBOT_LOG_ENABLED = false;
+
+        debugManager.LOG_DRIVEBASE  = false;
+        debugManager.LOG_PINPOINT   = false;
+        debugManager.LOG_VISION     = false;
+        debugManager.LOG_LAUNCHER   = false;
+        debugManager.LOG_SPINDEXER  = false;
+        debugManager.LOG_INTAKE     = false;
+        debugManager.LOG_HUD        = false;
+        debugManager.LOG_ROBOT      = false;
         // ───────────────────────────────────────────────────────────
         debugManager.addData("Red side", "%s", isRedSide);
 
@@ -126,13 +130,13 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             // Intake Balls. Add isSafeToStop()
             if (currentGamepad1.right_trigger != 0.0
                 && robot.isSafeToStopOuttake()) {
-                //telemetry.addLine("gameped 1 right trigger");
+                // telemetry.addLine("gamepad 1 right trigger");
                 // Robot entering intake state
                 if (robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
                     robot.setRobotState(Robot.RobotInOutStates.INTAKE);
                     //reset intake state
                     robot.setAutoIntakeState(Robot.AutoIntakeStates.INIT);
-                    //start the intake rolling
+                    //move intake control into the robot class
                     robot.getIntake().startIntake();
                 }
                 //turn the indexer for intake
