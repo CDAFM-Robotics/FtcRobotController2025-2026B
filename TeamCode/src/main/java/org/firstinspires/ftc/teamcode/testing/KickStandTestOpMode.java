@@ -1,18 +1,10 @@
-package org.firstinspires.ftc.teamcode.testing.archived;
+package org.firstinspires.ftc.teamcode.testing;
 
-import com.acmerobotics.roadrunner.Pose2d;
-import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.autonomous.actions.AutonomousActionBuilder;
 import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 @TeleOp(name = "KickStand Test", group = "Testing")
 public class KickStandTestOpMode extends LinearOpMode {

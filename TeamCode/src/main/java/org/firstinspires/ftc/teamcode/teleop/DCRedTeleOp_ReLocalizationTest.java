@@ -161,10 +161,10 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
                 && robot.isSafeToStopOuttake()) {
                 //telemetry.addLine("gameped 1 right trigger");
                 // Robot entering intake state
-                if (robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
-                    robot.setRobotState(Robot.RobotInOutStates.INTAKE);
+                if (robot.getRobotInOutState() != Robot.RobotInOutState.INTAKE) {
+                    robot.setRobotState(Robot.RobotInOutState.INTAKE);
                     //reset intake state
-                    robot.setAutoIntakeState(Robot.AutoIntakeStates.INIT);
+                    robot.setAutoIntakeState(Robot.AutoIntakeState.INIT);
                     //start the intake rolling
                     robot.getIntake().startIntake();
                 }
@@ -176,7 +176,7 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
                 //robot update artifact colors
                 robot.getIntake().stopIntake();
                 //TODO: reverse intake for 500 milliseconds if there are three ball already
-                robot.setRobotState(Robot.RobotInOutStates.IDLE);
+                robot.setRobotState(Robot.RobotInOutState.IDLE);
             }
 
             if (currentGamepad1.left_trigger != 0) {
@@ -253,16 +253,16 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
                 || currentGamepad2.left_trigger != 0
                 || currentGamepad2.right_bumper
                 || currentGamepad2.left_bumper)
-                && robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE
-                && robot.getRobotInOutState() != Robot.RobotInOutStates.OUTTAKE) {
-                    robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
+                && robot.getRobotInOutState() != Robot.RobotInOutState.INTAKE
+                && robot.getRobotInOutState() != Robot.RobotInOutState.OUTTAKE) {
+                    robot.setRobotState(Robot.RobotInOutState.OUTTAKE);
             }
 
             if ((currentGamepad2.right_trigger != 0
                 || currentGamepad2.left_trigger != 0
                 || currentGamepad2.right_bumper
                 || currentGamepad2.left_bumper)
-                && robot.getRobotInOutState() == Robot.RobotInOutStates.OUTTAKE) {
+                && robot.getRobotInOutState() == Robot.RobotInOutState.OUTTAKE) {
                 robot.shootAllBalls();
             }
 
@@ -279,8 +279,8 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
                 || !currentGamepad2.right_bumper
                 || !currentGamepad2.left_bumper)
                 && robot.isSafeToStopOuttake()) {
-                if (robot.getRobotInOutState() == Robot.RobotInOutStates.OUTTAKE) {
-                    robot.setRobotState(Robot.RobotInOutStates.IDLE);
+                if (robot.getRobotInOutState() == Robot.RobotInOutState.OUTTAKE) {
+                    robot.setRobotState(Robot.RobotInOutState.IDLE);
                 }
             }
 

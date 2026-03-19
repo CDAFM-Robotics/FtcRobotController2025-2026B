@@ -48,9 +48,9 @@ public class Indexer {
 
     public ArtifactColor[] artifactColorArray = new ArtifactColor[]{ArtifactColor.NONE, ArtifactColor.NONE, ArtifactColor.NONE};
 
-    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.188; //0.176
-    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.944; //0.938
-    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.566; //0.555
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.177; //0.176
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.934; //0.938
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.55955; //0.555
     public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.757; //0.746
     public static final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.380; // 0.365
     public static final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.00; //0.0
@@ -928,7 +928,7 @@ public class Indexer {
                 else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
                     artifactColorArray[2] = ArtifactColor.GREEN;
             }
-            RobotLog.d("intake ball at %.2f color %s %s %s", position, artifactColorArray[0],artifactColorArray[1], artifactColorArray[2]);
+            //todo RobotLog.d("intake ball at %.2f color %s %s %s", position, artifactColorArray[0],artifactColorArray[1], artifactColorArray[2]);
             return true;
         } else {
             return false;

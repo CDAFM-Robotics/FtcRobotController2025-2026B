@@ -54,6 +54,7 @@ public class Launcher {
     double launcherVelocity;
     double hoodPosition;
     double kickerPosition;
+    DcMotorEx elevatorMotor;
 
     public Servo kickerServo;
     CRServo turretServo;
@@ -83,23 +84,23 @@ public class Launcher {
 
     double lastServoPosition;
 
-    public final double POSITION_KICKER_SERVO_KICK_BALL = 0.06; // 0.16; // 0.26 reset due to kicker swap
-    public final double POSITION_KICKER_SERVO_INIT = 0.50; // 0.51; reset due to kicker swap (probably clock error on servo horn)
-    public final double POSITION_TUREET_SERVO_INIT = 0.5;
+    public static final double POSITION_KICKER_SERVO_KICK_BALL = 0.06; // 0.16; // 0.26 reset due to kicker swap
+    public static final double POSITION_KICKER_SERVO_INIT = 0.50; // 0.51; reset due to kicker swap (probably clock error on servo horn)
+    public static final double POSITION_TUREET_SERVO_INIT = 0.5;
 
     // Hood Servo
-    public final double POSITION_HOOD_SERVO_INIT = 0.1;
-    public final double POSITION_HOOD_SERVO_HIGH = 0.1;
-    public final double POSITION_HOOD_SERVO_LOW = 1.0;
+    public static final double POSITION_HOOD_SERVO_INIT = 0.1;
+    public static final double POSITION_HOOD_SERVO_HIGH = 0.1;
+    public static final double POSITION_HOOD_SERVO_LOW = 1.0;
 
-    public final double LAUNCH_POWER_FAR = 0.9;
-    public final double LAUNCH_POWER_NEAR= 0.8;
-    public final double LAUNCH_POWER_FULL= 1.0;
-    public final double LAUNCH_POWER_LOW=0.3;   // TODO find lowest valuable power and set this
-    public final double LAUNCH_VELOCITY_FAR = 2200; // was: 6000 (wrong, 2200tps/28ppr*60 rpm 4714 rpm )
-    public final double LAUNCH_VELOCITY_NEAR= 1300;
-    public final double LAUNCH_VELOCITY_FULL= 2200;
-    public final double LAUNCH_VELOCITY_LOW= 1060;   // TODO find lowest valuable power and set this
+    public static final double LAUNCH_POWER_FAR = 0.9;
+    public static final double LAUNCH_POWER_NEAR= 0.8;
+    public static final double LAUNCH_POWER_FULL= 1.0;
+    public static final double LAUNCH_POWER_LOW=0.3;   // TODO find lowest valuable power and set this
+    public static final double LAUNCH_VELOCITY_FAR = 2200; // was: 6000 (wrong, 2200tps/28ppr*60 rpm 4714 rpm )
+    public static final double LAUNCH_VELOCITY_NEAR= 1300;
+    public static final double LAUNCH_VELOCITY_FULL= 2200;
+    public static final double LAUNCH_VELOCITY_LOW= 1060;   // TODO find lowest valuable power and set this
 
 
     //rotate autoaim PID Constants
@@ -355,6 +356,18 @@ public class Launcher {
         debugManager.launcher("Last Servo Angle Raw", "%.2f", lastAngle);
         debugManager.launcher("Actual Servo Angle", "%.2f", actualAngle);
 
+        elevatorMotor = hardwareMap.get(DcMotorEx.class, "elevatorMotor");
+
+        elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        elevatorMotor.setTargetPosition(0);
+        elevatorMotor.setPower(1);
+
+        elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
         lastAngle = currentAngle;
         lastVoltage = currentVoltage;
 
@@ -464,17 +477,44 @@ public class Launcher {
 
     private boolean launcherActive = false;
 
+    @Deprecated
     public void kickBall() {
         RobotLog.d("kickball");
         if (isLauncherActive()) {
             kickerServo.setPosition(POSITION_KICKER_SERVO_KICK_BALL);
         }
     }
-
+    @Deprecated
     public void resetKicker() {
         RobotLog.d("reset kicker");
         kickerServo.setPosition(POSITION_KICKER_SERVO_INIT);
     }
+
+    boolean runElevator = false;
+    double elevatorTarget = 0;
+
+    double ticksPerElevate = 78.4;
+
+
+    public void elevateBall() {
+        runElevator = true;
+        elevatorTarget += 78.4 * 4;
+        elevatorMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void updateElevator() {
+        if (runElevator) {
+            elevatorMotor.setPower(1);
+            if (elevatorMotor.getCurrentPosition() >= elevatorTarget) {
+                runElevator = false;
+                elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+        }
+        else {
+            elevatorMotor.setTargetPosition((int) Math.round(elevatorTarget));
+        }
+    }
+
 
     public double getKickerPosition() {
         return (double) Math.round(kickerServo.getPosition()*100)/100;
@@ -703,6 +743,10 @@ public class Launcher {
         return kickerServo.getPosition();
     }
 
+    public void setKickerServoPosition(double position) {
+        kickerServo.setPosition(position);
+    }
+
 
     //For launch motor coefficients testing only
     public void setLaunchMotorPIDFCoefficients() {
@@ -857,5 +901,9 @@ public class Launcher {
 
     public void setShootingDistance(double distanceToGoal) {
         shootingDistance = distanceToGoal;
+
+
     }
+
+
 }

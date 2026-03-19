@@ -30,6 +30,9 @@ public class Robot {
 
     private ElapsedTime timeSinceIndex = new ElapsedTime();
     private ElapsedTime timeSinceKick = new ElapsedTime();
+
+    private ElapsedTime timeSinceElevate = new ElapsedTime();
+
     private ElapsedTime timeSinceKickReset  = new ElapsedTime();
     private ElapsedTime reverseIntakeTimer  = new ElapsedTime();
 
@@ -62,6 +65,8 @@ public class Robot {
     public static int WAIT_TIME_KICKER_UP = 180; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
     public static int WAIT_TIME_KICKER_DOWN = 80; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
 
+    public static final long WAIT_TIME_ELEVATOR = 2500;
+
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
 //    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
 
@@ -72,10 +77,6 @@ public class Robot {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
         debugManager = new DebugManager(telemetry, "launcher");
-        timeSinceIndex.startTime();
-        timeSinceKick.startTime();
-        timeSinceKickReset.startTime();
-        reverseIntakeTimer.startTime();
         isRedSide = isRed;
         initializeSubsystems(isRed);
     }
@@ -107,7 +108,7 @@ public class Robot {
         }
     }
 
-    public enum AutoIntakeStates {
+    public enum AutoIntakeState {
         INIT,
         TURN_EMPTY_SLOT_TO_INTAKE,
         WAIT_FOR_BALL,
@@ -115,7 +116,8 @@ public class Robot {
         READY_TO_SHOOT
     }
 
-    public enum LaunchBallStates {
+    @Deprecated
+    public enum LaunchBallKickerState {
         IDLE,
         INIT,
         TURN_TO_LAUNCH,
@@ -125,7 +127,16 @@ public class Robot {
         READY_TO_INTAKE
     }
 
-    public enum RobotInOutStates {
+    public enum LaunchBallState {
+        IDLE,
+        INIT,
+        TURN_TO_LAUNCH,
+        ELEVATE,
+        UPDATE_INDEXER,
+        READY_TO_INTAKE
+    }
+
+    public enum RobotInOutState {
         IDLE,
         INTAKE,
         OUTTAKE
@@ -133,7 +144,7 @@ public class Robot {
     /*
         LIMELIGHT PIPELINES:        TYPE:               STATUS:
             0: PURPLE               COLOR               USED
-            1: YELLOW               COLOR               OPEN FOR CONFIGURATION
+            1: YELLOW               COLOR               OPEN FOR CONLaunchBallStatesFIGURATION
             2: BLUE                 COLOR               OPEN FOR CONFIGURATION
             3: APRIL_TAG            AprilTag            OPEN FOR CONFIGURATION
             4: MOTIF                AprilTag            USED
@@ -153,9 +164,13 @@ public class Robot {
         OBELISK
     }
 
-    LaunchBallStates launchState = LaunchBallStates.INIT;
-    AutoIntakeStates autoIntakeState = AutoIntakeStates.INIT;
-    RobotInOutStates robotInOutState = RobotInOutStates.IDLE;
+    @Deprecated
+    LaunchBallKickerState launchStateKicker = LaunchBallKickerState.INIT;
+
+    LaunchBallState launchState = LaunchBallState.INIT;
+
+    AutoIntakeState autoIntakeState = AutoIntakeState.INIT;
+    RobotInOutState robotInOutState = RobotInOutState.IDLE;
 
     public DriveBase getDriveBase() {
         return driveBase;
@@ -189,11 +204,11 @@ public class Robot {
                      debugManager.log("RRobot: found empty slot");
                      if(indexer.turnEmptySlotToIntake()) {
                          intake.stopIntake();
-                         autoIntakeState = AutoIntakeStates.TURN_EMPTY_SLOT_TO_INTAKE;
+                         autoIntakeState = AutoIntakeState.TURN_EMPTY_SLOT_TO_INTAKE;
                          break;
                      }
                      else {
-                         autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
+                         autoIntakeState = AutoIntakeState.WAIT_FOR_BALL;
                          break;
                      }
                  } else {
@@ -209,7 +224,7 @@ public class Robot {
                  if (indexer.indexerFinishedTurning()) {
                      debugManager.robot("Robot: indexerFinishedTurning");
                      intake.startIntake();
-                     autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
+                     autoIntakeState = AutoIntakeState.WAIT_FOR_BALL;
                  }
                  break;
              case WAIT_FOR_BALL:
@@ -219,7 +234,7 @@ public class Robot {
                          debugManager.log("Robot: isBallAtIntake");
                          intake1Ball = true;
                          intake.stopIntake();
-                         autoIntakeState = AutoIntakeStates.INIT;
+                         autoIntakeState = AutoIntakeState.INIT;
                          break;
                  }
                  break;
@@ -236,7 +251,7 @@ public class Robot {
         if(launcher.isLauncherActive()) {
             //debugManager.robot("stratLaunchAGreenBall");
             ballColor = ArtifactColor.GREEN;
-            launchState = LaunchBallStates.INIT;
+            launchStateKicker = LaunchBallKickerState.INIT;
         }
         if (launcher.getKickerPosition() == launcher.POSITION_KICKER_SERVO_KICK_BALL) {
             launcher.resetKicker();
@@ -248,7 +263,7 @@ public class Robot {
         if(launcher.isLauncherActive()) {
             //debugManager.robot("stratLaunchAPupleBall");
             ballColor = ArtifactColor.PURPLE;
-            launchState = LaunchBallStates.INIT;
+            launchStateKicker = LaunchBallKickerState.INIT;
         }
         if (launcher.getKickerPosition() == launcher.POSITION_KICKER_SERVO_KICK_BALL) {
             launcher.resetKicker();
@@ -267,97 +282,75 @@ public class Robot {
 
     boolean noArtifacts = false;
 
+
+
     public void shootAllBalls() {
+        if (launcher.isLauncherActive() && robotInOutState == RobotInOutState.OUTTAKE) {
+            switch (launchState) {
+                case INIT:
 
+                    debugManager.log("shootAllBalls: INIT");
+                    if(findNextBall()) {
+                        debugManager.log("shootAllBalls: findNextBall");
+                        launchState = LaunchBallState.TURN_TO_LAUNCH;
+                    }
+                    else {
+                        if (!indexer.atIntake()) {
+                            debugManager.log("shootAllBalls: !indexer.atIntake())");
+                            indexer.positionForIntake();
+                        }
+                        launchState = LaunchBallState.READY_TO_INTAKE;
+                        debugManager.log("shootAllBalls: INIT %s", launchState);
+                    }
+                    break;
 
-        // check to see if flywheel motors are running
-        if(launcher.isLauncherActive() && robotInOutState == RobotInOutStates.OUTTAKE) {
-            debugManager.log("shootAllBalls");
-            debugManager.log("0 color: %s", indexer.artifactColorArray[0]);
-            debugManager.log("1 color: %s", indexer.artifactColorArray[1]);
-            debugManager.log("2 color: %s", indexer.artifactColorArray[2]);
+                case TURN_TO_LAUNCH:
+                    debugManager.log("shootAllBalls: TURN_TO_LAUNCH");
+                    if (indexer.moveToOuttake()) {
+                        debugManager.log("shootAllBalls: moveToOuttake()");
+                    }
+                    launchState = LaunchBallState.ELEVATE;
+                    break;
 
-                switch (launchState) {
-                    case INIT:
-                        noArtifacts = false;
-                        //debugManager.robot("shootAllBalls: INIT");
-                        debugManager.log("shootAllBalls: INIT");
-                        if(findNextBall()) {
-                            debugManager.log("shootAllBalls: findNextBall");
-                            launchState = LaunchBallStates.TURN_TO_LAUNCH;
-                            break;
+                case ELEVATE:
+                    debugManager.log("shootAllBalls: ELEVATE");
+                    if (indexer.indexerFinishedTurning()) {
+                        safeToStop = false;
+                        launcher.elevateBall();
+                        timeSinceElevate.reset();
+                        launchState = LaunchBallState.UPDATE_INDEXER;
+                    }
+                    break;
+
+                case UPDATE_INDEXER:
+                    debugManager.log("shootAllBalls: UPDATE_INDEXER");
+                    if (timeSinceElevate.milliseconds() > WAIT_TIME_ELEVATOR) {
+                        safeToStop = true;
+                        indexer.updateAfterShoot();
+                        shootQueue.removeFirst();
+                        launchState = LaunchBallState.INIT;
+                        debugManager.log("shootAllBalls: UPDATE_INDEXER set init");
+                    }
+                    break;
+
+                case READY_TO_INTAKE:
+                    debugManager.log("shootAllBalls: READY_TO_INTAKE");
+                    if (indexer.indexerFinishedTurning()) {
+                        updateColorAllSlots();
+                        if (indexer.findABall()) {
+                            // for some reason, there is a ball in the indexer
+                            shootOrder();
                         }
-                        else {
-                            if (!indexer.atIntake()) {
-                                debugManager.log("shootAllBalls: !indexer.atIntake())");
-                                indexer.positionForIntake();
-                            }
-                                launchState = LaunchBallStates.READY_TO_INTAKE;
-                            debugManager.log("shootAllBalls: INIT %s", launchState);
-                                break;
-                        }
-                    case TURN_TO_LAUNCH:
-                        //debugManager.robot("shootAllBalls: TURN_TO_LAUNCH");
-                        debugManager.log("shootAllBalls: TURN_TO_LAUNCH");
-                        if (indexer.moveToOuttake()) {
-                            debugManager.log("shootAllBalls: moveToOuttake()");
-                        }
-                        launchState = LaunchBallStates.KICK_BALL;
-                        break;
-                    case KICK_BALL:
-                        //debugManager.robot("shootAllBalls: KICK_BALL");
-                        debugManager.log("shootAllBalls: KICK_BALL");
-                        if (indexer.indexerFinishedTurning()) {
-                            safeToStop = false;
-                            launcher.kickBall();
-                            timeSinceKick.reset();
-                            launchState = LaunchBallStates.RESET_KICKER;
-                            break;
-                        } else {
-                            break;
-                        }
-                    case RESET_KICKER:
-                        //debugManager.robot("shootAllBalls: RESET_KICKER");
-                        debugManager.log("shootAllBalls: RESET_KICKER");
-                        if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER_UP) {
-                            launcher.resetKicker();
-                            timeSinceKickReset.reset();
-                            launchState = LaunchBallStates.UPDATE_INDEXER;
-                            break;
-                        } else {
-                            break;
-                        }
-                    case UPDATE_INDEXER:
-                        //debugManager.robot("shootAllBalls: UPDATE_INDEXER");
-                        debugManager.log("shootAllBalls: UPDATE_INDEXER");
-                        if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER_DOWN) {
-                            safeToStop = true;
-                            indexer.updateAfterShoot();
-                            shootQueue.removeFirst();
-                            launchState = LaunchBallStates.INIT;
-                            debugManager.log("shootAllBalls: UPDATE_INDEXER set init");
-                        }
-                        break;
-                    case READY_TO_INTAKE:
-                        debugManager.log("shootAllBalls: READY_TO_INTAKE");
-                        if (indexer.indexerFinishedTurning()) {
-                            updateColorAllSlots();
-                            if (indexer.findABall()) {
-                                // for some reason, there is a ball in the indexer
-                                shootOrder();
-                            }
-                            launchState = LaunchBallStates.INIT;
-                        }
-                        break;
-                    default:
-                        debugManager.log("shootAllBalls Unexpected");
-                        throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
-                }
+                        launchState = LaunchBallState.INIT;
+                    }
+                    break;
+
+                default:
+                    debugManager.log("shootAllBalls Unexpected");
+                    throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
+            }
         }
     }
-
-    public void shootAllBallsOrder() {}
-
 
     public void shootAllBallsAuto() {
 
@@ -366,13 +359,13 @@ public class Robot {
         debugManager.log("1 color: %s", indexer.artifactColorArray[1]);
         debugManager.log("2 color: %s", indexer.artifactColorArray[2]);
     // check to see if flywheel motors are running
-        switch (launchState) {
+        switch (launchStateKicker) {
             case INIT:
                 debugManager.log("shootAllBalls: INIT");
                 noArtifacts = false;
                 if(indexer.findABall()) {
+                    launchStateKicker = LaunchBallKickerState.TURN_TO_LAUNCH;
                     debugManager.log("shootAllBalls: findABall");
-                    launchState = LaunchBallStates.TURN_TO_LAUNCH;
                     break;
                 }
                 else {
@@ -383,7 +376,7 @@ public class Robot {
             case TURN_TO_LAUNCH:
                 debugManager.log("shootAllBalls: TURN_TO_LAUNCH");
                 indexer.moveToOuttake();
-                launchState = LaunchBallStates.KICK_BALL;
+                launchStateKicker = LaunchBallKickerState.KICK_BALL;
                 break;
             case KICK_BALL:
                 debugManager.log("shootAllBalls: KICK_BALL");
@@ -391,7 +384,7 @@ public class Robot {
                     safeToStop = false;
                     launcher.kickBall();
                     timeSinceKick.reset();
-                    launchState = LaunchBallStates.RESET_KICKER;
+                    launchStateKicker = LaunchBallKickerState.RESET_KICKER;
                     break;
                 } else {
                     break;
@@ -401,7 +394,7 @@ public class Robot {
                 if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER_UP) {
                     launcher.resetKicker();
                     timeSinceKickReset.reset();
-                    launchState = LaunchBallStates.UPDATE_INDEXER;
+                    launchStateKicker = LaunchBallKickerState.UPDATE_INDEXER;
                     break;
                 } else {
                     break;
@@ -411,19 +404,19 @@ public class Robot {
                 if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER_DOWN) {
                     safeToStop = true;
                     indexer.updateAfterShoot();
-                    launchState = LaunchBallStates.INIT;
+                    launchStateKicker = LaunchBallKickerState.INIT;
                 }
                 break;
             case READY_TO_INTAKE:
                 debugManager.log("Ready to Intake");
                 if (indexer.indexerFinishedTurning()) {
                     updateColorAllSlots();
-                    launchState = LaunchBallStates.INIT;
+                    launchStateKicker = LaunchBallKickerState.INIT;
                 }
                 break;
             default:
                 debugManager.log("Exception illegal");
-                throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
+                throw new IllegalStateException("shootAllBalls Unexpected value: " + launchStateKicker);
         }
     }
 
@@ -614,27 +607,27 @@ public class Robot {
         return safeToStop;
     }
 
-    public void setRobotState(RobotInOutStates state) {
+    public void setRobotState(RobotInOutState state) {
         robotInOutState = state;
     }
 
-    public RobotInOutStates getRobotInOutState() {
+    public RobotInOutState getRobotInOutState() {
         return robotInOutState;
     }
 
-    public void setLaunchState(LaunchBallStates state) {
-        launchState = state;
+    public void setLaunchStateKicker(LaunchBallKickerState state) {
+        launchStateKicker = state;
     }
 
-    public LaunchBallStates getLaunchState() {
-        return launchState;
+    public LaunchBallKickerState getLaunchStateKicker() {
+        return launchStateKicker;
     }
 
-    public void setAutoIntakeState(AutoIntakeStates state) {
+    public void setAutoIntakeState(AutoIntakeState state) {
         autoIntakeState = state;
     }
 
-    public AutoIntakeStates getAutoIntakeStat() {
+    public AutoIntakeState getAutoIntakeStat() {
         return autoIntakeState;
     }
 
@@ -704,14 +697,14 @@ public class Robot {
 
     public void shootOrderNone() {
         shootQueue.clear();
-        launchState = LaunchBallStates.INIT;
+        launchStateKicker = LaunchBallKickerState.INIT;
         targetPattern = TargetPattern.NONE;
         shootOrder();
     }
 
     public void shootOrderMotif() {
         shootQueue.clear();
-        launchState = LaunchBallStates.INIT;
+        launchStateKicker = LaunchBallKickerState.INIT;
         if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
             targetPattern = TargetPattern.GPP;
         else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
@@ -724,7 +717,7 @@ public class Robot {
 
     public void shootOrderMotifOneOff() {
         shootQueue.clear();
-        launchState = LaunchBallStates.INIT;
+        launchStateKicker = LaunchBallKickerState.INIT;
         if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
             targetPattern = TargetPattern.PPG;
         else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
@@ -737,7 +730,7 @@ public class Robot {
 
     public void shootOrderMotifTwoOff() {
         shootQueue.clear();
-        launchState = LaunchBallStates.INIT;
+        launchStateKicker = LaunchBallKickerState.INIT;
         if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
             targetPattern = TargetPattern.PGP;
         else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)

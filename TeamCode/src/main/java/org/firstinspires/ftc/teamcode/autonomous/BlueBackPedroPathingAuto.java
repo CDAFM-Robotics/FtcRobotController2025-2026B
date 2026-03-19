@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import static com.pedropathing.paths.HeadingInterpolator.lazy;
 import static com.pedropathing.paths.HeadingInterpolator.linear;
 
-import android.provider.Settings;
-
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.PoseConverter;
@@ -13,12 +11,10 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
@@ -29,9 +25,6 @@ import org.firstinspires.ftc.teamcode.pedropathing.commands.SubsystemCommands;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
-
-import kotlin.time.Clock;
 
 @Autonomous(name = "Blue Back Pedro Pathing", group = "0Comp")
 public class BlueBackPedroPathingAuto extends OpMode {
@@ -324,7 +317,7 @@ public class BlueBackPedroPathingAuto extends OpMode {
                 robot.updateTurretAngleAuto();
                 follower.holdPoint(holdPose);
 
-                robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
+                robot.setRobotState(Robot.RobotInOutState.OUTTAKE);
 
                 robot.getIndexer().autoFillColorArray();
 

@@ -323,7 +323,7 @@ public class RedBackPedroPathingAuto extends OpMode {
                 robot.updateTurretAngleAuto();
                 follower.holdPoint(holdPose);
 
-                robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
+                robot.setRobotState(Robot.RobotInOutState.OUTTAKE);
 
                 robot.getIndexer().autoFillColorArray();
 

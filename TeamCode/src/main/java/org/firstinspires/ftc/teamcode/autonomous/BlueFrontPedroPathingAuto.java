@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import static com.pedropathing.paths.HeadingInterpolator.lazy;
 import static com.pedropathing.paths.HeadingInterpolator.linear;
 
-import com.acmerobotics.roadrunner.Pose2d;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.PoseConverter;
@@ -16,9 +15,6 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
@@ -327,7 +323,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
                 robot.updateTurretAngleAuto();
                 follower.holdPoint(holdPose);
 
-                robot.setRobotState(Robot.RobotInOutStates.OUTTAKE);
+                robot.setRobotState(Robot.RobotInOutState.OUTTAKE);
 
                 robot.getIndexer().autoFillColorArray();
 
