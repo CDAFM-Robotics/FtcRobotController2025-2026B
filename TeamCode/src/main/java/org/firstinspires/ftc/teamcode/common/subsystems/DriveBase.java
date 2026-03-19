@@ -1,23 +1,27 @@
 package org.firstinspires.ftc.teamcode.common.subsystems;
 
+import static android.os.SystemClock.sleep;
+
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
+import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 
 public class DriveBase {
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
+    private final DebugManager debugManager;
 
     private DcMotor frontLeftMotor = null;
     private DcMotor frontRightMotor = null;
@@ -30,24 +34,29 @@ public class DriveBase {
     // private IMU imu;
 
     GoBildaPinpointDriver pinpoint;
+    private GoBildaPinpointDriver.DeviceStatus lastStatus;
+
     private Pose2D pos;
+    private boolean isRedSide;
 
 
-    public DriveBase(HardwareMap hardwareMap, Telemetry telemetry) {
+    public DriveBase(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
+        debugManager = new DebugManager(telemetry, "DRIVE");
+        isRedSide = isRed;
 
-        initializeDriveBaseDevices();
+        initializeDriveBaseDevices(isRed);
     }
 
-    public void initializeDriveBaseDevices() {
+    public void initializeDriveBaseDevices(boolean isRed) {
         frontLeftMotor = hardwareMap.get(DcMotor.class, "frontLeftMotor");
         frontRightMotor = hardwareMap.get(DcMotor.class, "frontRightMotor");
         backLeftMotor = hardwareMap.get(DcMotor.class, "backLeftMotor");
         backRightMotor = hardwareMap.get(DcMotor.class, "backRightMotor");
-        //rightKickStand = hardwareMap.get(Servo.class, "rightKickStand");
-        //leftKickStand = hardwareMap.get(Servo.class, "leftKickStand");
-        //kickStandLight = hardwareMap.get(Servo.class, "kickStandLight");
+        rightKickStand = hardwareMap.get(Servo.class, "rightKickStand");
+        leftKickStand = hardwareMap.get(Servo.class, "leftKickStand");
+        // kickStandLight = hardwareMap.get(Servo.class, "kickStandLight");
 
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -60,8 +69,8 @@ public class DriveBase {
         backRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // initialize the kick stand servos
-        //rightKickStand.setPosition(0.5);
-        //leftKickStand.setPosition(0.5);
+        rightKickStand.setPosition(0.5);
+        leftKickStand.setPosition(0.5);
 
         // ground lights OFF
         //kickStandLight.setPosition(0.0);
@@ -71,64 +80,117 @@ public class DriveBase {
 
         // Configure the sensor
         configurePinpoint();
-        double startX = 0;
-        double startY = 0;
-        double startHeading = 0;
+        // TODO will defer to the single pinpoint.update below.
+        // pinpoint.update();
 
-
-
+        //read the pose value from autonomous or initialized it at start up location
+        Pose2D startPose2D;
         // if the auto completed, use the value from end of auto
         if (RobotStaticValuesClass.autoCompleted) {
-            startX = RobotStaticValuesClass.robotStaticX;
-            startY = RobotStaticValuesClass.robotStaticY;
-            startHeading = RobotStaticValuesClass.robotStaticHeading;
+            startPose2D = RobotStaticValuesClass.savedPose;
+            // TODO temp fix invalidate the static data (next run must be start at zero)
+            RobotStaticValuesClass.autoCompleted = false;
+        }
+        else if (isRed) {
+            startPose2D = new Pose2D(DistanceUnit.INCH, 63, 12, AngleUnit.RADIANS, -3.14);
+        }
+        else {
+            startPose2D = new Pose2D(DistanceUnit.INCH, 63, -12, AngleUnit.RADIANS, -3.14);
         }
 
         // Set the location of the robot - this should be the place you are starting the robot from
-        pinpoint.setPosition(new Pose2D(DistanceUnit.MM, startX, startY, AngleUnit.RADIANS, startHeading));
+        pinpoint.setPosition(startPose2D);
+        pinpoint.update();
+        debugManager.addData("DriveBase Pos x, y, heading", "%.2f, %.2f, %.2f",
+            startPose2D.getX(DistanceUnit.INCH),
+            startPose2D.getY(DistanceUnit.INCH),
+            startPose2D.getHeading(AngleUnit.RADIANS));
+        debugManager.log("Pos x: %.2f, y: %2f, heading: %.2f",
+            startPose2D.getX(DistanceUnit.INCH),
+            startPose2D.getY(DistanceUnit.INCH),
+            startPose2D.getHeading(AngleUnit.RADIANS));
 
     }
 
-    public void resetIMU(){
-
+    public void resetIMU() {
         resetPinpointIMU();
-
     }
 
-    public void resetPinpointIMU()
-    {
+    public void recalibratePinpoint() {
+        pinpoint.recalibrateIMU();
+    }
+
+    public void setPinpointYScalar(double val) {
+        pinpoint.setYawScalar(val);
+    }
+
+    public void resetPinpointIMU() {
         pinpoint.resetPosAndIMU();
     }
 
-    public void configurePinpoint(){
+    public void configurePinpoint() {
 
-        // TODO TESTING Orientation may be wrong.
         pinpoint.setOffsets(8, -3.25, DistanceUnit.INCH); //Tuned for 2026 Bot2 17Feb26 OK
 
         pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
 
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
-                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+            GoBildaPinpointDriver.EncoderDirection.REVERSED);
 
         pinpoint.resetPosAndIMU();
+        sleep(300);
     }
 
-    public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
-        pinpoint.update();
+    public void updateSafePinpoint()
+    {
+//        telemetry.addData("X", pinpoint.getPosX(DistanceUnit.INCH));
+//        telemetry.addData("y", pinpoint.getPosY(DistanceUnit.INCH));
+
+        try {
+            pinpoint.update();
+            lastStatus = pinpoint.getDeviceStatus();
+        }
+        catch (Exception e) {
+            RobotLog.e("PINPOINT ERROR DURING UPDATE", e.getMessage());
+            RobotLog.d("pinpoint status: %s", pinpoint.getDeviceStatus());
+        }
+
+        if (Math.abs(1.0 - pinpoint.getYawScalar()) > 0.1 )
+        {
+            // TODO Pinpoint driver issue.  reset Yaw Scalar to good value and REload the lastgood heading
+            pinpoint.setYawScalar(Robot.PINPOINT_B1_YAWSCALAR); // initial Factory Yaw Scalar for Pinpoint from Bot1
+        }
         pos = pinpoint.getPosition();
+        RobotLog.d("pinpoint heading1 %.2f, yawScalar: %.8f, lastStatus: %s", pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getYawScalar(), lastStatus);
 
 
-        double heading;
+    }
+    public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
+
+        // TODO pinpoint update moved out
+        updateSafePinpoint();
+
+        double heading = 0;
+        double driverOffset;
+        double adjustedHeading;
         if (fieldCentric) {
-            // heading = -imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-            heading = -pos.getHeading(AngleUnit.RADIANS);
-        }
-        else {
-            heading = 0;
+            heading = pos.getHeading(AngleUnit.RADIANS);
+            // Apply 90-degree driver offset (in radians)
+            if (isRedSide) {
+                driverOffset = Math.toRadians(-90); // Change to -90 if opposite direction needed
+            } else {
+                driverOffset = Math.toRadians(90);
+            }
+
+            adjustedHeading = -(heading - driverOffset);
+            //if (adjustedHeading > 180)  adjustedHeading -= 360;
+            //if (adjustedHeading < -180) adjustedHeading += 360;
+        } else {
+            adjustedHeading = 0;
         }
 
-        double rotX = x * Math.cos(heading) - y * Math.sin(heading);
-        double rotY = x * Math.sin(heading) + y * Math.cos(heading);
+        double rotX = x * Math.cos(adjustedHeading) - y * Math.sin(adjustedHeading);
+        double rotY = x * Math.sin(adjustedHeading) + y * Math.cos(adjustedHeading);
 
         // put strafing factors here
         rotX = rotX * 1;
@@ -145,9 +207,27 @@ public class DriveBase {
         backLeftMotor.setPower(backLeftPower);
         frontRightMotor.setPower(frontRightPower);
         backRightMotor.setPower(backRightPower);
-        telemetry.addData("Pinpoint", "Heading %.2f, Pos %.2f", heading, pos.getX(DistanceUnit.MM));
-        telemetry.addData("fieldCentric",fieldCentric);
-        telemetry.addData("powers", "front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f", frontLeftPower *speed*100, frontRightPower *speed*100, backLeftPower *speed*100, backRightPower *speed*100);
+
+        debugManager.addData("DrvieBase", " Heading %.2f, PosX,Y %.2f,%.2f",
+            heading,
+            pos.getX(DistanceUnit.MM),
+            pos.getY(DistanceUnit.MM));
+        debugManager.addData("DrvieBase fieldCentric", "%s", fieldCentric);
+        debugManager.addData("DrvieBase powers", "front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f",
+            frontLeftPower * speed * 100,
+            frontRightPower * speed * 100,
+            backLeftPower * speed * 100,
+            backRightPower * speed * 100);
+        debugManager.log("Heading %.2f, PosX,Y %.2f,%.2f",
+            heading,
+            pos.getX(DistanceUnit.MM),
+            pos.getY(DistanceUnit.MM));
+        debugManager.log("fieldCentric", fieldCentric);
+        debugManager.log("powers front left: %.2f, front right: %.2f, back left: %.2f, back right: %.2f",
+            frontLeftPower * speed * 100,
+            frontRightPower * speed * 100,
+            backLeftPower * speed * 100,
+            backRightPower * speed * 100);
     }
 
     public void setIndividualMotorPowers(double frontLeftPower, double frontRightPower, double backRightPower, double backLeftPower) {
@@ -157,9 +237,9 @@ public class DriveBase {
         backLeftMotor.setPower(backLeftPower);
     }
 
-/*    public void setKickStand() {
-        rightKickStand.setPosition(0.0);
-        leftKickStand.setPosition(1.0);
+    public void setKickStand() {
+        rightKickStand.setPosition(0.81);
+        leftKickStand.setPosition(0.19);
     }
 
     public void resetKickStand() {
@@ -177,7 +257,7 @@ public class DriveBase {
 
     public void adjustKickStandLight(double power){
         kickStandLight.setPosition(power);
-    }*/
+    }
 
     public double getPinPointPosX() {
         return pinpoint.getPosX(DistanceUnit.INCH);
@@ -190,4 +270,8 @@ public class DriveBase {
     public double getPinPointHeading() {
         return pinpoint.getHeading(AngleUnit.RADIANS);
     }
+
+    public Pose2D getPinPointPose() { return pinpoint.getPosition();}
+
+
 }

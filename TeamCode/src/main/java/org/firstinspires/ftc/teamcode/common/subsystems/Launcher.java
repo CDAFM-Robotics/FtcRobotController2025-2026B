@@ -7,7 +7,11 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
+import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+
 import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -25,19 +29,24 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
+import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.InterpolationTable;
 import org.firstinspires.ftc.teamcode.common.util.RunTimeoutAction;
 import org.firstinspires.ftc.teamcode.common.util.WaitUntilAction;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 @Config
+@Configurable
 public class Launcher {
+
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
+    private final DebugManager debugManager;
 
     DcMotorEx launcherMotor1;
     DcMotorEx launcherMotor2;
@@ -45,8 +54,7 @@ public class Launcher {
     double launcherVelocity;
     double hoodPosition;
     double kickerPosition;
-
-    private Limelight3A limelight;
+    DcMotorEx elevatorMotor;
 
     public Servo kickerServo;
     CRServo turretServo;
@@ -57,6 +65,17 @@ public class Launcher {
     CRServo launcherServo;
     AnalogInput launcherAnalogInput;
 
+    public Limelight3A limelight;
+
+    public void setLimelightPipeline(int ordinal) {
+        limelight.pipelineSwitch(ordinal);
+    }
+    public Limelight3A getLimeiight() { return this.limelight; }
+
+    public double getCurrentAngleOffset() {
+        return currentAngleOffset;
+    }
+
     public enum QuadrantRotatorServo{
         POSITIVE, NEGATIVE, ZERO
     }
@@ -65,25 +84,24 @@ public class Launcher {
 
     double lastServoPosition;
 
-    public final double POSITION_KICKER_SERVO_KICK_BALL = 0.16; // 0.26
-    public final double POSITION_KICKER_SERVO_INIT = 0.51;
-    public final double POSITION_TUREET_SERVO_INIT = 0.5;
+    public static final double POSITION_KICKER_SERVO_KICK_BALL = 0.06; // 0.16; // 0.26 reset due to kicker swap
+    public static final double POSITION_KICKER_SERVO_INIT = 0.50; // 0.51; reset due to kicker swap (probably clock error on servo horn)
+    public static final double POSITION_TUREET_SERVO_INIT = 0.5;
 
     // Hood Servo
-    public final double POSITION_HOOD_SERVO_INIT = 0.1;
-    public final double POSITION_HOOD_SERVO_HIGH = 0.1;
-    public final double POSITION_HOOD_SERVO_LOW = 1.0;
+    public static final double POSITION_HOOD_SERVO_INIT = 0.1;
+    public static final double POSITION_HOOD_SERVO_HIGH = 0.1;
+    public static final double POSITION_HOOD_SERVO_LOW = 1.0;
 
-    public final double LAUNCH_POWER_FAR = 0.9;
-    public final double LAUNCH_POWER_NEAR= 0.8;
-    public final double LAUNCH_POWER_FULL= 1.0;
-    public final double LAUNCH_POWER_LOW=0.3;   // TODO find lowest valuable power and set this
-    public final double LAUNCH_VELOCITY_FAR = 2200; // was: 6000 (wrong, 2200tps/28ppr*60 rpm 4714 rpm )
-    public final double LAUNCH_VELOCITY_NEAR= 1300;
-    public final double LAUNCH_VELOCITY_FULL= 2200;
-    public final double LAUNCH_VELOCITY_LOW= 1060;   // TODO find lowest valuable power and set this
-    public final double LIMELIGHT_OFFSET = 17.4;
-    public final double LIMELIGHT_HEIGHT_OFFSET = 436;
+    public static final double LAUNCH_POWER_FAR = 0.9;
+    public static final double LAUNCH_POWER_NEAR= 0.8;
+    public static final double LAUNCH_POWER_FULL= 1.0;
+    public static final double LAUNCH_POWER_LOW=0.3;   // TODO find lowest valuable power and set this
+    public static final double LAUNCH_VELOCITY_FAR = 2200; // was: 6000 (wrong, 2200tps/28ppr*60 rpm 4714 rpm )
+    public static final double LAUNCH_VELOCITY_NEAR= 1300;
+    public static final double LAUNCH_VELOCITY_FULL= 2200;
+    public static final double LAUNCH_VELOCITY_LOW= 1060;   // TODO find lowest valuable power and set this
+
 
     //rotate autoaim PID Constants
     private double rotateIntegralSum = 0.0;
@@ -117,11 +135,11 @@ public class Launcher {
     // Use a table for interpolation
     private InterpolationTable shootingTable;
 
-    // Turret control variables
-    public static double turretkF = 0.10;
-    public static double turretkP = 0.005;
+    // Bot2 Turret control variables
+    public static double turretkF = 0.11; // 19m26 was 0.10
+    public static double turretkP = 0.004; // 19m26 was 0.005
     public static double turretkI = 0;
-    public static double turretkD = 0.00005;
+    public static double turretkD = 0.00002; // 19m26 was 0.000005
 
     private double currentVoltage;
     private double currentAngle;
@@ -223,13 +241,13 @@ public class Launcher {
         private ArtifactColor[] motifPattern;
 
         public AprilTagAction(int pipeline) {
-            //limelight.pipelineSwitch(pipeline);
+            limelight.pipelineSwitch(pipeline);
         }
 
 
         @Override
         public boolean run(@NonNull TelemetryPacket telemetryPacket) {
-            ArtifactColor[] result = getMotifPattern();
+            ArtifactColor[] result = getMotifPattern(true);
 
             if (result != null) {
                 motifPattern = result;
@@ -285,7 +303,7 @@ public class Launcher {
     public Launcher(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
-
+        debugManager = new DebugManager(telemetry, "launcher");
         initializeLauncherDevices();
     }
 
@@ -332,26 +350,65 @@ public class Launcher {
 
         actualAngle = currentAngle + currentAngleOffset;
 
-        telemetry.addData("Servo Voltage", "%.2f", currentVoltage);
-        telemetry.addData("Servo Angle Raw", "%.2f", currentAngle);
-        telemetry.addData("Last Servo Voltage", "%.2f", lastVoltage);
-        telemetry.addData("Last Servo Angle Raw", "%.2f", lastAngle);
-        telemetry.addData("Actual Servo Angle", "%.2f", actualAngle);
+        debugManager.launcher("Servo Voltage", "%.2f", currentVoltage);
+        debugManager.launcher("Servo Angle Raw", "%.2f", currentAngle);
+        debugManager.launcher("Last Servo Voltage", "%.2f", lastVoltage);
+        debugManager.launcher("Last Servo Angle Raw", "%.2f", lastAngle);
+        debugManager.launcher("Actual Servo Angle", "%.2f", actualAngle);
+
+        elevatorMotor = hardwareMap.get(DcMotorEx.class, "elevatorMotor");
+
+        elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        elevatorMotor.setTargetPosition(0);
+        elevatorMotor.setPower(1);
+
+        elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         lastAngle = currentAngle;
         lastVoltage = currentVoltage;
 
         shootingTable = new InterpolationTable(InterpolationTable.ExtrapolationMode.LINEAR);
 
-        shootingTable.add(30.20,1080,1.0);
-        shootingTable.add(60.02,1200,0.30);
-        shootingTable.add(90,1320,0.15);
-        shootingTable.add(140,1560,0.0);
+        // key = distance from goal,
+        // data1 = motor power,
+        // data2 = shooter hood servo position
+        shootingTable.add(35,1080,1.0);
+        shootingTable.add(40.03,1100,1.0);
+        shootingTable.add(45.29,1120,0.73);
+        shootingTable.add(50.03,1140,0.72);
+        shootingTable.add(55.25,1160,0.66);
+        shootingTable.add(60.17,1180,0.50);
+        shootingTable.add(64.89,1200,0.32);
+        shootingTable.add(69.98,1230,0.30);
+        shootingTable.add(74.92,1250,0.275);
+        shootingTable.add(80.08,1280,0.24);
+        shootingTable.add(90,1320,0.13);
+        shootingTable.add(95.03,1350,0.11);
+        shootingTable.add(100.17,1370,0.10);
+        shootingTable.add(105.16,1380,0.10);
+        shootingTable.add(110.08,1420,0.10);
+        shootingTable.add(115.05,1480,0.08);
+        shootingTable.add(120.25,1500,0.03);
+        shootingTable.add(125.20,1520,0.025);
+        shootingTable.add(130.20,1550,0.02);
+        shootingTable.add(135.20,1580,0.01);
+        shootingTable.add(140.09,1600,0.00);
+        shootingTable.add(145.39,1640,0.00);
+        shootingTable.add(149.96,1660,0.00);
 
-        //limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        //limelight.pipelineSwitch(0);
 
-        //limelight.start();
+
+        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        limelight.pipelineSwitch(0);
+
+        // TODO faster poll speed for localization
+        limelight.setPollRateHz(50);
+
+        limelight.start();
 
         // Initialize the map with calibration points.
         // Distances in cm, velocities as motor power (0.0 to 1.0)
@@ -370,47 +427,101 @@ public class Launcher {
 
      */
 
-    public ArtifactColor[] getMotifPattern() {
-//        LLResult result = limelight.getLatestResult();
-//        if (result.isValid()) {
-//            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-//            if (fiducialResults != null) {
-//                for (LLResultTypes.FiducialResult fr : fiducialResults) {
-//                    if (fr.getFiducialId() == 21) {
-//                        return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
-//                    }
-//                    else if (fr.getFiducialId() == 22) {
-//                        return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE};
-//                    }
-//                    else if (fr.getFiducialId() == 23) {
-//                        return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
-//                    }
-//                }
-//            }
-//        }
+    public ArtifactColor[] getMotifPattern(boolean isRed) {
+        LLResult result = limelight.getLatestResult();
+        if (result.isValid()) {
+            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+            if (fiducialResults != null) {
+                if (fiducialResults.size() > 1) {
+                    int[] ids = new int[2];
+
+                    ids[0] = fiducialResults.get(0).getFiducialId();
+                    ids[1] = fiducialResults.get(1).getFiducialId();
+
+                    if (isRed) {
+                        if (Arrays.stream(ids).anyMatch((int i) -> i == 21) && Arrays.stream(ids).anyMatch((int i) -> i == 22)) {
+                            return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+                        }
+                        else if (Arrays.stream(ids).anyMatch((int i) -> i == 23) && Arrays.stream(ids).anyMatch((int i) -> i == 22)) {
+                            return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE};
+                        }
+                        else if (Arrays.stream(ids).anyMatch((int i) -> i == 21) && Arrays.stream(ids).anyMatch((int i) -> i == 23)) {
+                            return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
+                        }
+                    }
+                    else {
+                        if (Arrays.stream(ids).anyMatch((int i) -> i == 21) && Arrays.stream(ids).anyMatch((int i) -> i == 22)) {
+                            return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE};
+                        }
+                        else if (Arrays.stream(ids).anyMatch((int i) -> i == 23) && Arrays.stream(ids).anyMatch((int i) -> i == 22)) {
+                            return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
+                        }
+                        else if (Arrays.stream(ids).anyMatch((int i) -> i == 21) && Arrays.stream(ids).anyMatch((int i) -> i == 23)) {
+                            return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+                        }
+                    }
+                }
+                else {
+                    if (fiducialResults.get(0).getFiducialId() == 21) {
+                        return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
+                    } else if (fiducialResults.get(0).getFiducialId() == 22) {
+                        return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.GREEN, ArtifactColor.PURPLE};
+                    } else if (fiducialResults.get(0).getFiducialId() == 23) {
+                        return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
+                    }
+                }
+            }
+        }
         return null;
     }
 
     private boolean launcherActive = false;
 
+    @Deprecated
     public void kickBall() {
         RobotLog.d("kickball");
         if (isLauncherActive()) {
             kickerServo.setPosition(POSITION_KICKER_SERVO_KICK_BALL);
         }
     }
-
+    @Deprecated
     public void resetKicker() {
         RobotLog.d("reset kicker");
         kickerServo.setPosition(POSITION_KICKER_SERVO_INIT);
     }
+
+    boolean runElevator = false;
+    double elevatorTarget = 0;
+
+    double ticksPerElevate = 78.4;
+
+
+    public void elevateBall() {
+        runElevator = true;
+        elevatorTarget += 78.4 * 4;
+        elevatorMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void updateElevator() {
+        if (runElevator) {
+            elevatorMotor.setPower(1);
+            if (elevatorMotor.getCurrentPosition() >= elevatorTarget) {
+                runElevator = false;
+                elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            }
+        }
+        else {
+            elevatorMotor.setTargetPosition((int) Math.round(elevatorTarget));
+        }
+    }
+
 
     public double getKickerPosition() {
         return (double) Math.round(kickerServo.getPosition()*100)/100;
     }
 
     public void toggleLauncher() {
-        telemetry.addData("toggleLauncher", launcherMotor1.getPower());
+        debugManager.launcher("toggleLauncher", "%.2f", launcherMotor1.getPower());
        if (launcherMotor1.getPower() == 0) {
            startLauncher();
        }
@@ -453,7 +564,7 @@ public class Launcher {
         }
     }
     public void startLauncher() {
-        telemetry.addData("startLauncher",launcherVelocity);
+        debugManager.launcher("startLauncher","%.2f",launcherVelocity);
         //launcherVelocity = shootingTable.getData1(shootingDistance);
         setLauncherVelocity(launcherVelocity);
         launcherActive = true;
@@ -594,6 +705,12 @@ public class Launcher {
         launcherMotor1.setVelocity(launcherVelocity);
     }
 
+    public void setAutoVelocity(double velocity) {
+        launcherMotor2.setVelocity(velocity);
+        launcherMotor1.setVelocity(velocity);
+        launcherActive = true;
+    }
+
 
     public void changeLauncherVelocity(double change) {
         launcherVelocity += change;
@@ -626,6 +743,10 @@ public class Launcher {
         return kickerServo.getPosition();
     }
 
+    public void setKickerServoPosition(double position) {
+        kickerServo.setPosition(position);
+    }
+
 
     //For launch motor coefficients testing only
     public void setLaunchMotorPIDFCoefficients() {
@@ -641,6 +762,11 @@ public class Launcher {
 
     // Turret Methods
     public void setTurretRelativeAngle(double relativeTargetAngle){
+
+        double turretLastTime = turretTime;
+        turretTime = System.nanoTime() / 1000000000.0;
+        double dt = turretTime - turretLastTime;
+
         double turretTarget = relativeTargetAngle * 2;
         // Find the voltage returned and the angle of the servo
 
@@ -652,11 +778,11 @@ public class Launcher {
         double diff = Math.abs(currentAngle - lastAngle);
 
         if (!firstLoop) {
-            if (currentAngle > 180 && lastAngle < 180 && diff > 30) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
                 currentAngleOffset -= 360;
             }
 
-            if (currentAngle < 180 && lastAngle > 180 && diff > 30) {
+            if (currentAngle < 180 && lastAngle > 180 && diff > 100) {
                 currentAngleOffset += 360;
             }
         }
@@ -666,7 +792,7 @@ public class Launcher {
         greatestDiff = Math.max(greatestDiff, diff);
 
         // Set Servo power
-        double turretPower = updateTurretPID(turretTarget, actualAngle);
+        double turretPower = updateTurretPID(turretTarget, actualAngle, dt);
         launcherServo.setPower(turretPower);
 
         // Set hood Servo position
@@ -680,26 +806,22 @@ public class Launcher {
 
         // Add telemetry data for debugging
 
-        telemetry.addData("Power", turretPower);
-        telemetry.addLine();
-        telemetry.addData("Servo Voltage", "%.2f", currentVoltage);
-        telemetry.addData("Servo Angle Raw", "%.2f", currentAngle);
-        telemetry.addLine();
-        telemetry.addData("Last Servo Voltage", "%.2f", lastVoltage);
-        telemetry.addData("Last Servo Angle Raw", "%.2f", lastAngle);
-        telemetry.addData("Difference", "%.2f", diff);
-        telemetry.addData("Angle Offset", "%.2f", currentAngleOffset);
-        telemetry.addData("Actual Servo Angle", "%.2f", actualAngle);
-        telemetry.addData("launcherVelocity", "%.2f", launcherVelocity);
-        telemetry.addData("launcherVelocity from motor", "%.2f", launcherMotor1.getVelocity());
+        debugManager.addData("Turret Power", "%.2f", turretPower);
+        debugManager.addData("Servo Voltage", "%.2f", currentVoltage);
+        debugManager.addData("Servo Angle Raw", "%.2f", currentAngle);
+        debugManager.addData("Last Servo Voltage", "%.2f", lastVoltage);
+        debugManager.addData("Last Servo Angle Raw", "%.2f", lastAngle);
+        debugManager.addData("Difference", "%.2f", diff);
+        debugManager.addData("Angle Offset", "%.2f", currentAngleOffset);
+        debugManager.addData("Actual Servo Angle", "%.2f", actualAngle);
+        debugManager.addData("launcherVelocity", "%.2f", launcherVelocity);
+        debugManager.addData("launcherVelocity from motor1", "%.2f", launcherMotor1.getVelocity());
+        debugManager.addData("launcherVelocity from motor2", "%.2f", launcherMotor2.getVelocity());
+        debugManager.addData("hood position", "%.2f", hoodPosition);
 
-        // TODO don't do this here. one time per loooop
-//        telemetry.update();
 
         // Logging
-
-        RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
-
+        // RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
         // Set last variables for next loop
 
         lastAngle = currentAngle;
@@ -708,10 +830,51 @@ public class Launcher {
         firstLoop = false;
     }
 
-    public double updateTurretPID(double target, double current) {
+    public double getTurretDegrees() {
+        return actualAngle / 2;
+    }
+
+    public void autoUpdateTurretPID (double target) {
+
         double turretLastTime = turretTime;
         turretTime = System.nanoTime() / 1000000000.0;
         double dt = turretTime - turretLastTime;
+
+
+        double turretTarget = target * 2;
+        // Find the voltage returned and the angle of the servo
+
+        currentVoltage = launcherAnalogInput.getVoltage();
+        currentAngle = currentVoltage / 3.3 * 360;
+
+        // Find out whether the angle looped around
+
+        double diff = Math.abs(currentAngle - lastAngle);
+
+        if (!firstLoop) {
+            if (currentAngle > 180 && lastAngle < 180 && diff > 100) {
+                currentAngleOffset -= 360;
+            }
+
+            if (currentAngle < 180 && lastAngle > 180 && diff > 100) {
+                currentAngleOffset += 360;
+            }
+        }
+
+        actualAngle = currentAngle + currentAngleOffset;
+
+        // Set Servo power
+        double turretPower = updateTurretPID(turretTarget, actualAngle, dt);
+        launcherServo.setPower(turretPower);
+
+        // Set last variables for next loop
+        lastAngle = currentAngle;
+        lastVoltage = currentVoltage;
+
+        firstLoop = false;
+    }
+
+    public double updateTurretPID(double target, double current, double dt) {
 
         double error = target - current;
 
@@ -726,17 +889,21 @@ public class Launcher {
 
         double turretPower = Math.max(Math.min((error * turretkP) + (turretIntegralSum * turretkI) + (derivative * turretkD) + (turretkF * Math.signum(error)), 1), -1);
 
-        telemetry.addData("turret target angle", "%.2f", target);
-        telemetry.addData("turret current angle", "%.2f", current);
-        telemetry.addData("turret Error", "%.2f", error);
-        telemetry.addData("turret Integral", "%.2f", turretIntegralSum);
-        telemetry.addData("turret Derivative", "%.2f", derivative);
-        telemetry.addData("turret Power", "%.2f", turretPower);
+//        debugManager.launcher("turret target angle", "%.2f", target);
+//        debugManager.launcher("turret current angle", "%.2f", current);
+//        debugManager.launcher("turret Error", "%.2f", error);
+//        debugManager.launcher("turret Integral", "%.2f", turretIntegralSum);
+//        debugManager.launcher("turret Derivative", "%.2f", derivative);
+//        debugManager.launcher("turret Power", "%.2f", turretPower);
 
         return turretPower;
     }
 
     public void setShootingDistance(double distanceToGoal) {
         shootingDistance = distanceToGoal;
+
+
     }
+
+
 }

@@ -1,14 +1,12 @@
-package org.firstinspires.ftc.teamcode.testing.archived;
+package org.firstinspires.ftc.teamcode.testing;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-@TeleOp(name="shooter Test", group = "Testing")
-@Disabled
+@TeleOp(name="Shooter Test bot2", group = "Testing")
 public class ShooterTestBot2 extends LinearOpMode {
     public DcMotor shooterLeftMotor = null;
     public DcMotor shooterRightMotor = null;
@@ -25,8 +23,8 @@ public class ShooterTestBot2 extends LinearOpMode {
         //Robot robot = new Robot(this);
 
         //robot.initializeDevices();
-        shooterLeftMotor = hardwareMap.get(DcMotor.class, "shooterLeftMotor");
-        shooterRightMotor = hardwareMap.get(DcMotor.class, "shooterRightMotor");
+        shooterLeftMotor = hardwareMap.get(DcMotor.class, "launcherMotor1");
+        shooterRightMotor = hardwareMap.get(DcMotor.class, "launcherMotor2");
 
         shooterRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 

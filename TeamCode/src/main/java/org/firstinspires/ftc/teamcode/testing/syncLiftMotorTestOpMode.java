@@ -7,11 +7,15 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-@TeleOp(name = "Lift Motor Test", group = "Testing")
+@TeleOp(name = "Sync Elevoator Motor Test", group = "Testing")
 public class syncLiftMotorTestOpMode extends LinearOpMode {
+
+
+    double ticksPerElevate = 1960.0/50.0;
+
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotorEx liftMotor = hardwareMap.get(DcMotorEx.class, "liftMotor");
+        DcMotorEx liftMotor = hardwareMap.get(DcMotorEx.class, "elevatorMotor");
         ElapsedTime wait = new ElapsedTime();
 
         // Need an Encoder
@@ -32,17 +36,17 @@ public class syncLiftMotorTestOpMode extends LinearOpMode {
 
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         while (opModeIsActive()) {
-            power = -gamepad1.left_stick_y;
+            boolean aPressed= gamepad1.aWasPressed();
             // liftMotor.setPower(power);
-            if (Math.abs(power) > 0.1 && !running ) {
-                liftMotor.setTargetPosition((int) (500 * Math.signum(power))); // -1 or +1 or 0
+            if (aPressed && !running ) {
+                liftMotor.setTargetPosition((int) (ticksPerElevate * 10)); // -1 or +1 or 0
                 liftMotor.setPower(1.0);
                 liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 running = true;
             }
 
             encoder = liftMotor.getCurrentPosition();
-            if (Math.abs(encoder)>62) // Wait for Indexer   (28ppr / (10T sprocket to 23<-1> TOOTH CHAIN)
+            if (Math.abs(encoder)>ticksPerElevate) // Wait for Indexer   (28ppr / (10T sprocket to 23<-1> TOOTH CHAIN)
             {
                 // liftMotor.setPower(0.0); // chart 2 (346 ms)
                 liftMotor.setTargetPosition((int) encoder); // chart 3

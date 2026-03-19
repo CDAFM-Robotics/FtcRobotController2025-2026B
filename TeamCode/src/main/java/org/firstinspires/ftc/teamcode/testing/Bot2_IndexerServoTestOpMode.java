@@ -1,9 +1,7 @@
-package org.firstinspires.ftc.teamcode.testing.archived;
+package org.firstinspires.ftc.teamcode.testing;
 
 import com.acmerobotics.roadrunner.Pose2d;
 import com.acmerobotics.roadrunner.Vector2d;
-import com.acmerobotics.roadrunner.ftc.Actions;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -12,14 +10,15 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.autonomous.actions.AutonomousActionBuilder;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
-@TeleOp(name = "Indexer Servo Test", group = "Testing")
+@TeleOp(name = "Bot2 Indexer Servo Test", group = "Testing")
 public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
-
+    boolean isRedSide = false;
     @Override
     public void runOpMode() throws InterruptedException {
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         AnalogInput axon_position_V;
         axon_position_V = hardwareMap.get(AnalogInput.class, "indexerAnalog");
@@ -50,7 +49,7 @@ public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
 
         // 2025 - 2026 (Archimedes)
         // Control HUB
-        // 0 Indexer Servo (Axoon)
+        // 0 Indexer Servo (Axon)
         // 1 Kicker
         // 2 Undef
         // 3 UNdef
@@ -64,6 +63,11 @@ public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
         // 3 Undef
         // 4 Undef
         // 5 Undef
+
+
+        int currentPos = 0;
+
+        double[] positions = new double[]{Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE, Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE, Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE, Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT, Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT, Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT};
 
         while (opModeIsActive()) {
 
@@ -116,13 +120,24 @@ public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
                 position=1;
             }
 
-            if (currentGamepad2.x && !previousGamepad2.x)
-            {
+
+            if (currentGamepad1.right_bumper && !previousGamepad1.right_bumper) {
+                currentPos++;
+
+                if (currentPos > 5) {
+                    currentPos = 5;
+                }
+
+                position = positions[currentPos];
             }
+            if (currentGamepad1.left_bumper && !previousGamepad1.left_bumper) {
+                currentPos--;
 
-            if (currentGamepad2.y && !previousGamepad2.y)
-            {
+                if (currentPos < 0) {
+                    currentPos = 0;
+                }
 
+                position = positions[currentPos];
             }
 
 
@@ -155,7 +170,8 @@ public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
 
             robot.getIndexer().rotateToPosition(position);
             mpos = (axon_position_V.getVoltage() - voltageOffset) * voltageScaler;
-            telemetry.addLine("GP1 A/B: Indexer,  X/Y: nothing,  LFT/RG: 0 / Max");
+            telemetry.addLine("GP1 A/B: +/- 0.1,  X/Y: +/- 0.001,  LEFT/RIGHT: 0 / Max, UP/DOWN: +/-0.01");
+            telemetry.addLine("Left Bumper/Right Bumper: Set to Next or Previous Position");
             telemetry.addData("Axon set position: ", position);
             telemetry.addData("measured position: ", mpos);
             telemetry.addData("Voltage: ", axon_position_V.getVoltage());

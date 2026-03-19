@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.autonomous;
+package org.firstinspires.ftc.teamcode.autonomous.archived;
 
 import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.ParallelAction;
@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.acmerobotics.roadrunner.Vector2d;
 import com.acmerobotics.roadrunner.ftc.Actions;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
@@ -18,7 +19,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
 import java.util.ArrayList;
 import java.util.function.Supplier;
-
+@Disabled
 @Autonomous(name = "Red Back Autonomous", group = "Competition")
 public class RedBackAutonomousOpMode extends LinearOpMode {
 
@@ -26,12 +27,12 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
     Action[] trajectories;
 
     AutonomousActionBuilder autonomousActionBuilder;
-
+    boolean isRedSide = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
         MecanumDrive md = new MecanumDrive(hardwareMap, /*new Pose2d(new Vector2d(61, 11.5), Math.toRadians(180))*/ new Pose2d(new Vector2d(61, 11.75), Math.toRadians(-90)));
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
         //robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
         autonomousActionBuilder = new AutonomousActionBuilder(md, robot);
 
@@ -64,7 +65,7 @@ public class RedBackAutonomousOpMode extends LinearOpMode {
 
         while(opModeInInit()) {
 
-            motif = robot.getLauncher().getMotifPattern();
+            motif = robot.getLauncher().getMotifPattern(true);
 
             if (motif == null) {
                 telemetry.addData("  Motif Pattern", "Not Detected");

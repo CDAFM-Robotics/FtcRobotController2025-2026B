@@ -22,11 +22,11 @@ public class AutonomousAprilTagActionTestOpMode extends LinearOpMode {
 
     AutonomousActionBuilder autonomousActionBuilder;
 
-
+    boolean isRedSide = false;
     @Override
     public void runOpMode() {
         MecanumDrive md = new MecanumDrive(hardwareMap, new Pose2d(-50.5, -50.5, Math.toRadians(143)));
-        Robot robot = new Robot(hardwareMap, telemetry);
+        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
         //robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
         autonomousActionBuilder = new AutonomousActionBuilder(md, robot);
 

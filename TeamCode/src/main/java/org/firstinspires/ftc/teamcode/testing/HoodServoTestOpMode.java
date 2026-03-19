@@ -2,25 +2,25 @@ package org.firstinspires.ftc.teamcode.testing;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
 
-@TeleOp(name = "Kicker Servo Test", group = "testing")
+@TeleOp(name = "Hood Servo Test", group = "testing")
 
-public class KickerServoTestOpMode extends LinearOpMode {
+public class HoodServoTestOpMode extends LinearOpMode {
     boolean isRedSide = false;
     @Override
     public void runOpMode() throws InterruptedException {
-        Robot robot = new Robot(hardwareMap, telemetry,isRedSide);
-        robot.getIndexer().indexerServo.setPosition(0.176);
+        // Robot robot = new Robot(hardwareMap, telemetry,isRedSide);
 
         //AnalogInput axon_position_V;
         //axon_position_V = hardwareMap.get(AnalogInput.class, "analog0");
 
         // axon_position_V interpolates between 0-3.3V based on real position in range
         // x = pos / 3.3 * 360
+        Servo hoodServo = hardwareMap.get(Servo.class, "hoodServo");
 
         telemetry.setMsTransmissionInterval(50);
 
@@ -86,8 +86,8 @@ public class KickerServoTestOpMode extends LinearOpMode {
 
 
 
-            robot.getLauncher().kickerServo.setPosition(position);
-            telemetry.addData("Kicker", robot.getLauncher().kickerServo.getPosition());
+            hoodServo.setPosition(position);
+            telemetry.addData("Hood", hoodServo.getPosition());
             telemetry.update();
         }
     }

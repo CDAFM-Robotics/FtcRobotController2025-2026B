@@ -63,6 +63,8 @@ public class Intake {
 
     public void initializeIntakeDevices() {
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
+
+
     }
 
     public void toggleIntake() {
@@ -84,16 +86,20 @@ public class Intake {
     }
 
     public void startIntake() {
-        setIntakeMotorPower(INTAKE_POWER);
-        activeIntake = 1;
+        if (activeIntake != 1) {
+            setIntakeMotorPower(INTAKE_POWER);
+            activeIntake = 1;
+        }
     }
+
     public void stopIntake() {
-
-        setIntakeMotorPower(0);
-        activeIntake = 0;
+        if (activeIntake != 0) {
+            setIntakeMotorPower(0);
+            activeIntake = 0;
+        }
     }
-    public void reverseIntake() {
 
+    public void reverseIntake() {
         setIntakeMotorPower(-1);
         activeIntake = -1;
     }
