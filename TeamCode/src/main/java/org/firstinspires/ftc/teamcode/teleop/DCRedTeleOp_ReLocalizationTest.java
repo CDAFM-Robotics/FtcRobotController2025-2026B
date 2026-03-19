@@ -1,17 +1,27 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.field.Style;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.subsystems.Hud;
+import org.firstinspires.ftc.teamcode.common.util.Drawing;
 
 @Configurable
 @TeleOp(name = "Red Limelight+Pinpoint RELocalize Test", group = "Testing")
@@ -25,7 +35,8 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
 
 
     // TODO add Data to Panels
-    // static TelemetryManager telemetryM;
+    static TelemetryManager telemetryM;
+    Pose3D botpose_mt2 ;
 
 
     @Override
@@ -36,7 +47,11 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         // TODO Panels telemetry
-        // telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+
+        // TODO Draw Robot setup
+        Drawing.init();
+
 
         Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
@@ -58,13 +73,15 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
 
 
         // TODO localization pipeline test
-        Limelight3A limelight;
+        // Limelight3A limelight;
 
-        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+        // limelight = hardwareMap.get(Limelight3A.class, "limelight");
         // polling rate 100 hz? 50hz maps to loop time (25ms)
-        limelight.setPollRateHz(50); // This sets how often we ask Limelight for data (50 times per second)
-        limelight.start();
-        limelight.pipelineSwitch(Robot.LLPipelines.APRIL_TAG.ordinal()); // set Pipeline 3 for April Tags (all)
+        // limelight.setPollRateHz(50); // This sets how often we ask Limelight for data (50 times per second)
+        // limelight.start();
+
+        // limelight.pipelineSwitch(Robot.LLPipelines.APRIL_TAG.ordinal()); // set Pipeline 3 for April Tags (all)
+        robot.getLauncher().setLimelightPipeline((Robot.LLPipelines.APRIL_TAG.ordinal()));
 
 
         hud = new Hud(hardwareMap, telemetry);
@@ -76,27 +93,27 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
         while (opModeIsActive()){
 
             // TODO LOCALIZATION UPDATE TEST
-            limelight.updateRobotOrientation(robot.getDriveBase().getPinPointHeading()*180/Math.PI);
+            robot.getLauncher().getLimeiight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
 
-            result = limelight.getLatestResult();
+            result = robot.getLauncher().getLimeiight().getLatestResult();
             if (result != null && result.isValid()) {
-                Pose3D botpose_mt2 = result.getBotpose_MT2();
+                botpose_mt2 = result.getBotpose_MT2();
                 if (botpose_mt2 != null) {
                     double x = botpose_mt2.getPosition().toUnit(DistanceUnit.INCH).x;
                     double y = botpose_mt2.getPosition().toUnit(DistanceUnit.INCH).y;
-                    telemetry.addData("MT2 Location:", "(" + x + ", " + y + ")");
+                    telemetryM.addData("MT2 Location:", "(" + x + ", " + y + ")");
                 }
             }
 
-            // TODO MT1 (for reference)
-            if (result != null && result.isValid()) {
-                Pose3D botpose = result.getBotpose();
-                if (botpose != null) {
-                    double x = botpose.getPosition().toUnit(DistanceUnit.INCH).x;
-                    double y = botpose.getPosition().toUnit(DistanceUnit.INCH).y;
-                    telemetry.addData("MT1 Location", "(" + x + ", " + y + ")");
-                }
-            }
+//            // TODO MT1 (for reference)
+//            if (result != null && result.isValid()) {
+//                Pose3D botpose = result.getBotpose();
+//                if (botpose != null) {
+//                    double x = botpose.getPosition().toUnit(DistanceUnit.INCH).x;
+//                    double y = botpose.getPosition().toUnit(DistanceUnit.INCH).y;
+//                    telemetryM.addData("MT1 Location", "(" + x + ", " + y + ")");
+//                }
+//            }
 
             // TODO Check for Drift and Update the PINPOINT
             // code here
@@ -119,10 +136,15 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
 
             // Disabled the driver's ability to reset robot heading
             // since we are keeping the heading from autonomous
-//            if (currentGamepad1.start && !previousGamepad1.start){
-//                robot.getDriveBase().resetIMU();
-//                gamepad1.rumble(300);
-//            }
+            if (currentGamepad1.start && !previousGamepad1.start){
+                // robot.getDriveBase().resetIMU();
+                // RobotLog.d("reinit pinpoint %s", robot.getDriveBase().reinitializePinpoint());
+                // robot.getDriveBase().recalibratePinpoint();
+                // robot.getDriveBase().resetIMU();
+                robot.getDriveBase().setPinpointYScalar(1.0);
+                sleep(500);
+                gamepad1.rumble(300);
+            }
 
             if (currentGamepad1.right_bumper != previousGamepad1.right_bumper) {
                 driveSpeed = driveSpeed == 1 ? 0.5 : 1;
@@ -332,6 +354,23 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
 //            }
 
             telemetry.update();
+
+            // TODO add panels telem
+            telemetryM.update();
+
+            // TODO update drawing in panels
+            // drawOnlyCurrent();
+            try{
+                Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
+                if (botpose_mt2 != null) {
+                    // Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.1));
+                    Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.5));
+                }
+                Drawing.sendPacket();
+            } catch (Exception e) {
+                throw new RuntimeException("Drawing failed" +e);
+            }
+
         }
     }
 }

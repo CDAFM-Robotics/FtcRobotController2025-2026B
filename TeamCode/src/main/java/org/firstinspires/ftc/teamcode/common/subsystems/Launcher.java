@@ -29,6 +29,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
+import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.InterpolationTable;
 import org.firstinspires.ftc.teamcode.common.util.RunTimeoutAction;
 import org.firstinspires.ftc.teamcode.common.util.WaitUntilAction;
@@ -45,6 +46,7 @@ public class Launcher {
 
     HardwareMap hardwareMap;
     Telemetry telemetry;
+    private final DebugManager debugManager;
 
     DcMotorEx launcherMotor1;
     DcMotorEx launcherMotor2;
@@ -62,11 +64,12 @@ public class Launcher {
     CRServo launcherServo;
     AnalogInput launcherAnalogInput;
 
-    private Limelight3A limelight;
+    public Limelight3A limelight;
 
     public void setLimelightPipeline(int ordinal) {
         limelight.pipelineSwitch(ordinal);
     }
+    public Limelight3A getLimeiight() { return this.limelight; }
 
     public double getCurrentAngleOffset() {
         return currentAngleOffset;
@@ -299,7 +302,7 @@ public class Launcher {
     public Launcher(HardwareMap hardwareMap, Telemetry telemetry) {
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
-
+        debugManager = new DebugManager(telemetry, "launcher");
         initializeLauncherDevices();
     }
 
@@ -346,11 +349,11 @@ public class Launcher {
 
         actualAngle = currentAngle + currentAngleOffset;
 
-        telemetry.addData("Servo Voltage", "%.2f", currentVoltage);
-        telemetry.addData("Servo Angle Raw", "%.2f", currentAngle);
-        telemetry.addData("Last Servo Voltage", "%.2f", lastVoltage);
-        telemetry.addData("Last Servo Angle Raw", "%.2f", lastAngle);
-        telemetry.addData("Actual Servo Angle", "%.2f", actualAngle);
+        debugManager.launcher("Servo Voltage", "%.2f", currentVoltage);
+        debugManager.launcher("Servo Angle Raw", "%.2f", currentAngle);
+        debugManager.launcher("Last Servo Voltage", "%.2f", lastVoltage);
+        debugManager.launcher("Last Servo Angle Raw", "%.2f", lastAngle);
+        debugManager.launcher("Actual Servo Angle", "%.2f", actualAngle);
 
         lastAngle = currentAngle;
         lastVoltage = currentVoltage;
@@ -388,6 +391,9 @@ public class Launcher {
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0);
+
+        // TODO faster poll speed for localization
+        limelight.setPollRateHz(50);
 
         limelight.start();
 
@@ -475,7 +481,7 @@ public class Launcher {
     }
 
     public void toggleLauncher() {
-        //telemetry.addData("toggleLauncher", launcherMotor1.getPower());
+        debugManager.launcher("toggleLauncher", "%.2f", launcherMotor1.getPower());
        if (launcherMotor1.getPower() == 0) {
            startLauncher();
        }
@@ -518,7 +524,7 @@ public class Launcher {
         }
     }
     public void startLauncher() {
-        //telemetry.addData("startLauncher",launcherVelocity);
+        debugManager.launcher("startLauncher","%.2f",launcherVelocity);
         //launcherVelocity = shootingTable.getData1(shootingDistance);
         setLauncherVelocity(launcherVelocity);
         launcherActive = true;
@@ -756,25 +762,22 @@ public class Launcher {
 
         // Add telemetry data for debugging
 
-        telemetry.addData("Power", turretPower);
-        telemetry.addLine();
-        telemetry.addData("Servo Voltage", "%.2f", currentVoltage);
-        telemetry.addData("Servo Angle Raw", "%.2f", currentAngle);
-        telemetry.addLine();
-        telemetry.addData("Last Servo Voltage", "%.2f", lastVoltage);
-        telemetry.addData("Last Servo Angle Raw", "%.2f", lastAngle);
-        telemetry.addData("Difference", "%.2f", diff);
-        telemetry.addData("Angle Offset", "%.2f", currentAngleOffset);
-        telemetry.addData("Actual Servo Angle", "%.2f", actualAngle);
-        telemetry.addData("launcherVelocity", "%.2f", launcherVelocity);
-        telemetry.addData("launcherVelocity from motor1", "%.2f", launcherMotor1.getVelocity());
-        telemetry.addData("launcherVelocity from motor2", "%.2f", launcherMotor2.getVelocity());
-        telemetry.addData("hood position", "%.2f", hoodPosition);
+        debugManager.addData("Turret Power", "%.2f", turretPower);
+        debugManager.addData("Servo Voltage", "%.2f", currentVoltage);
+        debugManager.addData("Servo Angle Raw", "%.2f", currentAngle);
+        debugManager.addData("Last Servo Voltage", "%.2f", lastVoltage);
+        debugManager.addData("Last Servo Angle Raw", "%.2f", lastAngle);
+        debugManager.addData("Difference", "%.2f", diff);
+        debugManager.addData("Angle Offset", "%.2f", currentAngleOffset);
+        debugManager.addData("Actual Servo Angle", "%.2f", actualAngle);
+        debugManager.addData("launcherVelocity", "%.2f", launcherVelocity);
+        debugManager.addData("launcherVelocity from motor1", "%.2f", launcherMotor1.getVelocity());
+        debugManager.addData("launcherVelocity from motor2", "%.2f", launcherMotor2.getVelocity());
+        debugManager.addData("hood position", "%.2f", hoodPosition);
 
 
         // Logging
-
-        RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
+        // RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
         // Set last variables for next loop
 
         lastAngle = currentAngle;
@@ -842,12 +845,12 @@ public class Launcher {
 
         double turretPower = Math.max(Math.min((error * turretkP) + (turretIntegralSum * turretkI) + (derivative * turretkD) + (turretkF * Math.signum(error)), 1), -1);
 
-//        telemetry.addData("turret target angle", "%.2f", target);
-//        telemetry.addData("turret current angle", "%.2f", current);
-//        telemetry.addData("turret Error", "%.2f", error);
-//        telemetry.addData("turret Integral", "%.2f", turretIntegralSum);
-//        telemetry.addData("turret Derivative", "%.2f", derivative);
-//        telemetry.addData("turret Power", "%.2f", turretPower);
+//        debugManager.launcher("turret target angle", "%.2f", target);
+//        debugManager.launcher("turret current angle", "%.2f", current);
+//        debugManager.launcher("turret Error", "%.2f", error);
+//        debugManager.launcher("turret Integral", "%.2f", turretIntegralSum);
+//        debugManager.launcher("turret Derivative", "%.2f", derivative);
+//        debugManager.launcher("turret Power", "%.2f", turretPower);
 
         return turretPower;
     }

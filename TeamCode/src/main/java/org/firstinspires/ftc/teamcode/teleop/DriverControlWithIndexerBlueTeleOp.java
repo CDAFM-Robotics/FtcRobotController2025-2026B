@@ -18,6 +18,8 @@ import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Hud;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.common.util.DebugManager;
+
 import com.bylazar.configurables.PanelsConfigurables;
 
 @Configurable
@@ -43,6 +45,24 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // TODO Panels telemetry
         // telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
+        // One line to set up — pass your telemetry and a tag name
+        DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
+        // ── Toggle these for competition vs. development ────────────
+        // ─── Master switches ───────────────────────────────────────────
+        debugManager.TELEMETRY_ENABLED = false;
+        debugManager.ROBOT_LOG_ENABLED = false;
+
+        debugManager.LOG_DRIVEBASE  = false;
+        debugManager.LOG_PINPOINT   = false;
+        debugManager.LOG_VISION     = false;
+        debugManager.LOG_LAUNCHER   = false;
+        debugManager.LOG_SPINDEXER  = false;
+        debugManager.LOG_INTAKE     = false;
+        debugManager.LOG_HUD        = false;
+        debugManager.LOG_ROBOT      = false;
+        // ───────────────────────────────────────────────────────────
+        debugManager.addData("Red side", "%s", isRedSide);
+
         Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         double driveSpeed = 1;
@@ -64,12 +84,11 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
         hud = new Hud(hardwareMap, telemetry);
 
-        telemetry.update();
+        debugManager.update();
 
         waitForStart();
 
         while (opModeIsActive()){
-            telemetry.addData("is red side", isRedSide);
             previousGamepad1.copy(currentGamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
@@ -111,13 +130,13 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             // Intake Balls. Add isSafeToStop()
             if (currentGamepad1.right_trigger != 0.0
                 && robot.isSafeToStopOuttake()) {
-                //telemetry.addLine("gameped 1 right trigger");
+                // telemetry.addLine("gamepad 1 right trigger");
                 // Robot entering intake state
                 if (robot.getRobotInOutState() != Robot.RobotInOutStates.INTAKE) {
                     robot.setRobotState(Robot.RobotInOutStates.INTAKE);
                     //reset intake state
                     robot.setAutoIntakeState(Robot.AutoIntakeStates.INIT);
-                    //start the intake rolling
+                    //move intake control into the robot class
                     robot.getIntake().startIntake();
                 }
                 //turn the indexer for intake
@@ -254,12 +273,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 gamepad2.setLedColor(255, 255, 0, 20);
             }*/
 
-            //telemetry.addData("launcher power:", robot.getLauncher().getLaunchPower());
-            //telemetry.addData("launcher velocity:", robot.getLauncher().getLauncherVelocity());
-            //telemetry.addData("launcher velocity2:", robot.getLauncher().getLauncherVelocity2());
-            telemetry.addData("color:", robot.getIndexer().artifactColorArray[0]);
-            telemetry.addData("color:", robot.getIndexer().artifactColorArray[1]);
-            telemetry.addData("color:", robot.getIndexer().artifactColorArray[2]);
+            debugManager.addData("Blue TeleOp color s0:", "%s", robot.getIndexer().artifactColorArray[0]);
+            debugManager.addData("Blue TeleOp color s1:", "%s", robot.getIndexer().artifactColorArray[1]);
+            debugManager.addData("Blue TeleOp color s2:", "%s", robot.getIndexer().artifactColorArray[2]);
 
             // TODO Measure Loop time and launcher velocity
             // RobotLog.d("launcher velocity: %f",
@@ -285,10 +301,10 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             hud.UpdateBallUI();
 
             // TODO Add timing Log at end of loop
-//            RobotLog.d("c0: %s c1: %s c2: %s",
-//                    robot.getIndexer().artifactColorArray[0],
-//                    robot.getIndexer().artifactColorArray[1],
-//                    robot.getIndexer().artifactColorArray[2]);
+            debugManager.log("Blue TeleOp c0: %s c1: %s c2: %s",
+                    robot.getIndexer().artifactColorArray[0],
+                    robot.getIndexer().artifactColorArray[1],
+                    robot.getIndexer().artifactColorArray[2]);
 
             // Update turret angle so that it always point to the goal
             robot.updateTurretAngle();
@@ -298,7 +314,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //                robot.getMotif();
 //            }
 
-            telemetry.update();
+            debugManager.update();
         }
     }
 }
