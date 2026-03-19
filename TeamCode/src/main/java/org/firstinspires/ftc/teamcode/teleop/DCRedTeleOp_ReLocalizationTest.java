@@ -6,14 +6,11 @@ import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.PoseConverter;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -138,11 +135,7 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
             // since we are keeping the heading from autonomous
             if (currentGamepad1.start && !previousGamepad1.start){
                 // robot.getDriveBase().resetIMU();
-                // RobotLog.d("reinit pinpoint %s", robot.getDriveBase().reinitializePinpoint());
-                // robot.getDriveBase().recalibratePinpoint();
-                // robot.getDriveBase().resetIMU();
-                robot.getDriveBase().setPinpointYScalar(1.0);
-                sleep(500);
+                robot.getDriveBase().setPinpointYScalar(robot.PINPOINT_B1_YAWSCALAR);
                 gamepad1.rumble(300);
             }
 

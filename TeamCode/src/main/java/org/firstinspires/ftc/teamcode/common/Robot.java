@@ -6,7 +6,6 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.subsystems.DriveBase;
@@ -66,6 +65,8 @@ public class Robot {
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
 //    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
 
+    public static double PINPOINT_B1_YAWSCALAR = 1.0033595;
+
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class
         this.hardwareMap = hardwareMap;
@@ -95,18 +96,7 @@ public class Robot {
         // Initialize the map with calibration points.
         // Distances in cm, velocities as motor power (0.0 to 1.0)
         // Example values:
-    /*
-        LIMELIGHT PIPELINES:        TYPE:               STATUS:
-            0: PURPLE               COLOR               USED
-            1: YELLOW               COLOR               OPEN FOR CONFIGURATION
-            2: BLUE                 COLOR               OPEN FOR CONFIGURATION
-            3: APRIL_TAG            AprilTag            OPEN FOR CONFIGURATION
-            4: MOTIF                AprilTag            USED
-            5: RED_GOAL             AprilTag            USED
-            6: BLUE_GOAL            AprilTag            USED
-            7: OBELISK              AprilTag            USED
 
-     */
         // read the target pattern from autonomous
         if (RobotStaticValuesClass.autoCompleted) {
             RobotStaticValuesClass.obliskReady = true;
@@ -278,11 +268,7 @@ public class Robot {
     boolean noArtifacts = false;
 
     public void shootAllBalls() {
-        //debugManager.robot("shootAllBalls");
 
-//        debugManager.robot("color:", indexer.artifactColorArray[0]);
-//        debugManager.robot("color:", indexer.artifactColorArray[1]);
-//        debugManager.robot("color:", indexer.artifactColorArray[2]);
 
         // check to see if flywheel motors are running
         if(launcher.isLauncherActive() && robotInOutState == RobotInOutStates.OUTTAKE) {
@@ -594,6 +580,8 @@ public class Robot {
 
     double buffer = 10;
 
+
+    // TODO check logic
     public double normalizeAngle (double angle) {
 
         if (lastRelativeHeading == -5000) {
@@ -601,7 +589,9 @@ public class Robot {
         }
 
 
+        // TODO will this 'ever' happen more than once? (while?)
         while (angle > 180.0) {
+            // TODO what about when exactly == 180?
             if (angle > 180 && angle < 180 + buffer && lastRelativeHeading > 0) {
                 lastRelativeHeading = angle;
                 return angle;

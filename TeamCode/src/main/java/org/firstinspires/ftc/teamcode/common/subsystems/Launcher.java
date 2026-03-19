@@ -134,11 +134,11 @@ public class Launcher {
     // Use a table for interpolation
     private InterpolationTable shootingTable;
 
-    // Turret control variables
-    public static double turretkF = 0.10;
-    public static double turretkP = 0.005;
+    // Bot2 Turret control variables
+    public static double turretkF = 0.11; // 19m26 was 0.10
+    public static double turretkP = 0.004; // 19m26 was 0.005
     public static double turretkI = 0;
-    public static double turretkD = 0.00005;
+    public static double turretkD = 0.00002; // 19m26 was 0.000005
 
     private double currentVoltage;
     private double currentAngle;

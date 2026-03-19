@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -81,8 +82,11 @@ public class ColorSensorTestOpMode extends LinearOpMode {
         colorSensorA.setGain(gain);
         colorSensorB.setGain(gain);
 
+        RobotLog.d("CS A 1");
         colorSensorANormalizedColors = colorSensorA.getNormalizedColors();
+        RobotLog.d("CS A 2");
         sensorADistance = ((DistanceSensor) colorSensorA).getDistance(DistanceUnit.CM);
+        RobotLog.d("CS A 3");
 
         // TODO Changed "Detect Distance to 6.5 for both (Output and Alternate Sensor Distance in real program)
         // TODO: ~15 = Black Divider wall
@@ -133,6 +137,9 @@ public class ColorSensorTestOpMode extends LinearOpMode {
         telemetry.addData("Distance (cm)", "%.2f / %.2f", sensorADistance, sensorBDistance);
         telemetry.addData("Detected Color",  "%s / %s", colorSensorADetectedColor, colorSensorBDetectedColor);
         telemetry.addData("Predicted Color", predictedColor);
+        RobotLog.d("RGBA: %.2f, %.2f, %.2f, %.2f / %.2f, %.2f, %.2f, %.2f", colorSensorANormalizedColors.red, colorSensorANormalizedColors.green, colorSensorANormalizedColors.blue, colorSensorANormalizedColors.alpha,
+            colorSensorBNormalizedColors.red, colorSensorBNormalizedColors.green, colorSensorBNormalizedColors.blue, colorSensorBNormalizedColors.alpha);
+        RobotLog.d("DIST: %.2f / %.2f",sensorADistance, sensorBDistance );
 
     }
 }

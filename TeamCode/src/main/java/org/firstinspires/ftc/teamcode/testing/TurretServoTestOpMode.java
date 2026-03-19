@@ -1,31 +1,40 @@
 package org.firstinspires.ftc.teamcode.testing;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 
-@TeleOp(name = "Launcher Position Test", group = "Testing")
+@TeleOp(name = "Bot2 Turret Servo Test", group = "Testing")
 @Configurable
-public class LauncherRotatePositionTestOpMode extends LinearOpMode {
+public class TurretServoTestOpMode extends LinearOpMode {
 
-    public static double kF = 0.12;
-    public static double kP = 0.01;
+    public static double kF = 0.11; // 0.12
+    public static double kP = 0.004; // 0.01
     public static double kI = 0;
-    public static double kD = 0;
+    public static double kD = 0.000002; // 0.0
     public static double target = 0;
+
+    static TelemetryManager panelsTelemetry;
+    // TODO Panels telemetry
+
 
     @Override
     public void runOpMode() {
+
+
         CRServo launcherServo = hardwareMap.get(CRServo.class, "turretServo");
         AnalogInput launcherAnalogInput = hardwareMap.get(AnalogInput.class, "turretAnalog");
 
+        panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
         telemetry.setMsTransmissionInterval(100);
+
 
         double currentVoltage;
         double currentAngle;
@@ -81,18 +90,21 @@ public class LauncherRotatePositionTestOpMode extends LinearOpMode {
             // Find the voltage returned and the angle of the servo
 
             currentVoltage = launcherAnalogInput.getVoltage();
-            currentAngle = currentVoltage / 3.3 * 360;
+
+            // TODO: Voltage only outputs angles between 2.5 deg and 355 deg
+            currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360; // max 355, min 2.5
+            // currentAngle = currentVoltage / 3.3 * 360.0;
 
             // Find out whether the angle looped around
 
             diff = Math.abs(currentAngle - lastAngle);
 
             if (!firstLoop) {
-                if (currentAngle > 180 && lastAngle < 180 && diff > 30) {
+                if (currentAngle > 180 && lastAngle <= 180 && diff > 100) { // Diff tuned by jo on 19m26 with panels to prevent flip
                     currentAngleOffset -= 360;
                 }
 
-                if (currentAngle < 180 && lastAngle > 180 && diff > 30) {
+                if (currentAngle < 180 && lastAngle >= 180 && diff > 100) {
                     currentAngleOffset += 360;
                 }
             }
@@ -152,6 +164,12 @@ public class LauncherRotatePositionTestOpMode extends LinearOpMode {
 
             prevGamepad1.copy(currentGamepad1);
             currentGamepad1.copy(gamepad1);
+
+            // TODO put to panels
+            panelsTelemetry.addData("Turret Angle", currentAngle);
+            panelsTelemetry.addData("Actual Angle", actualAngle);
+            panelsTelemetry.addData("Target", target);
+            panelsTelemetry.update();
         }
     }
 
