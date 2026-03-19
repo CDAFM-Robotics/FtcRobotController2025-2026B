@@ -271,8 +271,7 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         // convert the and update the current pose to global
         // RobotStaticValuesClass.savedPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(new Pose(follower.getPose().getX(), follower.getPose().getY(), follower.getPose().getHeading()));
 
-        RobotStaticValuesClass.savedPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
-        RobotStaticValuesClass.turretAngleOffset = robot.getLauncher().getCurrentAngleOffset();
+
 //        RobotLog.d("L:fx:" + RobotStaticValuesClass.savedPose.getX(DistanceUnit.INCH) + ", y:" + RobotStaticValuesClass.savedPose.getY(DistanceUnit.INCH) + ", h:" + RobotStaticValuesClass.savedPose.getHeading(AngleUnit.RADIANS));
 //        RobotLog.d("L:px:"+ follower.getPose().getX() + ", y:" + follower.getPose().getY() + ", h:" + follower.getPose().getHeading());
 //        RobotLog.d("L:ta:"+ robot.getLauncher().getCurrentAngleOffset());
@@ -297,6 +296,12 @@ public class BlueFrontPedroPathingAuto extends OpMode {
         // RobotLog.d("States: " + state + ", " + shootState + ", " + driveState + ", " + newState_Drive);
 
         telemetry.update();
+    }
+
+    @Override
+    public void stop() {
+        RobotStaticValuesClass.savedPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
+        RobotStaticValuesClass.turretAngleOffset = robot.getLauncher().getCurrentAngleOffset();
     }
 
     private enum ShootState {
