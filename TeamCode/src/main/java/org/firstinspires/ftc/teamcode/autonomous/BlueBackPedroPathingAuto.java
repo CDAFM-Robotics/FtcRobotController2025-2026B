@@ -538,4 +538,9 @@ public class BlueBackPedroPathingAuto extends OpMode {
             newState_Drive = false;
         }
     }
+    @Override
+    public void stop() {
+        RobotStaticValuesClass.savedPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
+        RobotStaticValuesClass.turretAngleOffset = robot.getLauncher().getCurrentAngleOffset();
+    }
 }

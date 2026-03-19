@@ -156,7 +156,7 @@ public class Paths {
             .addPath(
                 new BezierLine(
                     new Pose(60.000, 14),
-                    new Pose(8.000, 10)
+                    new Pose(10, 12)
                 )).setConstantHeadingInterpolation(Math.toRadians(180))
 
             .build();
@@ -169,7 +169,7 @@ public class Paths {
         blueFarReturnFromHumanPlayerZone = follower.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                new Pose(8.000, 10),
+                                new Pose(10, 12),
                                 new Pose(60.000, 14)
                         )).setConstantHeadingInterpolation(Math.toRadians(180))
 

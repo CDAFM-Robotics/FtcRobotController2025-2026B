@@ -247,19 +247,26 @@ public class RedBackPedroPathingAuto extends OpMode {
                         motifFound = true;
                     }
                 }
+
+                if (leaveTimer.seconds() >= 26) {
+                    state = State.LEAVE;
+                }
+
                 break;
 
             case ZONE_PICKUP:
                 updateDrive(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000);
                 if (leaveTimer.seconds() >= 26) {
                     state = State.LEAVE;
-               }
+                }
                 break;
             case LEAVE:
                 follower.followPath(follower.pathBuilder()
                         .addPath(new BezierLine(() -> follower.getPose(), new Pose(87, 35)))
                         .setHeadingInterpolation(lazy(() -> linear(follower.getHeading(), Math.toRadians(0),0.8)))
                         .build(), false);
+
+                state = State.FINISHED;
                 break;
         }
 
@@ -478,7 +485,7 @@ public class RedBackPedroPathingAuto extends OpMode {
                     }
                     else if (delayTimer.milliseconds() >= midDelay){
                         follower.followPath(returnToPos);
-                        driveState = DriveState.PICKUP_2_RETURN;
+                        driveState = DriveState.PREP_FOR_SHOOT_INIT;
                         if (state == State.ZONE_PICKUP) {
                             robot.getIntake().setIntakeMotorPower(-1);
                         }
@@ -529,5 +536,11 @@ public class RedBackPedroPathingAuto extends OpMode {
         if (driveState != DriveState.FINISHED) {
             newState_Drive = false;
         }
+    }
+
+    @Override
+    public void stop() {
+        RobotStaticValuesClass.savedPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
+        RobotStaticValuesClass.turretAngleOffset = robot.getLauncher().getCurrentAngleOffset();
     }
 }

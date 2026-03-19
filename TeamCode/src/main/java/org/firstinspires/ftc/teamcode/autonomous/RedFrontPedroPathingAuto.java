@@ -469,7 +469,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
                 if (!follower.isBusy()) {
                     if (midDelay == 0) {
                         follower.followPath(returnToPos);
-                        driveState = DriveState.PICKUP_2_RETURN;
+                        driveState = DriveState.PREP_FOR_SHOOT_INIT;
                         intakeHoldTimer.reset(); // start the holdover timer for intake
                     }
                     else if (!resetTimer) {
@@ -478,7 +478,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
                     }
                     else if (delayTimer.milliseconds() >= midDelay){
                         follower.followPath(returnToPos);
-                        driveState = DriveState.PICKUP_2_RETURN;
+                        driveState = DriveState.PREP_FOR_SHOOT_INIT;
                         intakeHoldTimer.reset(); // start the holdover timer for intake
                     }
                 }
@@ -526,5 +526,11 @@ public class RedFrontPedroPathingAuto extends OpMode {
         if (driveState != DriveState.FINISHED) {
             newState_Drive = false;
         }
+    }
+
+    @Override
+    public void stop() {
+        RobotStaticValuesClass.savedPose = PoseConverter.poseToPose2D(follower.getPose(), InvertedFTCCoordinates.INSTANCE);
+        RobotStaticValuesClass.turretAngleOffset = robot.getLauncher().getCurrentAngleOffset();
     }
 }
