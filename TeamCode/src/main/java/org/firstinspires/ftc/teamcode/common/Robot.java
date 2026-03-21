@@ -1,8 +1,11 @@
 package org.firstinspires.ftc.teamcode.common;
 
+import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.geometry.Pose;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.subsystems.DriveBase;
@@ -11,10 +14,11 @@ import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.common.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
+import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.LinkedList;
 
+@Configurable
 public class Robot {
 
     private DriveBase driveBase;
@@ -22,9 +26,13 @@ public class Robot {
     private Launcher launcher;
     private Intake intake;
     private Hud hud;
+    private Limelight3A limelight;
 
-    //private ElapsedTime timeSinceIndex = new ElapsedTime();
+    private ElapsedTime timeSinceIndex = new ElapsedTime();
     private ElapsedTime timeSinceKick = new ElapsedTime();
+
+    private ElapsedTime timeSinceElevate = new ElapsedTime();
+
     private ElapsedTime timeSinceKickReset  = new ElapsedTime();
     private ElapsedTime reverseIntakeTimer  = new ElapsedTime();
 
@@ -32,35 +40,75 @@ public class Robot {
     public boolean intake3Balls = false; //Picked up all three balls
     public boolean intake1Ball = false; //Picked up one ball
     private boolean safeToStop = true; //if kicker is down
+    private boolean isRedSide = false;
+
+    // PID targets for use in Auto
+    public double last_TurretAngle_Target;
+    public double last_PIDShootingPower_Target;
 
     private ArtifactColor ballColor = ArtifactColor.NONE;
 
     private HardwareMap hardwareMap;
     private Telemetry telemetry;
+    private final DebugManager debugManager;
 
-    public final int WAIT_TIME_KICKER = 300; // 75 didn't shoot once  // was 175 // was 275 (SNGLE RB WHEEL)
+    //shooting order for the balls
+    LinkedList<Integer> shootQueue = new LinkedList<>();
+    enum TargetPattern {
+        NONE,
+        GPP,
+        PGP,
+        PPG
+    }
+    private TargetPattern targetPattern = TargetPattern.NONE;
 
-    public Robot(HardwareMap hardwareMap, Telemetry telemetry) {
+    public static int WAIT_TIME_KICKER_UP = 180; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
+    public static int WAIT_TIME_KICKER_DOWN = 80; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
+
+    public static final long WAIT_TIME_ELEVATOR = 500;
+
+//    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
+//    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
+
+    public static double PINPOINT_B1_YAWSCALAR = 1.0033595;
+
+    public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class
         this.hardwareMap = hardwareMap;
         this.telemetry = telemetry;
-        timeSinceKick.startTime();
-        timeSinceKickReset.startTime();
-        reverseIntakeTimer.startTime();
-
-        initializeSubsystems();
+        debugManager = new DebugManager(telemetry, "launcher");
+        isRedSide = isRed;
+        initializeSubsystems(isRed);
     }
 
-    public void initializeSubsystems() {
+    public void initializeSubsystems(boolean isRed) {
         // Create an instance of every subsystem in the Robot class
-        this.driveBase = new DriveBase(this.hardwareMap, this.telemetry);
+        this.driveBase = new DriveBase(this.hardwareMap, this.telemetry, isRed);
         this.indexer = new Indexer(this.hardwareMap, this.telemetry);
         this.launcher = new Launcher(this.hardwareMap, this.telemetry);
         this.intake = new Intake(this.hardwareMap, this.telemetry);
         //this.hud = new Hud(this.hardwareMap, this.telemetry);
+
+//        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+//        limelight.pipelineSwitch(7);
+
+//        limelight.start();
+
+        // Initialize the map with calibration points.
+        // Distances in cm, velocities as motor power (0.0 to 1.0)
+        // Example values:
+
+        // read the target pattern from autonomous
+        if (RobotStaticValuesClass.autoCompleted) {
+            RobotStaticValuesClass.obliskReady = true;
+        }
+        else {
+            // try to read the oblisk with limelight
+//            getMotif();
+        }
     }
 
-    public enum AutoIntakeStates {
+    public enum AutoIntakeState {
         INIT,
         TURN_EMPTY_SLOT_TO_INTAKE,
         WAIT_FOR_BALL,
@@ -68,7 +116,8 @@ public class Robot {
         READY_TO_SHOOT
     }
 
-    public enum LaunchBallStates {
+    @Deprecated
+    public enum LaunchBallKickerState {
         IDLE,
         INIT,
         TURN_TO_LAUNCH,
@@ -77,10 +126,25 @@ public class Robot {
         UPDATE_INDEXER,
         READY_TO_INTAKE
     }
+
+    public enum LaunchBallState {
+        IDLE,
+        INIT,
+        TURN_TO_LAUNCH,
+        ELEVATE,
+        UPDATE_INDEXER,
+        READY_TO_INTAKE
+    }
+
+    public enum RobotInOutState {
+        IDLE,
+        INTAKE,
+        OUTTAKE
+    }
     /*
         LIMELIGHT PIPELINES:        TYPE:               STATUS:
             0: PURPLE               COLOR               USED
-            1: YELLOW               COLOR               OPEN FOR CONFIGURATION
+            1: YELLOW               COLOR               OPEN FOR CONLaunchBallStatesFIGURATION
             2: BLUE                 COLOR               OPEN FOR CONFIGURATION
             3: APRIL_TAG            AprilTag            OPEN FOR CONFIGURATION
             4: MOTIF                AprilTag            USED
@@ -100,8 +164,13 @@ public class Robot {
         OBELISK
     }
 
-    LaunchBallStates launchState = LaunchBallStates.INIT;
-    AutoIntakeStates autoIntakeState = AutoIntakeStates.INIT;
+    @Deprecated
+    LaunchBallKickerState launchStateKicker = LaunchBallKickerState.INIT;
+
+    LaunchBallState launchState = LaunchBallState.INIT;
+
+    AutoIntakeState autoIntakeState = AutoIntakeState.INIT;
+    RobotInOutState robotInOutState = RobotInOutState.IDLE;
 
     public DriveBase getDriveBase() {
         return driveBase;
@@ -124,45 +193,49 @@ public class Robot {
     }
 
      // Auto-Indexing for intake
-     public void intakeWithIndexerTurn(){
-         telemetry.addData("intakeWithIndexerTurn", autoIntakeState);
+    public void intakeWithIndexerTurn(){
+         debugManager.robot("intakeWithIndexerTurn", "%s",autoIntakeState);
 
          switch (autoIntakeState) {
              case INIT:
+                 debugManager.log("intakeWithIndexerTurn: INIT)");
                  if (indexer.checkEmptySlot()) {
-                     telemetry.addLine("Robot: found empty slot");
-                     RobotLog.d("RRobot: found empty slot");
-                     autoIntakeState = AutoIntakeStates.TURN_EMPTY_SLOT_TO_INTAKE;
+                     debugManager.robot("Robot: found empty slot");
+                     debugManager.log("RRobot: found empty slot");
+                     if(indexer.turnEmptySlotToIntake()) {
+                         intake.stopIntake();
+                         autoIntakeState = AutoIntakeState.TURN_EMPTY_SLOT_TO_INTAKE;
+                         break;
+                     }
+                     else {
+                         autoIntakeState = AutoIntakeState.WAIT_FOR_BALL;
+                         break;
+                     }
                  } else {
                      //No empty slot
                      // - update color double check
                      // This line is removed to save time.
                      indexer.updateColorAllSlots();
                      intake3Balls = true;
-//                     indexer.positionForOuttake();
-                     autoIntakeState = AutoIntakeStates.INIT;
                      break;
                  }
              case TURN_EMPTY_SLOT_TO_INTAKE:
-                 indexer.turnEmptySlotToIntake();
-                 autoIntakeState = AutoIntakeStates.WAIT_FOR_BALL;
-                 break;
-             case WAIT_FOR_BALL:
-                 telemetry.addLine("Robot: WAIT_FOR_BALL");
+                 debugManager.log("Robot: TURN_EMPTY_SLOT_TO_INTAKE");
                  if (indexer.indexerFinishedTurning()) {
-                     telemetry.addLine("Robot: indexerFinishedTurning");
-                     if (indexer.isBallAtIntake()) {
-                         telemetry.addLine("Robot: isBallAtIntake");
-                         intake1Ball = true;
-                         indexer.updateColorAtIntakeOnly();
-                         autoIntakeState = AutoIntakeStates.INIT;
-                         break;
-                     }
+                     debugManager.robot("Robot: indexerFinishedTurning");
+                     intake.startIntake();
+                     autoIntakeState = AutoIntakeState.WAIT_FOR_BALL;
                  }
                  break;
-             case POSITION_FOR_OUTTAKE:
-                 if (indexer.indexerFinishedTurning()) {
-                     autoIntakeState = AutoIntakeStates.INIT;
+             case WAIT_FOR_BALL:
+                 debugManager.log("Robot: WAIT_FOR_BALLt");
+
+                 if (indexer.isBallAtIntakeFast()) {
+                         debugManager.log("Robot: isBallAtIntake");
+                         intake1Ball = true;
+                         intake.stopIntake();
+                         autoIntakeState = AutoIntakeState.INIT;
+                         break;
                  }
                  break;
              default:
@@ -170,11 +243,15 @@ public class Robot {
          }
      }
 
+    public Telemetry getTelemetry() {
+        return telemetry;
+    }
+
     public void startLaunchAGreenBall(){
         if(launcher.isLauncherActive()) {
-            //telemetry.addLine("stratLaunchAGreenBall");
+            //debugManager.robot("stratLaunchAGreenBall");
             ballColor = ArtifactColor.GREEN;
-            launchState = LaunchBallStates.INIT;
+            launchStateKicker = LaunchBallKickerState.INIT;
         }
         if (launcher.getKickerPosition() == launcher.POSITION_KICKER_SERVO_KICK_BALL) {
             launcher.resetKicker();
@@ -184,9 +261,9 @@ public class Robot {
 
     public void startLaunchAPurpleBall(){
         if(launcher.isLauncherActive()) {
-            //telemetry.addLine("stratLaunchAPupleBall");
+            //debugManager.robot("stratLaunchAPupleBall");
             ballColor = ArtifactColor.PURPLE;
-            launchState = LaunchBallStates.INIT;
+            launchStateKicker = LaunchBallKickerState.INIT;
         }
         if (launcher.getKickerPosition() == launcher.POSITION_KICKER_SERVO_KICK_BALL) {
             launcher.resetKicker();
@@ -196,93 +273,155 @@ public class Robot {
 
     public void launchAColorBall(){
 
-            //telemetry.addData("launchAColorBall", ballColor);
-            //telemetry.addData("color:", indexer.artifactColorArray[0]);
-            //telemetry.addData("color:", indexer.artifactColorArray[1]);
-            //telemetry.addData("color:", indexer.artifactColorArray[2]);
+            //debugManager.robot("launchAColorBall", ballColor);
+            //debugManager.robot("color:", indexer.artifactColorArray[0]);
+            //debugManager.robot("color:", indexer.artifactColorArray[1]);
+            //debugManager.robot("color:", indexer.artifactColorArray[2]);
 
     }
 
+    boolean noArtifacts = false;
+
+
+
     public void shootAllBalls() {
-        telemetry.addLine("shootAllBalls");
+        if (launcher.isLauncherActive() && robotInOutState == RobotInOutState.OUTTAKE) {
+            switch (launchState) {
+                case INIT:
 
-        telemetry.addData("color:", indexer.artifactColorArray[0]);
-        telemetry.addData("color:", indexer.artifactColorArray[1]);
-        telemetry.addData("color:", indexer.artifactColorArray[2]);
-
-        // check to see if flywheel motors are running
-        if(launcher.isLauncherActive()) {
-            RobotLog.d("shootAllBalls");
-            RobotLog.d("0 color: %s", indexer.artifactColorArray[0]);
-            RobotLog.d("1 color: %s", indexer.artifactColorArray[1]);
-            RobotLog.d("2 color: %s", indexer.artifactColorArray[2]);
-
-                switch (launchState) {
-                    case INIT:
-                        telemetry.addLine("shootAllBalls: INIT");
-                        RobotLog.d("shootAllBalls: INIT");
-                        if(indexer.findABall()) {
-                            launchState = LaunchBallStates.TURN_TO_LAUNCH;
-                            break;
-                        }
-                        else if (!indexer.atIntake()){
+                    debugManager.log("shootAllBalls: INIT");
+                    if(findNextBall()) {
+                        debugManager.log("shootAllBalls: findNextBall");
+                        launchState = LaunchBallState.TURN_TO_LAUNCH;
+                    }
+                    else {
+                        if (!indexer.atIntake()) {
+                            debugManager.log("shootAllBalls: !indexer.atIntake())");
                             indexer.positionForIntake();
-                            launchState = LaunchBallStates.READY_TO_INTAKE;
-                            break;
                         }
-                        else {
-                            break;
+                        launchState = LaunchBallState.READY_TO_INTAKE;
+                        debugManager.log("shootAllBalls: INIT %s", launchState);
+                    }
+                    break;
+
+                case TURN_TO_LAUNCH:
+                    debugManager.log("shootAllBalls: TURN_TO_LAUNCH");
+                    if (indexer.moveToOuttake()) {
+                        debugManager.log("shootAllBalls: moveToOuttake()");
+                    }
+                    launchState = LaunchBallState.ELEVATE;
+                    break;
+
+                case ELEVATE:
+                    debugManager.log("shootAllBalls: ELEVATE");
+                    if (indexer.indexerFinishedTurning()) {
+                        safeToStop = false;
+                        launcher.elevateBall();
+                        timeSinceElevate.reset();
+                        launchState = LaunchBallState.UPDATE_INDEXER;
+                    }
+                    break;
+
+                case UPDATE_INDEXER:
+                    debugManager.log("shootAllBalls: UPDATE_INDEXER");
+                    if (timeSinceElevate.milliseconds() > WAIT_TIME_ELEVATOR) {
+                        safeToStop = true;
+                        indexer.updateAfterShoot();
+                        shootQueue.removeFirst();
+                        launchState = LaunchBallState.INIT;
+                        debugManager.log("shootAllBalls: UPDATE_INDEXER set init");
+                    }
+                    break;
+
+                case READY_TO_INTAKE:
+                    debugManager.log("shootAllBalls: READY_TO_INTAKE");
+                    if (indexer.indexerFinishedTurning()) {
+                        updateColorAllSlots();
+                        if (indexer.findABall()) {
+                            // for some reason, there is a ball in the indexer
+                            shootOrder();
                         }
-                    case TURN_TO_LAUNCH:
-                        telemetry.addLine("shootAllBalls: TURN_TO_LAUNCH");
-                        RobotLog.d("shootAllBalls: TURN_TO_LAUNCH");
-                        indexer.moveToOuttake();
-                        launchState = LaunchBallStates.KICK_BALL;
-                        break;
-                    case KICK_BALL:
-                        telemetry.addLine("shootAllBalls: KICK_BALL");
-                        RobotLog.d("shootAllBalls: KICK_BALL");
-                        if (indexer.indexerFinishedTurning()) {
-                            safeToStop = false;
-                            launcher.kickBall();
-                            timeSinceKick.reset();
-                            launchState = LaunchBallStates.RESET_KICKER;
-                            break;
-                        } else {
-                            break;
-                        }
-                    case RESET_KICKER:
-                        telemetry.addLine("shootAllBalls: RESET_KICKER");
-                        RobotLog.d("shootAllBalls: RESET_KICKER");
-                        if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER) {
-                            launcher.resetKicker();
-                            timeSinceKickReset.reset();
-                            launchState = LaunchBallStates.UPDATE_INDEXER;
-                            break;
-                        } else {
-                            break;
-                        }
-                    case UPDATE_INDEXER:
-                        telemetry.addLine("shootAllBalls: UPDATE_INDEXER");
-                        RobotLog.d("shootAllBalls: UPDATE_INDEXER");
-                        if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER) {
-                            safeToStop = true;
-                            indexer.updateAfterShoot();
-                            launchState = LaunchBallStates.INIT;
-                            RobotLog.d("shootAllBalls: UPDATE_INDEXER set init");
-                        }
-                        break;
-                    case READY_TO_INTAKE:
-                        if (indexer.indexerFinishedTurning()) {
-                            updateColorAllSlots();
-                            launchState = LaunchBallStates.INIT;
-                        }
-                        break;
-                    default:
-                        RobotLog.d("shootAllBalls Unexpected");
-                        throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
-                }
+                        launchState = LaunchBallState.INIT;
+                    }
+                    break;
+
+                default:
+                    debugManager.log("shootAllBalls Unexpected");
+                    throw new IllegalStateException("shootAllBalls Unexpected value: " + launchState);
+            }
         }
+    }
+
+    public void shootAllBallsAuto() {
+
+        debugManager.log("shootAllBalls");
+        debugManager.log("0 color: %s", indexer.artifactColorArray[0]);
+        debugManager.log("1 color: %s", indexer.artifactColorArray[1]);
+        debugManager.log("2 color: %s", indexer.artifactColorArray[2]);
+    // check to see if flywheel motors are running
+        switch (launchStateKicker) {
+            case INIT:
+                debugManager.log("shootAllBalls: INIT");
+                noArtifacts = false;
+                if(indexer.findABall()) {
+                    launchStateKicker = LaunchBallKickerState.TURN_TO_LAUNCH;
+                    debugManager.log("shootAllBalls: findABall");
+                    break;
+                }
+                else {
+                    debugManager.log("shootAllBalls: NOT findABall");
+                    noArtifacts = true;
+                    break;
+                }
+            case TURN_TO_LAUNCH:
+                debugManager.log("shootAllBalls: TURN_TO_LAUNCH");
+                indexer.moveToOuttake();
+                launchStateKicker = LaunchBallKickerState.KICK_BALL;
+                break;
+            case KICK_BALL:
+                debugManager.log("shootAllBalls: KICK_BALL");
+                if (indexer.indexerFinishedTurning()) {
+                    safeToStop = false;
+                    launcher.kickBall();
+                    timeSinceKick.reset();
+                    launchStateKicker = LaunchBallKickerState.RESET_KICKER;
+                    break;
+                } else {
+                    break;
+                }
+            case RESET_KICKER:
+                debugManager.log("shootAllBalls: RESET_KICKER");
+                if (timeSinceKick.milliseconds() > WAIT_TIME_KICKER_UP) {
+                    launcher.resetKicker();
+                    timeSinceKickReset.reset();
+                    launchStateKicker = LaunchBallKickerState.UPDATE_INDEXER;
+                    break;
+                } else {
+                    break;
+                }
+            case UPDATE_INDEXER:
+                debugManager.log("Update_indexer");
+                if (timeSinceKickReset.milliseconds() > WAIT_TIME_KICKER_DOWN) {
+                    safeToStop = true;
+                    indexer.updateAfterShoot();
+                    launchStateKicker = LaunchBallKickerState.INIT;
+                }
+                break;
+            case READY_TO_INTAKE:
+                debugManager.log("Ready to Intake");
+                if (indexer.indexerFinishedTurning()) {
+                    updateColorAllSlots();
+                    launchStateKicker = LaunchBallKickerState.INIT;
+                }
+                break;
+            default:
+                debugManager.log("Exception illegal");
+                throw new IllegalStateException("shootAllBalls Unexpected value: " + launchStateKicker);
+        }
+    }
+
+    public boolean isNoArtifacts() {
+        return noArtifacts;
     }
 
     public void resetIndexer() {
@@ -298,7 +437,7 @@ public class Robot {
         return intake3Balls;
     }
 
-    public void setIntak3BallsOff () {
+    public void setIntake3BallsOff() {
         intake3Balls = false;
     }
 
@@ -306,13 +445,15 @@ public class Robot {
         return intake1Ball;
     }
 
-    public void setIntak1BallOff () {
+    public void setIntake1BallOff() {
         intake1Ball = false;
     }
 
     public void updateColorAllSlots() {
         indexer.updateColorAllSlots();
     }
+
+    private double lastRelativeHeading = -5000; // Just to check whether it has been set yet
 
     //updating the turret every loop
     public void updateTurretAngle(){
@@ -325,9 +466,18 @@ public class Robot {
         double robotHeading = Math.toDegrees(pinPointHeading);
 
         //calculate the relative angle of the turret to the robot
+        double blueGoalX;
+        double blueGoalY;
         // coordinates of the blue goal
-        double blueGoalX = -64;
-        double blueGoalY = -64;
+        if (isRedSide) {
+            blueGoalX = -64;
+            blueGoalY = 64;
+        }
+        else {
+            blueGoalX = -64;
+            blueGoalY = -64;
+        }
+
 
         // calculate vector to blue goal
         double deltaX = blueGoalX - robotX;
@@ -339,34 +489,299 @@ public class Robot {
         double absoluteAngleRadians = Math.atan2(deltaY, deltaX);
         double absoluteAngleDegree = Math.toDegrees(absoluteAngleRadians);
 
-        double relativeAngle = absoluteAngleDegree - robotHeading;
+        double relativeAngle;
+        if (isRedSide) {
+            relativeAngle = (absoluteAngleDegree - robotHeading);
+        }
+        else {
+            relativeAngle = (absoluteAngleDegree - robotHeading) + 2; //off set on blue side
+        }
 
         relativeAngle = normalizeAngle(relativeAngle);
 
-        telemetry.addData("deltaX:", deltaX);
-        telemetry.addData("deltaY:", deltaY);
-        telemetry.addData("robotX:", robotX);
-        telemetry.addData("robotY:", robotY);
-        telemetry.addData("absoluteAngleRadians:", absoluteAngleRadians);
-        telemetry.addData("absoluteAngleDegree:", absoluteAngleDegree);
-        telemetry.addData("pinPointHeading:", pinPointHeading);
-        telemetry.addData("relativeAngle:", relativeAngle);
-        telemetry.addData("distance to goal",distanceToGoal);
+        debugManager.robot("deltaX:", "%.2f", deltaX);
+        debugManager.robot("deltaY:", "%.2f", deltaY);
+        debugManager.robot("robotX:", "%.2f", robotX);
+        debugManager.robot("robotY:", "%.2f", robotY);
+        debugManager.robot("absoluteAngleRadians:", "%.2f", absoluteAngleRadians);
+        debugManager.robot("absoluteAngleDegree:", "%.2f", absoluteAngleDegree);
+        debugManager.robot("pinPointHeading:", "%.2f", pinPointHeading);
+        debugManager.robot("relativeAngle:", "%.2f", relativeAngle);
+        debugManager.robot("distance to goal","%.2f", distanceToGoal);
 
         launcher.setTurretRelativeAngle(relativeAngle);
     }
 
+    //updating the turret every loop
+    public void updateTurretAngleAuto(){
+        //read the current pose
+        Pose FTCPose = new Pose();
+        FTCPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(new Pose(driveBase.getPinPointPosX(), driveBase.getPinPointPosY(), driveBase.getPinPointHeading()));
+        double robotX = FTCPose.getX();
+        double robotY = FTCPose.getY();
+        //read the current robot heading
+        double pinPointHeading = FTCPose.getHeading();
+        pinPointHeading = normalizeAngle(pinPointHeading);
+        double robotHeading = Math.toDegrees(pinPointHeading);
+
+        //calculate the relative angle of the turret to the robot
+        double blueGoalX;
+        double blueGoalY;
+        // coordinates of the blue goal
+        if (isRedSide) {
+            blueGoalX = -64;
+            blueGoalY = 64;
+        }
+        else {
+            blueGoalX = -64;
+            blueGoalY = -64;
+        }
+
+
+        // calculate vector to blue goal
+        double deltaX = blueGoalX - robotX;
+        double deltaY = blueGoalY - robotY;
+        double distanceToGoal = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+        launcher.setShootingDistance(distanceToGoal);
+
+        //calculates the angle in radians between the positive x-axis and a point
+        double absoluteAngleRadians = Math.atan2(deltaY, deltaX);
+        double absoluteAngleDegree = Math.toDegrees(absoluteAngleRadians);
+
+        double relativeAngle;
+        if (isRedSide) {
+            relativeAngle = (absoluteAngleDegree - robotHeading);
+        }
+        else {
+            relativeAngle = (absoluteAngleDegree - robotHeading) + 6; //off set on blue side
+        }
+
+        relativeAngle = normalizeAngle(relativeAngle);
+
+        debugManager.robot("deltaX:", "%.2f", deltaX);
+        debugManager.robot("deltaY:", "%.2f", deltaY);
+        debugManager.robot("robotX:", "%.2f", robotX);
+        debugManager.robot("robotY:", "%.2f", robotY);
+        debugManager.robot("absoluteAngleRadians:", "%.2f", absoluteAngleRadians);
+        debugManager.robot("absoluteAngleDegree:", "%.2f", absoluteAngleDegree);
+        debugManager.robot("pinPointHeading:", "%.2f", pinPointHeading);
+        debugManager.robot("relativeAngle:", "%.2f", relativeAngle);
+        debugManager.robot("distance to goal", "%.2f", distanceToGoal);
+
+        launcher.setTurretRelativeAngle(relativeAngle);
+    }
+
+    double buffer = 10;
+
+
+    // TODO check logic
     public double normalizeAngle (double angle) {
+
+        if (lastRelativeHeading == -5000) {
+            lastRelativeHeading = angle;
+        }
+
+
+        // TODO will this 'ever' happen more than once? (while?)
         while (angle > 180.0) {
+            // TODO what about when exactly == 180?
+            if (angle > 180 && angle < 180 + buffer && lastRelativeHeading > 0) {
+                lastRelativeHeading = angle;
+                return angle;
+            }
             angle -= 360.0;
         }
         while (angle < -180.0) {
+            if (angle < -180 && angle > -180 - buffer && lastRelativeHeading < 0) {
+                lastRelativeHeading = angle;
+                return angle;
+            }
             angle += 360.0;
         }
+
+        lastRelativeHeading = angle;
         return angle;
     }
 
-    public boolean isSafeToStop() {
+    public boolean isSafeToStopOuttake() {
         return safeToStop;
     }
+
+    public void setRobotState(RobotInOutState state) {
+        robotInOutState = state;
+    }
+
+    public RobotInOutState getRobotInOutState() {
+        return robotInOutState;
+    }
+
+    public void setLaunchStateKicker(LaunchBallKickerState state) {
+        launchStateKicker = state;
+    }
+
+    public LaunchBallKickerState getLaunchStateKicker() {
+        return launchStateKicker;
+    }
+
+    public void setAutoIntakeState(AutoIntakeState state) {
+        autoIntakeState = state;
+    }
+
+    public AutoIntakeState getAutoIntakeStat() {
+        return autoIntakeState;
+    }
+
+    public void shootOrder() {
+        indexer.buildShootQueueNoColor(shootQueue);
+
+        if (shootQueue.size() >= 2) {
+            if (targetPattern == TargetPattern.GPP) {
+                int index = shootQueue.get(0);
+                if (indexer.artifactColorArray[index] != ArtifactColor.GREEN) {
+                    for (int i=0; i < shootQueue.size(); i++) {
+                        if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.GREEN) {
+                            int item = shootQueue.remove(i);  // remove from old position
+                            shootQueue.add(0, item);
+                            break;
+                        }
+                        else if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.UNKNOWN) {
+                            int item = shootQueue.remove(i);  // remove from old position
+                            shootQueue.add(0, item);
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (targetPattern == TargetPattern.PGP) {
+                int index = shootQueue.get(1);
+                if (indexer.artifactColorArray[index] != ArtifactColor.GREEN) {
+                    for (int i=0; i < shootQueue.size(); i++) {
+                        if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.GREEN) {
+                            int item = shootQueue.remove(i);  // remove from old position
+                            shootQueue.add(1, item);
+                            break;
+                        }
+                        else if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.UNKNOWN) {
+                            int item = shootQueue.remove(i);  // remove from old position
+                            shootQueue.add(1, item);
+                            break;
+                        }
+                    }
+                }
+
+            }
+            else if (targetPattern == TargetPattern.PPG) {
+                if (shootQueue.size() >= 3) {
+                    int index = shootQueue.get(2);
+                    if (indexer.artifactColorArray[index] != ArtifactColor.GREEN) {
+                        for (int i = 0; i < shootQueue.size(); i++) {
+                            if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.GREEN) {
+                                int item = shootQueue.remove(i);  // remove from old position
+                                shootQueue.add(2, item);
+                                break;
+                            } else if (indexer.artifactColorArray[shootQueue.get(i)] == ArtifactColor.UNKNOWN) {
+                                int item = shootQueue.remove(i);  // remove from old position
+                                shootQueue.add(2, item);
+                                break;
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+        for (int value :shootQueue) {
+            debugManager.robot("shootOrder:", "%d", value);
+        }
+    }
+
+    public void shootOrderNone() {
+        shootQueue.clear();
+        launchStateKicker = LaunchBallKickerState.INIT;
+        targetPattern = TargetPattern.NONE;
+        shootOrder();
+    }
+
+    public void shootOrderMotif() {
+        shootQueue.clear();
+        launchStateKicker = LaunchBallKickerState.INIT;
+        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+            targetPattern = TargetPattern.GPP;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+            targetPattern = TargetPattern.PGP;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+            targetPattern = TargetPattern.PPG;
+
+        shootOrder();
+    }
+
+    public void shootOrderMotifOneOff() {
+        shootQueue.clear();
+        launchStateKicker = LaunchBallKickerState.INIT;
+        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+            targetPattern = TargetPattern.PPG;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+            targetPattern = TargetPattern.GPP;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+            targetPattern = TargetPattern.PGP;
+
+        shootOrder();
+    }
+
+    public void shootOrderMotifTwoOff() {
+        shootQueue.clear();
+        launchStateKicker = LaunchBallKickerState.INIT;
+        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+            targetPattern = TargetPattern.PGP;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+            targetPattern = TargetPattern.PPG;
+        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+            targetPattern = TargetPattern.GPP;
+
+        shootOrder();
+    }
+
+    public boolean findNextBall() {
+        debugManager.robot("findNextBall", "");
+        for (int value :shootQueue) {
+            debugManager.robot("shootOrder: ", "%d",value);
+        }
+
+        if ( !shootQueue.isEmpty() ) {
+            debugManager.robot("findNextBall:!shootQueue.isEmpty()", "");
+            indexer.setNextShootSlot(shootQueue.getFirst());
+            //shootQueue.removeFirst();
+            return true;
+        }
+        return false;
+    }
+//
+//    public void getMotif() {
+//        LLResult result = limelight.getLatestResult();
+//        if (result.isValid()) {
+//            List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
+//            if (fiducialResults != null) {
+//                for (LLResultTypes.FiducialResult fr : fiducialResults) {
+//                    if (fr.getFiducialId() == 21) {
+//                        RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.GPP;
+//                        RobotStaticValuesClass.obliskReady = true;
+//                    }
+//                    else if (fr.getFiducialId() == 22) {
+//                        RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.PGP;
+//                        RobotStaticValuesClass.obliskReady = true;
+//                    }
+//                    else if (fr.getFiducialId() == 23) {
+//                        RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.PPG;
+//                        RobotStaticValuesClass.obliskReady = true;
+//                    }
+//                }
+//            }
+//        }
+//        RobotLog.d("RobotStaticValuesClass.obliskReady %s", RobotStaticValuesClass.obliskReady);
+//    }
+//
+//    public void setTagPipeline(int pipeline) {
+//        limelight.pipelineSwitch(pipeline);
+//    }
+
 }

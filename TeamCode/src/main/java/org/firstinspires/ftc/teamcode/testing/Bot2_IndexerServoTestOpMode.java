@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 @TeleOp(name = "Bot2 Indexer Servo Test", group = "Testing")
 public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
     boolean isRedSide = false;
+
     @Override
     public void runOpMode() throws InterruptedException {
         Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
@@ -67,7 +68,16 @@ public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
 
         int currentPos = 0;
 
-        double[] positions = new double[]{Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE, Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE, Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE, Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT, Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT, Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT};
+
+        double[] positions = new double[]{
+            Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE,
+            Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE,
+            Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE,
+            Indexer.POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT,
+            Indexer.POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT,
+            Indexer.POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT};
+
+
 
         while (opModeIsActive()) {
 
@@ -79,16 +89,28 @@ public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
             // A/B Test Axon (Indexer)
             if (currentGamepad1.a && !previousGamepad1.a) {
                 position += 0.1;
+                if (position > 1.0) {
+                    position = 1.0;
+                }
             }
             if (currentGamepad1.b && !previousGamepad1.b) {
                 position -= 0.1;
+                if (position < 0.0) {
+                    position = 0.0;
+                }
             }
 
             if (currentGamepad1.x && !previousGamepad1.x) {
                 position += 0.001;
+                if (position > 1.0) {
+                    position = 1.0;
+                }
             }
             if (currentGamepad1.y && !previousGamepad1.y) {
                 position -= 0.001;
+                if (position < 0.0) {
+                    position = 0.0;
+                }
             }
             // X/Y Kick Stand   (Left = ControlHub P5 / Right = ExpHub P0)
             // SQ TRI ps5 controller
@@ -104,10 +126,16 @@ public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
             // U/D Kick Stand Lights
             if (currentGamepad1.dpad_up != previousGamepad1.dpad_up) {
                 position += 0.01;
+                if (position > 1.0) {
+                    position = 1.0;
+                }
             }
 
             if (currentGamepad1.dpad_down != previousGamepad1.dpad_down) {
                 position -=0.01;
+                if (position < 0.0) {
+                    position = 0.0;
+                }
             }
 
             // Dp-Right => Zero Servo
@@ -171,7 +199,8 @@ public class Bot2_IndexerServoTestOpMode extends LinearOpMode {
             robot.getIndexer().rotateToPosition(position);
             mpos = (axon_position_V.getVoltage() - voltageOffset) * voltageScaler;
             telemetry.addLine("GP1 A/B: +/- 0.1,  X/Y: +/- 0.001,  LEFT/RIGHT: 0 / Max, UP/DOWN: +/-0.01");
-            telemetry.addLine("Left Bumper/Right Bumper: Set to Next or Previous Position");
+            telemetry.addLine("Left Bumper/Right Bumper: CYCLE through Programed Positions");
+            telemetry.addData("Stored Position: (0-2) intake, (3-5) outtake", currentPos);
             telemetry.addData("Axon set position: ", position);
             telemetry.addData("measured position: ", mpos);
             telemetry.addData("Voltage: ", axon_position_V.getVoltage());
