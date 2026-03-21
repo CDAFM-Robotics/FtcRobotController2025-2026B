@@ -18,6 +18,9 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     // Make a local HUD
     private Hud hud;
 
+    // ---- Loop throttle ----
+    private int loopCount = 0;
+    private static final int READ_EVERY_N_LOOPS = 20;
 
     // TODO add Data to Panels
     // static TelemetryManager telemetryM;
@@ -36,6 +39,22 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         // One line to set up — pass your telemetry and a tag name
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
+        // ─── Master switches ────────────────────────────────────────
+//        debugManager.TELEMETRY_ENABLED = false;
+//        debugManager.ROBOT_LOG_ENABLED = false;
+//
+//        debugManager.LOG_DRIVEBASE  = false;
+//        debugManager.LOG_PINPOINT   = false;
+//        debugManager.LOG_VISION     = false;
+//        debugManager.LOG_LAUNCHER   = false;
+//        debugManager.LOG_SPINDEXER  = false;
+//        debugManager.LOG_INTAKE     = false;
+//        debugManager.LOG_HUD        = false;
+//        debugManager.LOG_ROBOT      = false;
+
+        debugManager.TELEMETRY_ENABLED = true;
+        debugManager.ROBOT_LOG_ENABLED = true;
+
         debugManager.LOG_DRIVEBASE  = true;
         debugManager.LOG_PINPOINT   = true;
         debugManager.LOG_VISION     = true;
@@ -113,7 +132,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             // Intake Balls. Add isSafeToStop()
             if (currentGamepad1.right_trigger != 0.0
                 && robot.isSafeToStopOuttake()) {
-                //telemetry.addLine("gameped 1 right trigger");
+                // telemetry.addLine("gamepad 1 right trigger");
                 // Robot entering intake state
                 if (robot.getRobotInOutState() != Robot.RobotInOutState.INTAKE) {
                     robot.setRobotState(Robot.RobotInOutState.INTAKE);
@@ -283,6 +302,19 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 //            else {
 //                robot.getHud().setAimIndicator(false);
 //            }
+
+            debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
+            // Update ball colors every 20 loops if the robot is not intaking or outtaking
+            if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE) {
+                if (robot.getIndexer().axonAtIntake()) {
+                    loopCount++;
+                    // ---- Read sensors every N loops ----
+                    if (loopCount % READ_EVERY_N_LOOPS == 0) {
+                        robot.getIndexer().updateColorAllSlots();
+                    }
+                }
+            }
+
             hud.UpdateBallUI();
 
             // TODO Add timing Log at end of loop

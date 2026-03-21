@@ -140,7 +140,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                     robot.setRobotState(Robot.RobotInOutState.INTAKE);
                     //reset intake state
                     robot.setAutoIntakeState(Robot.AutoIntakeState.INIT);
-                    //move intake control into the robot class
+                    //start the intake rolling
                     robot.getIntake().startIntake();
                 }
                 //turn the indexer for intake
