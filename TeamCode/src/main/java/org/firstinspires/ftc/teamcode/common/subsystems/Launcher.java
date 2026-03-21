@@ -498,7 +498,10 @@ public class Launcher {
 
     public void elevateBall() {
         runElevator = true;
-        elevatorTarget += 78.4 * 4;
+
+        //  TODO 6000 rpm motor (not enough torque) 28ppr => (*2.8 rev) => 78.4 tick for a single flapper 1-shot
+        //  TODO 1150 motor installed  145.1 ppr => (*2.8 rev) => 406.28 revolution for a 2 flapper 2-shot.
+        elevatorTarget += 406.28;   // 78.4 * 4;
         elevatorMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
@@ -513,6 +516,7 @@ public class Launcher {
         else {
             elevatorMotor.setTargetPosition((int) Math.round(elevatorTarget));
         }
+        RobotLog.d ("Elevator: pos: %d, vel: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), elevatorTarget);
     }
 
 
