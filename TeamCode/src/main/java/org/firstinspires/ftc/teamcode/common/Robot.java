@@ -65,12 +65,12 @@ public class Robot {
     public static int WAIT_TIME_KICKER_UP = 180; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
     public static int WAIT_TIME_KICKER_DOWN = 80; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
 
-    public static final long WAIT_TIME_ELEVATOR = 500;
+    public static final long WAIT_TIME_ELEVATOR = 300;
 
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
 //    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
 
-    public static double PINPOINT_B1_YAWSCALAR = 1.0033595;
+    public static final double PINPOINT_B1_YAW_SCALAR = 1.0033595;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class
@@ -755,6 +755,7 @@ public class Robot {
         }
         return false;
     }
+
 //
 //    public void getMotif() {
 //        LLResult result = limelight.getLatestResult();
