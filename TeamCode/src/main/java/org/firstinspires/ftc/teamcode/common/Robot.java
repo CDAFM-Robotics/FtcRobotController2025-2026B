@@ -615,8 +615,8 @@ public class Robot {
         return robotInOutState;
     }
 
-    public void setLaunchStateKicker(LaunchBallKickerState state) {
-        launchStateKicker = state;
+    public void setLaunchState(LaunchBallState state) {
+        launchState = state;
     }
 
     public LaunchBallKickerState getLaunchStateKicker() {

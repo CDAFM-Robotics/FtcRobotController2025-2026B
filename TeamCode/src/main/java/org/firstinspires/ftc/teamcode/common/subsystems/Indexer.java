@@ -199,7 +199,7 @@ public class Indexer {
     public boolean indexerFinishedTurning() {
         debugManager.spindexer("indexerFinishedTurning start", targetIndexerPosition);
         //TODO: 0.02 is used to start with. Is 0.02 the best value to use here?
-        return getIndexerServoAtPosition(targetIndexerPosition, 0.01);
+        return getIndexerServoAtPosition(targetIndexerPosition, 0.03);
     }
 
     public void rotateToPosition(double position) {

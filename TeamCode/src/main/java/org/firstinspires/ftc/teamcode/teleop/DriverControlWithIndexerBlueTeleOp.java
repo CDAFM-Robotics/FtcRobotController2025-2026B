@@ -40,29 +40,29 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
-//        debugManager.TELEMETRY_ENABLED = false;
-//        debugManager.ROBOT_LOG_ENABLED = false;
-//
-//        debugManager.LOG_DRIVEBASE  = false;
-//        debugManager.LOG_PINPOINT   = false;
-//        debugManager.LOG_VISION     = false;
-//        debugManager.LOG_LAUNCHER   = false;
-//        debugManager.LOG_SPINDEXER  = false;
-//        debugManager.LOG_INTAKE     = false;
-//        debugManager.LOG_HUD        = false;
-//        debugManager.LOG_ROBOT      = false;
-
         debugManager.TELEMETRY_ENABLED = true;
         debugManager.ROBOT_LOG_ENABLED = true;
 
-        debugManager.LOG_DRIVEBASE  = true;
-        debugManager.LOG_PINPOINT   = true;
-        debugManager.LOG_VISION     = true;
-        debugManager.LOG_LAUNCHER   = true;
+        debugManager.LOG_DRIVEBASE  = false;
+        debugManager.LOG_PINPOINT   = false;
+        debugManager.LOG_VISION     = false;
+        debugManager.LOG_LAUNCHER   = false;
         debugManager.LOG_SPINDEXER  = true;
-        debugManager.LOG_INTAKE     = true;
-        debugManager.LOG_HUD        = true;
+        debugManager.LOG_INTAKE     = false;
+        debugManager.LOG_HUD        = false;
         debugManager.LOG_ROBOT      = true;
+
+//        debugManager.TELEMETRY_ENABLED = true;
+//        debugManager.ROBOT_LOG_ENABLED = true;
+//
+//        debugManager.LOG_DRIVEBASE  = true;
+//        debugManager.LOG_PINPOINT   = true;
+//        debugManager.LOG_VISION     = true;
+//        debugManager.LOG_LAUNCHER   = true;
+//        debugManager.LOG_SPINDEXER  = true;
+//        debugManager.LOG_INTAKE     = true;
+//        debugManager.LOG_HUD        = true;
+//        debugManager.LOG_ROBOT      = true;
 
         // ───────────────────────────────────────────────────────────
         debugManager.addData("Red side", "%s", isRedSide);
@@ -230,9 +230,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 || currentGamepad2.left_trigger != 0
                 || currentGamepad2.right_bumper
                 || currentGamepad2.left_bumper)
-                && robot.getRobotInOutState() != Robot.RobotInOutState.INTAKE
-                && robot.getRobotInOutState() != Robot.RobotInOutState.OUTTAKE) {
+                && robot.getRobotInOutState() == Robot.RobotInOutState.IDLE) {
                     robot.setRobotState(Robot.RobotInOutState.OUTTAKE);
+                    robot.setLaunchState(Robot.LaunchBallState.INIT);
             }
 
             if ((currentGamepad2.right_trigger != 0
@@ -243,18 +243,18 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 robot.shootAllBalls();
             }
 
-            if ((currentGamepad2.right_trigger == 0
-                || currentGamepad2.left_trigger == 0
-                || !currentGamepad2.right_bumper
-                || !currentGamepad2.left_bumper)
+            if (currentGamepad2.right_trigger == 0
+                && currentGamepad2.left_trigger == 0
+                && !currentGamepad2.right_bumper
+                && !currentGamepad2.left_bumper
                 && !robot.isSafeToStopOuttake()) {
                 robot.shootAllBalls();
             }
 
             if ((currentGamepad2.right_trigger == 0
-                || currentGamepad2.left_trigger == 0
-                || !currentGamepad2.right_bumper
-                || !currentGamepad2.left_bumper)
+                && currentGamepad2.left_trigger == 0
+                && !currentGamepad2.right_bumper
+                && !currentGamepad2.left_bumper)
                 && robot.isSafeToStopOuttake()) {
                 if (robot.getRobotInOutState() == Robot.RobotInOutState.OUTTAKE) {
                     robot.setRobotState(Robot.RobotInOutState.IDLE);
