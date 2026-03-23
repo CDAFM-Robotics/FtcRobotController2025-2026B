@@ -18,6 +18,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
     // Make a local HUD
     private Hud hud;
 
+    // ---- Loop throttle ----
+    private int loopCount = 0;
+    private static final int READ_EVERY_N_LOOPS = 20;
 
     // TODO add Data to Panels
     // static TelemetryManager telemetryM;
@@ -36,18 +39,31 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // One line to set up — pass your telemetry and a tag name
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
-        // ─── Master switches ───────────────────────────────────────────
-        debugManager.TELEMETRY_ENABLED = false;
-        debugManager.ROBOT_LOG_ENABLED = false;
+        // ─── Master switches ────────────────────────────────────────
+        debugManager.TELEMETRY_ENABLED = true;
+        debugManager.ROBOT_LOG_ENABLED = true;
 
         debugManager.LOG_DRIVEBASE  = false;
         debugManager.LOG_PINPOINT   = false;
         debugManager.LOG_VISION     = false;
         debugManager.LOG_LAUNCHER   = false;
-        debugManager.LOG_SPINDEXER  = false;
+        debugManager.LOG_SPINDEXER  = true;
         debugManager.LOG_INTAKE     = false;
         debugManager.LOG_HUD        = false;
-        debugManager.LOG_ROBOT      = false;
+        debugManager.LOG_ROBOT      = true;
+
+//        debugManager.TELEMETRY_ENABLED = true;
+//        debugManager.ROBOT_LOG_ENABLED = true;
+//
+//        debugManager.LOG_DRIVEBASE  = true;
+//        debugManager.LOG_PINPOINT   = true;
+//        debugManager.LOG_VISION     = true;
+//        debugManager.LOG_LAUNCHER   = true;
+//        debugManager.LOG_SPINDEXER  = true;
+//        debugManager.LOG_INTAKE     = true;
+//        debugManager.LOG_HUD        = true;
+//        debugManager.LOG_ROBOT      = true;
+
         // ───────────────────────────────────────────────────────────
         debugManager.addData("Red side", "%s", isRedSide);
 
@@ -132,7 +148,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                     robot.setRobotState(Robot.RobotInOutState.INTAKE);
                     //reset intake state
                     robot.setAutoIntakeState(Robot.AutoIntakeState.INIT);
-                    //move intake control into the robot class
+                    //start the intake rolling
                     robot.getIntake().startIntake();
                 }
                 //turn the indexer for intake
@@ -222,9 +238,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 || currentGamepad2.left_trigger != 0
                 || currentGamepad2.right_bumper
                 || currentGamepad2.left_bumper)
-                && robot.getRobotInOutState() != Robot.RobotInOutState.INTAKE
-                && robot.getRobotInOutState() != Robot.RobotInOutState.OUTTAKE) {
+                && robot.getRobotInOutState() == Robot.RobotInOutState.IDLE) {
                     robot.setRobotState(Robot.RobotInOutState.OUTTAKE);
+                    robot.setLaunchState(Robot.LaunchBallState.INIT);
             }
 
             if ((currentGamepad2.right_trigger != 0
@@ -235,18 +251,18 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 robot.shootAllBalls();
             }
 
-            if ((currentGamepad2.right_trigger == 0
-                || currentGamepad2.left_trigger == 0
-                || !currentGamepad2.right_bumper
-                || !currentGamepad2.left_bumper)
+            if (currentGamepad2.right_trigger == 0
+                && currentGamepad2.left_trigger == 0
+                && !currentGamepad2.right_bumper
+                && !currentGamepad2.left_bumper
                 && !robot.isSafeToStopOuttake()) {
                 robot.shootAllBalls();
             }
 
             if ((currentGamepad2.right_trigger == 0
-                || currentGamepad2.left_trigger == 0
-                || !currentGamepad2.right_bumper
-                || !currentGamepad2.left_bumper)
+                && currentGamepad2.left_trigger == 0
+                && !currentGamepad2.right_bumper
+                && !currentGamepad2.left_bumper)
                 && robot.isSafeToStopOuttake()) {
                 if (robot.getRobotInOutState() == Robot.RobotInOutState.OUTTAKE) {
                     robot.setRobotState(Robot.RobotInOutState.IDLE);
@@ -296,6 +312,19 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //            else {
 //                robot.getHud().setAimIndicator(false);
 //            }
+
+            debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
+            // Update ball colors every 20 loops if the robot is not intaking or outtaking
+            if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE) {
+                if (robot.getIndexer().axonAtIntake()) {
+                    loopCount++;
+                    // ---- Read sensors every N loops ----
+                    if (loopCount % READ_EVERY_N_LOOPS == 0) {
+                        robot.getIndexer().updateColorAllSlots();
+                    }
+                }
+            }
+
             hud.UpdateBallUI();
 
             // TODO Add timing Log at end of loop

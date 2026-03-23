@@ -70,7 +70,7 @@ public class Hud {
         ledstripRear.setBrightness(LED_STICK_BRIGHTNESS);// 10 LEDs at brightness 31 generates 660ma current
 //        ledstripFront = hardwareMap.get(QwiicLEDStick.class, "ledstripFront");
 //        ledstripFront.changeLength(LED_STICK_TOTAL_LEDS);
-//        ledstripFront.setBrightness(LED_STICK_BRIGHTNESS);
+//        zledstripFront.setBrightness(LED_STICK_BRIGHTNESS);
         timeSinceLastHUDChange.reset();
 
         // Set LAST to an unused and different color to ensure it gets updated once at init to clear carry-over.

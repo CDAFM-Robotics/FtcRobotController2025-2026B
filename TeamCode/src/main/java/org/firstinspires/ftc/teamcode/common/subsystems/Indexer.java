@@ -1,4 +1,6 @@
 package org.firstinspires.ftc.teamcode.common.subsystems;
+import static android.os.SystemClock.sleep;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -48,12 +50,13 @@ public class Indexer {
 
     public ArtifactColor[] artifactColorArray = new ArtifactColor[]{ArtifactColor.NONE, ArtifactColor.NONE, ArtifactColor.NONE};
 
-    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.177; //0.176
-    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.934; //0.938
-    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.55955; //0.555
-    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.757; //0.746
-    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.380; // 0.365
-    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.00; //0.0
+    // TODO +0.03 after indexer rebuild on 20Mar26
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.209 ; // 0.177 + 0.03; //0.176
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.965; // 0.934 + 0.03 ; //0.938
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.585; // 0.55955 + 0.03; //0.555
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.783; // 0.757 + 0.03; //0.746
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.403 ; // 0.380 + 0.03 ; // 0.365
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.03; //  0.00; //0.0
 
     public static final double AXON_SERVO_VOLTAGE_OFFSET = 0.228;
     public static final double AXON_SERVO_VOLTAGE_SCALER = 0.1 / 0.2815;
@@ -89,24 +92,16 @@ public class Indexer {
         colorSensorBackLR.setGain(8);
 
         timeSinceTurnIndex.reset();
-        rotateToPosition(POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE);
-        while(!indexerFinishedTurning() || timeSinceTurnIndex.milliseconds() < 1000) {
-            //wait for indexer
-        }
+        turnToClosestIntake();
+        sleep(500);
+
         timeSinceTurnIndex.reset();
         updateColorAllSlots();
         if(checkEmptySlot()) {
             turnEmptySlotToIntake();
-            while(!indexerFinishedTurning() || timeSinceTurnIndex.milliseconds() < 500) {
-                //wait for indexer
-            }
+            sleep(550);
         }
-        else {
-            positionForOuttake();
-            while(!indexerFinishedTurning() || timeSinceTurnIndex.milliseconds() < 500) {
-                //wait for indexer
-            }
-        }
+
         timeSinceTurnIndex.reset();
     }
 
@@ -204,12 +199,7 @@ public class Indexer {
     public boolean indexerFinishedTurning() {
         debugManager.spindexer("indexerFinishedTurning start", targetIndexerPosition);
         //TODO: 0.02 is used to start with. Is 0.02 the best value to use here?
-        if (getIndexerServoAtPosition(targetIndexerPosition, 0.03)) {
-            return true;
-        }
-        else {
-            return false;
-        }
+        return getIndexerServoAtPosition(targetIndexerPosition, 0.03);
     }
 
     public void rotateToPosition(double position) {
@@ -223,14 +213,14 @@ public class Indexer {
         ArtifactColor sensor1DetectedColor;
         debugManager.spindexer("sensor1Distance", "%.2f", sensor1Distance);
         debugManager.spindexer("sensor1Distance alpha, ", "%.2f", sensor1RGBA.alpha);
-        debugManager.log("sensor1Distance", "%.2f", sensor1Distance);
-        debugManager.log("sensor1RGBA.alpha", "%.2f", sensor1RGBA.alpha);
+        debugManager.log("sensor1Distance %.2f", sensor1Distance);
+        debugManager.log("sensor1RGBA.alpha %.2f", sensor1RGBA.alpha);
         debugManager.spindexer("sensor2Distance", "%.2f", sensor2Distance);
         debugManager.spindexer("sensor2Distance alpha, ", "%.2f", sensor2RGBA.alpha);
-        debugManager.log("sensor2Distance", "%.2f", sensor2Distance);
-        debugManager.log("sensor2RGBA.alpha", "%.2f", sensor2RGBA.alpha);
+        debugManager.log("sensor2Distance %.2f", sensor2Distance);
+        debugManager.log("sensor2RGBA.alpha %.2f", sensor2RGBA.alpha);
 
-        if (sensor1Distance > 2.5 || sensor1RGBA.alpha < 0.75) {
+        if (sensor1Distance > 3.5) {
             sensor1DetectedColor = ArtifactColor.NONE;
         }
         else if (sensor1RGBA.blue > sensor1RGBA.green) {
@@ -242,7 +232,7 @@ public class Indexer {
 
         ArtifactColor sensor2DetectedColor;
 
-        if (sensor2Distance > 2.5 || sensor2RGBA.alpha < 0.75) {
+        if (sensor2Distance > 3.5) {
             sensor2DetectedColor = ArtifactColor.NONE;
         }
         else if (sensor2RGBA.blue > sensor2RGBA.green) {
@@ -706,8 +696,27 @@ public class Indexer {
         }
     }
 
+    public void turnToClosestIntake(){
+        double position = getAxonServoPosition();
+        debugManager.spindexer("turnToClosestIntake", "%.2f", position);
+        debugManager.log("turnToClosestIntake", "%.2f", position);
+
+        if (position <= POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT
+            && position != POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
+            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE);
+        }
+        else if (position <= POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT
+            && position != POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
+            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE);
+        }
+        else if (position != POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE){
+            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE);
+        }
+    }
+
     public boolean atIntake() {
         double position = getIndexerPosition();
+        debugManager.log("!atIntake()", "%.2f", position);
 
         if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE
                 || position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE
@@ -1031,6 +1040,20 @@ public class Indexer {
 
     public void setNextShootSlot(int slot) {
         nextShootSlot = slot;
+    }
+
+    public boolean axonAtIntake() {
+        double position = getAxonServoPosition();
+        debugManager.log("axonAtIntake() %.2f", position);
+
+        if (Math.abs(position - POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) <= 0.03
+            || Math.abs(position - POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) <= 0.03
+            || Math.abs(position - POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) <= 0.03) {
+            return true;
+        }
+        else {
+            return false;
+        }
     }
 
 }

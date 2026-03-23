@@ -135,7 +135,7 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
             // since we are keeping the heading from autonomous
             if (currentGamepad1.start && !previousGamepad1.start){
                 // robot.getDriveBase().resetIMU();
-                robot.getDriveBase().setPinpointYScalar(robot.PINPOINT_B1_YAWSCALAR);
+                robot.getDriveBase().setPinpointYScalar(robot.PINPOINT_B1_YAW_SCALAR);
                 gamepad1.rumble(300);
             }
 

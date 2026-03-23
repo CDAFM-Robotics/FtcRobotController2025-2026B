@@ -161,7 +161,7 @@ public class DriveBase {
         if (Math.abs(1.0 - pinpoint.getYawScalar()) > 0.1 )
         {
             // TODO Pinpoint driver issue.  reset Yaw Scalar to good value and REload the lastgood heading
-            pinpoint.setYawScalar(Robot.PINPOINT_B1_YAWSCALAR); // initial Factory Yaw Scalar for Pinpoint from Bot1
+            pinpoint.setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR); // initial Factory Yaw Scalar for Pinpoint from Bot1
         }
         pos = pinpoint.getPosition();
         RobotLog.d("pinpoint heading1 %.2f, yawScalar: %.8f, lastStatus: %s", pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getYawScalar(), lastStatus);
