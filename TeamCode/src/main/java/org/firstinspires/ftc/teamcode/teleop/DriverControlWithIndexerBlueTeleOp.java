@@ -102,11 +102,19 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 driveSpeed = driveSpeed == 1 ? 0.5 : 1;
             }
 
-            robot.getDriveBase().setMotorPowers(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x, driveSpeed, fieldCentric);
+
+            if (!robot.getDriveBase().kickStandIsSet) {
+                robot.getDriveBase().setMotorPowers(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x, driveSpeed, fieldCentric);
+            }
 
             // Kickstand control
             if (currentGamepad1.a != previousGamepad1.a) {
+                robot.getDriveBase().setMotorPowers(0, 0, 0, driveSpeed, fieldCentric);
                 robot.getDriveBase().setKickStand();
+                sleep(100);
+                if (robot.getDriveBase().kickStandIsSet) {
+                    robot.getDriveBase().spinFrontWheels();
+                }
                 //robot.getDriveBase().setKickStandLight();
             }
 
