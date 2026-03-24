@@ -67,6 +67,15 @@ public class Robot {
 
     public static final long WAIT_TIME_ELEVATOR = 300;
 
+    // turret offset from the center of the robot
+    public static final double TURRET_OFFSET = 1.679; //inches
+    // blue goal x and y
+    public static final double BLUE_X = -63; //inches
+    public static final double BLUE_Y = -63; //inches
+    // red goal x and y
+    public static final double RED_X = -63; //inches
+    public static final double RED_Y = 63; //inches
+
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
 //    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
 
@@ -456,7 +465,7 @@ public class Robot {
     private double lastRelativeHeading = -5000; // Just to check whether it has been set yet
 
     //updating the turret every loop
-    public void updateTurretAngle(){
+    public void updateShootingDistanceAngle(){
         //read the current pose
         double robotX = driveBase.getPinPointPosX();
         double robotY = driveBase.getPinPointPosY();
@@ -465,23 +474,26 @@ public class Robot {
         pinPointHeading = normalizeAngle(pinPointHeading);
         double robotHeading = Math.toDegrees(pinPointHeading);
 
+        // offset turret x y from the ceneter of the robot
+        double tx = robotX - Math.sin(pinPointHeading) * TURRET_OFFSET;
+        double ty = robotY - Math.cos(pinPointHeading) * TURRET_OFFSET;
+
         //calculate the relative angle of the turret to the robot
-        double blueGoalX;
-        double blueGoalY;
+        double goalX;
+        double goalY;
         // coordinates of the blue goal
         if (isRedSide) {
-            blueGoalX = -64;
-            blueGoalY = 64;
+            goalX = RED_X;
+            goalY = RED_Y;
         }
         else {
-            blueGoalX = -64;
-            blueGoalY = -64;
+            goalX = BLUE_X;
+            goalY = BLUE_Y;
         }
 
-
-        // calculate vector to blue goal
-        double deltaX = blueGoalX - robotX;
-        double deltaY = blueGoalY - robotY;
+        // calculate vector to goal
+        double deltaX = goalX - tx;
+        double deltaY = goalY - ty;
         double distanceToGoal = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
         launcher.setShootingDistance(distanceToGoal);
 
@@ -490,12 +502,13 @@ public class Robot {
         double absoluteAngleDegree = Math.toDegrees(absoluteAngleRadians);
 
         double relativeAngle;
-        if (isRedSide) {
-            relativeAngle = (absoluteAngleDegree - robotHeading);
-        }
-        else {
-            relativeAngle = (absoluteAngleDegree - robotHeading) + 2; //off set on blue side
-        }
+        relativeAngle = (absoluteAngleDegree - robotHeading);
+//        if (isRedSide) {
+//            relativeAngle = (absoluteAngleDegree - robotHeading);
+//        }
+//        else {
+//            relativeAngle = (absoluteAngleDegree - robotHeading); //off set on blue side
+//        }
 
         relativeAngle = normalizeAngle(relativeAngle);
 
@@ -503,6 +516,8 @@ public class Robot {
         debugManager.robot("deltaY:", "%.2f", deltaY);
         debugManager.robot("robotX:", "%.2f", robotX);
         debugManager.robot("robotY:", "%.2f", robotY);
+        debugManager.robot("tx:", "%.2f", tx);
+        debugManager.robot("ty:", "%.2f", ty);
         debugManager.robot("absoluteAngleRadians:", "%.2f", absoluteAngleRadians);
         debugManager.robot("absoluteAngleDegree:", "%.2f", absoluteAngleDegree);
         debugManager.robot("pinPointHeading:", "%.2f", pinPointHeading);
