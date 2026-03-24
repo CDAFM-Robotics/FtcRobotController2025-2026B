@@ -231,7 +231,7 @@ public class Robot {
                  debugManager.log("Robot: WAIT_FOR_BALLt");
 
                  if (indexer.isBallAtIntakeFast()) {
-                         debugManager.log("Robot: isBallAtIntake");
+                         debugManager.log("Robot: isBallAtIntakeFast");
                          intake1Ball = true;
                          intake.stopIntake();
                          autoIntakeState = AutoIntakeState.INIT;

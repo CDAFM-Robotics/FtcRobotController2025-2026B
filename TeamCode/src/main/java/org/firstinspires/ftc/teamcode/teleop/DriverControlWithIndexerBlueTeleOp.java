@@ -20,7 +20,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
     // ---- Loop throttle ----
     private int loopCount = 0;
-    private static final int READ_EVERY_N_LOOPS = 20;
+    private static final int READ_EVERY_N_LOOPS = 10;
+    private boolean colorConfirmed = false;
 
     // TODO add Data to Panels
     // static TelemetryManager telemetryM;
@@ -40,8 +41,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
-        debugManager.TELEMETRY_ENABLED = true;
-        debugManager.ROBOT_LOG_ENABLED = true;
+//        debugManager.TELEMETRY_ENABLED = false;
+//        debugManager.ROBOT_LOG_ENABLED = false;
 
         debugManager.LOG_DRIVEBASE  = false;
         debugManager.LOG_PINPOINT   = false;
@@ -52,8 +53,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         debugManager.LOG_HUD        = false;
         debugManager.LOG_ROBOT      = true;
 
-//        debugManager.TELEMETRY_ENABLED = true;
-//        debugManager.ROBOT_LOG_ENABLED = true;
+        debugManager.TELEMETRY_ENABLED = true;
+        debugManager.ROBOT_LOG_ENABLED = true;
 //
 //        debugManager.LOG_DRIVEBASE  = true;
 //        debugManager.LOG_PINPOINT   = true;
@@ -152,6 +153,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 robot.getIntake().stopIntake();
                 //TODO: reverse intake for 500 milliseconds if there are three ball already
                 robot.setRobotState(Robot.RobotInOutState.IDLE);
+                colorConfirmed = false;
             }
 
             if (currentGamepad1.left_trigger != 0) {
@@ -258,6 +260,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 && robot.isSafeToStopOuttake()) {
                 if (robot.getRobotInOutState() == Robot.RobotInOutState.OUTTAKE) {
                     robot.setRobotState(Robot.RobotInOutState.IDLE);
+                    colorConfirmed = false;
                 }
             }
 
@@ -291,6 +294,31 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             // telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
             // telemetryM.update(telemetry);
 
+            debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
+            // Update ball colors every 20 loops if the robot is in idle
+            if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE
+                && !colorConfirmed) {
+                if (robot.getIndexer().axonAtIntake()) {
+                    loopCount++;
+                    // ---- Read sensors every N loops ----
+                    if (loopCount % READ_EVERY_N_LOOPS == 0) {
+                        if (robot.getIndexer().confirmColorMatch() ) {
+                            colorConfirmed = true;
+                            if (robot.getIndexer().countArtifacts() == 3) {
+                                //turn to output
+                                debugManager.addData("count %d", robot.getIndexer().countArtifacts());
+                                robot.getIndexer().positionForOuttake();
+                            }
+                        }
+                        else {
+                            colorConfirmed = false;
+                        }
+                    }
+                }
+            }
+
+            // turn to output after three balls are confirmed for three times
+
             // Refresh the indicator lights
             hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);
 //            if (llLastIsValid == true)
@@ -304,18 +332,6 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //            else {
 //                robot.getHud().setAimIndicator(false);
 //            }
-
-            debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
-            // Update ball colors every 20 loops if the robot is not intaking or outtaking
-            if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE) {
-                if (robot.getIndexer().axonAtIntake()) {
-                    loopCount++;
-                    // ---- Read sensors every N loops ----
-                    if (loopCount % READ_EVERY_N_LOOPS == 0) {
-                        robot.getIndexer().updateColorAllSlots();
-                    }
-                }
-            }
 
             hud.UpdateBallUI();
 

@@ -92,10 +92,12 @@ public class DriveBase {
             RobotStaticValuesClass.autoCompleted = false;
         }
         else if (isRed) {
-            startPose2D = new Pose2D(DistanceUnit.INCH, 63, 12, AngleUnit.RADIANS, -3.14);
+            //initialized red far position is x=(71in - 8.8in), y=23.5/2, -pi.
+            startPose2D = new Pose2D(DistanceUnit.INCH, 62.2, 11.75, AngleUnit.RADIANS, -3.14);
         }
         else {
-            startPose2D = new Pose2D(DistanceUnit.INCH, 63, -12, AngleUnit.RADIANS, -3.14);
+            //initialized red far position is x=(71in - 8.8in), y=-23.5/2, -pi.
+            startPose2D = new Pose2D(DistanceUnit.INCH, 62.2, -11.75, AngleUnit.RADIANS, -3.14);
         }
 
         // Set the location of the robot - this should be the place you are starting the robot from
