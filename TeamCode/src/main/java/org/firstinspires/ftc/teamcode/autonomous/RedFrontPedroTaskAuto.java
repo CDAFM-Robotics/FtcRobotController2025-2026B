@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -14,13 +13,12 @@ import org.firstinspires.ftc.teamcode.pedropathing.commands.Paths;
 import org.firstinspires.ftc.teamcode.tasks.DeadlineTask;
 import org.firstinspires.ftc.teamcode.tasks.FollowPathTask;
 import org.firstinspires.ftc.teamcode.tasks.HoldPointTask;
-import org.firstinspires.ftc.teamcode.tasks.RepeatTask;
 import org.firstinspires.ftc.teamcode.tasks.SequentialTask;
 import org.firstinspires.ftc.teamcode.tasks.SleepTask;
 import org.firstinspires.ftc.teamcode.tasks.TaskMaster;
 
-@Autonomous(name = "Blue Back", group = "0Competition")
-public class BlueBackPedroTaskAuto extends OpMode {
+@Autonomous(name = "Red Front", group = "0Competition")
+public class RedFrontPedroTaskAuto extends OpMode {
     TaskMaster taskMaster;
 
     Follower follower;
@@ -32,11 +30,11 @@ public class BlueBackPedroTaskAuto extends OpMode {
     @Override
     public void init() {
         follower = Constants.createFollower(hardwareMap);
-        robot = new Robot(hardwareMap, telemetry, false);
+        robot = new Robot(hardwareMap, telemetry, true);
 
         paths = new Paths(follower);
 
-        follower.setStartingPose(new Pose(60, 8.5, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(144 - 18, 120, Math.toRadians(126)));
         follower.update();
 
         taskMaker = new AutoTaskMaker(robot, follower);
@@ -45,20 +43,20 @@ public class BlueBackPedroTaskAuto extends OpMode {
             new DeadlineTask(
                 new SleepTask(27000),
                 new SequentialTask(
-                    taskMaker.runShootSequenceTask(new Pose(60, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runPickupSequenceTask(paths.getBlueFarPickupThirdMark(), paths.getBlueFarReturnFromThirdMark(), 250, AutoTaskMaker.Side.FAR),
-                    new RepeatTask(() -> new SequentialTask(
-                        taskMaker.runShootSequenceTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
-                        taskMaker.runPickupSequenceTask(paths.getBlueFarPickupHumanPlayerZone(), paths.getBlueFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR)
-                    ))
+                    taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED),
+                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupSecondMark(), paths.getRedCloseReturnFromSecondMark(), 250, AutoTaskMaker.Side.NEAR),
+                    taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED),
+                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupFirstMark(), paths.getRedCloseReturnFromFirstMark(), 250, AutoTaskMaker.Side.NEAR),
+                    taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED),
+                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupThirdMark(), paths.getRedCloseReturnFromThirdMark(), 250, AutoTaskMaker.Side.NEAR)
                 )
             ),
             new FollowPathTask(follower, follower.pathBuilder()
-                .addPath(new BezierLine(follower.getPose(), new Pose(36, 36))).setConstantHeadingInterpolation(Math.toRadians(180))
+                .addPath(new BezierLine(follower.getPose(), new Pose(144 - 54, 126))).setConstantHeadingInterpolation(Math.toRadians(0))
                 .build()
             ),
 
-            new HoldPointTask(follower, new Pose(36, 36, Math.toRadians(180)))
+            new HoldPointTask(follower, new Pose(144 - 36, 126, Math.toRadians(0)))
         ));
     }
 

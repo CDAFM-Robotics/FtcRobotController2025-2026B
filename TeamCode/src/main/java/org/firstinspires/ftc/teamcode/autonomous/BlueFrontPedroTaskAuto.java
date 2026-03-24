@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.autonomous;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
@@ -19,8 +18,8 @@ import org.firstinspires.ftc.teamcode.tasks.SequentialTask;
 import org.firstinspires.ftc.teamcode.tasks.SleepTask;
 import org.firstinspires.ftc.teamcode.tasks.TaskMaster;
 
-@Autonomous(name = "Blue Back", group = "0Competition")
-public class BlueBackPedroTaskAuto extends OpMode {
+@Autonomous(name = "Blue Front", group = "0Competition")
+public class BlueFrontPedroTaskAuto extends OpMode {
     TaskMaster taskMaster;
 
     Follower follower;
@@ -36,7 +35,7 @@ public class BlueBackPedroTaskAuto extends OpMode {
 
         paths = new Paths(follower);
 
-        follower.setStartingPose(new Pose(60, 8.5, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(18, 120, Math.toRadians(54)));
         follower.update();
 
         taskMaker = new AutoTaskMaker(robot, follower);
@@ -45,20 +44,20 @@ public class BlueBackPedroTaskAuto extends OpMode {
             new DeadlineTask(
                 new SleepTask(27000),
                 new SequentialTask(
-                    taskMaker.runShootSequenceTask(new Pose(60, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runPickupSequenceTask(paths.getBlueFarPickupThirdMark(), paths.getBlueFarReturnFromThirdMark(), 250, AutoTaskMaker.Side.FAR),
-                    new RepeatTask(() -> new SequentialTask(
-                        taskMaker.runShootSequenceTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
-                        taskMaker.runPickupSequenceTask(paths.getBlueFarPickupHumanPlayerZone(), paths.getBlueFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR)
-                    ))
+                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 250, AutoTaskMaker.Side.NEAR),
+                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 250, AutoTaskMaker.Side.NEAR),
+                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 250, AutoTaskMaker.Side.NEAR)
                 )
             ),
             new FollowPathTask(follower, follower.pathBuilder()
-                .addPath(new BezierLine(follower.getPose(), new Pose(36, 36))).setConstantHeadingInterpolation(Math.toRadians(180))
+                .addPath(new BezierLine(follower.getPose(), new Pose(54, 126))).setConstantHeadingInterpolation(Math.toRadians(180))
                 .build()
             ),
 
-            new HoldPointTask(follower, new Pose(36, 36, Math.toRadians(180)))
+            new HoldPointTask(follower, new Pose(36, 126, Math.toRadians(180)))
         ));
     }
 
