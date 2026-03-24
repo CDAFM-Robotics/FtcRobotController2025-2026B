@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.RunTimeoutAction;
 import org.firstinspires.ftc.teamcode.common.util.WaitUntilAction;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -91,16 +92,10 @@ public class Indexer {
         colorSensorBackLL.setGain(8);
         colorSensorBackLR.setGain(8);
 
-        timeSinceTurnIndex.reset();
         turnToClosestIntake();
-        sleep(500);
+        sleep(1000);
 
-        timeSinceTurnIndex.reset();
         updateColorAllSlots();
-        if(checkEmptySlot()) {
-            turnEmptySlotToIntake();
-            sleep(550);
-        }
 
         timeSinceTurnIndex.reset();
     }
@@ -172,6 +167,12 @@ public class Indexer {
         );
     }
 
+    public void autoFillColorArray() {
+        artifactColorArray[0] = ArtifactColor.PURPLE;
+        artifactColorArray[1] = ArtifactColor.PURPLE;
+        artifactColorArray[2] = ArtifactColor.PURPLE;
+    }
+
     /****************************************************
      * Class methods
      *****************************************************/
@@ -181,7 +182,7 @@ public class Indexer {
     }
 
     public double getAxonServoPosition() {
-        //RobotLog.d("getAxonServoPosition: %f", indexerServoVoltage.getVoltage());
+        RobotLog.d("getAxonServoPosition: %.3f", indexerServoVoltage.getVoltage());
         return (indexerServoVoltage.getVoltage() - AXON_SERVO_VOLTAGE_OFFSET) * AXON_SERVO_VOLTAGE_SCALER;
     }
 
@@ -199,7 +200,7 @@ public class Indexer {
     public boolean indexerFinishedTurning() {
         debugManager.spindexer("indexerFinishedTurning start", targetIndexerPosition);
         //TODO: 0.02 is used to start with. Is 0.02 the best value to use here?
-        return getIndexerServoAtPosition(targetIndexerPosition, 0.01);
+        return getIndexerServoAtPosition(targetIndexerPosition, 0.03);
     }
 
     public void rotateToPosition(double position) {
@@ -256,54 +257,11 @@ public class Indexer {
         }
     }
 
-//    private ArtifactColor getPredictedColorAtIntake(NormalizedRGBA sensor1RGBA, NormalizedRGBA sensor2RGBA, double sensor1Distance, double sensor2Distance) {
-//
-//        ArtifactColor sensor1DetectedColor;
-//        //telemetry.addData("sensor1Distance", sensor1Distance);
-//        //telemetry.addData("sensor2Distance", sensor2Distance);
-//
-//        if (sensor1Distance > 5) {
-//            sensor1DetectedColor = ArtifactColor.UNKNOWN;
-//        }
-//        else if (sensor1RGBA.blue > sensor1RGBA.green) {
-//            sensor1DetectedColor = ArtifactColor.PURPLE;
-//        }
-//        else {
-//            sensor1DetectedColor = ArtifactColor.GREEN;
-//        }
-//
-//        ArtifactColor sensor2DetectedColor;
-//
-//        if (sensor2Distance > 5) {
-//            sensor2DetectedColor = ArtifactColor.UNKNOWN;
-//        }
-//        else if (sensor2RGBA.blue > sensor2RGBA.green) {
-//            sensor2DetectedColor = ArtifactColor.PURPLE;
-//        }
-//        else {
-//            sensor2DetectedColor = ArtifactColor.GREEN;
-//        }
-//
-//        if (sensor1DetectedColor == sensor2DetectedColor) {
-//            return sensor1DetectedColor;
-//        }
-//        else if (sensor2DetectedColor != ArtifactColor.UNKNOWN) {
-//            return sensor2DetectedColor;
-//        }
-//        else if (sensor1DetectedColor != ArtifactColor.UNKNOWN) {
-//            return sensor1DetectedColor;
-//        }
-//        else {
-//            return ArtifactColor.UNKNOWN;
-//        }
-//    }
 
     public void updateBallColorAtBackL(double position) {
-        debugManager.spindexer("updateBallColorAtOuttake() start", "%.2f", position);
-        debugManager.log("Indexer: updateBallColorAtOuttake() start");
-        debugManager.spindexer("updateBallColors Color 0", "%s", artifactColorArray[0]);
-        debugManager.spindexer("updateBallColors Color 1", "%s", artifactColorArray[1]);
-        debugManager.spindexer("updateBallColors Color 2", "%s", artifactColorArray[2]);
+        debugManager.spindexer("updateBallColorAtBackL() start", "%.2f", position);
+        debugManager.log("Indexer: updateBallColorAtBackL() start");
+
         int i = 0;
 
         if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
@@ -324,9 +282,9 @@ public class Indexer {
             colorSensorBackLR.getNormalizedColors(),
             ((DistanceSensor) colorSensorBackLL).getDistance(DistanceUnit.CM),
             ((DistanceSensor) colorSensorBackLR).getDistance(DistanceUnit.CM));
-        debugManager.spindexer("updateBallColors index", "%d", i);
-        debugManager.spindexer("updateBallColors color1", "%s", artifactColorArray[i]);
-        debugManager.log("updateBallColors color1","%s", artifactColorArray[i]);
+        debugManager.spindexer("updateBallColorAtBackL index", "%d", i);
+        debugManager.spindexer("updateBallColorAtBackL color1", "%s", artifactColorArray[i]);
+        debugManager.log("updateBallColorAtBackL color1 %d %s", i, artifactColorArray[i]);
 
     }
 
@@ -351,37 +309,9 @@ public class Indexer {
             colorSensorIntakeR.getNormalizedColors(),
             ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM),
             ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
-        debugManager.spindexer("updateBallColors index", "%d", i);
-        debugManager.spindexer("updateBallColors color1","%s",  artifactColorArray[i]);
-        debugManager.log("updateBallColors color Intake","%s", artifactColorArray[i]);
-
-    }
-
-    public void updateColorAtIntakeOnly() {
-        debugManager.spindexer("updateBallColorAtIntakeLeft() start");
-        debugManager.log("Indexer: updateBallColorAtIntakeLeft() start");
-
-        double position = getIndexerPosition();
-        int i = 0;
-
-        if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
-            i = 0;
-        } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
-            i = 1;
-        } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
-            i = 2;
-        } else {
-            telemetry.addLine("ERROR: updateBallColors");
-        }
-
-        artifactColorArray[i] = getPredictedColor(
-            colorSensorIntakeL.getNormalizedColors(),
-            colorSensorIntakeR.getNormalizedColors(),
-            ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM),
-            ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
-        debugManager.spindexer("updateBallColors index", "%d", i);
-        debugManager.spindexer("updateBallColors color1", "%s", artifactColorArray[i]);
-        debugManager.log("updateBallColors color Intake Left","%s", artifactColorArray[i]);
+        debugManager.spindexer("updateBallColorAtIntake index", "%d", i);
+        debugManager.spindexer("updateBallColorAtIntake color1","%s",  artifactColorArray[i]);
+        debugManager.log("updateBallColors color Intake %d %s", i, artifactColorArray[i]);
 
     }
 
@@ -406,9 +336,9 @@ public class Indexer {
             colorSensorBackRR.getNormalizedColors(),
             ((DistanceSensor) colorSensorBackRL).getDistance(DistanceUnit.CM),
             ((DistanceSensor) colorSensorBackRL).getDistance(DistanceUnit.CM));
-        debugManager.spindexer("updateBallColors index", "%d", i);
-        debugManager.spindexer("updateBallColors color1", "%s", artifactColorArray[i]);
-        debugManager.log("updateBallColorAtBackR %s", artifactColorArray[i]);
+        debugManager.spindexer("updateBallColorAtBackR index", "%d", i);
+        debugManager.spindexer("updateBallColorAtBackR color1", "%s", artifactColorArray[i]);
+        debugManager.log("updateBallColorAtBackR  %d %s", i, artifactColorArray[i]);
     }
 
     public void updateColorAllSlots(){
@@ -427,165 +357,6 @@ public class Indexer {
 
     }
 
-//    public void updateBallColors() {
-//        telemetry.addLine("updateBallColors() start");
-//        //RobotLog.d("Indexer: updateBallColors() start");
-//        //telemetry.addData("updateBallColors Color 0", artifactColorArray[0]);
-//        //telemetry.addData("updateBallColors Color 1", artifactColorArray[1]);
-//        //telemetry.addData("updateBallColors Color 2", artifactColorArray[2]);
-//        double position = getIndexerPosition();
-//
-//        int i = 0;
-//
-//        if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
-//            i = 0;
-//        } else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
-//            i = 1;
-//        } else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
-//            i = 2;
-//        } else {
-//            telemetry.addLine("ERROR: updateBallColors");
-//        }
-//
-//        int[] color = {0, 0, 0, 0};
-//
-//        for (int j = 0; j < 5; j++) {
-//            artifactColorArray[i] = getPredictedColor(
-//                colorSensorIntakeLL.getNormalizedColors(),
-//                colorSensorIntakeLR.getNormalizedColors(),
-//                ((DistanceSensor) colorSensorIntakeLL).getDistance(DistanceUnit.CM),
-//                ((DistanceSensor) colorSensorIntakeLR).getDistance(DistanceUnit.CM));
-//            //telemetry.addData("updateBallColors index", i);
-//            //telemetry.addData("updateBallColors color1", artifactColorArray[i]);
-//            //RobotLog.d("updateBallColors color1 %s",artifactColorArray[i]);
-//            if (artifactColorArray[i] == ArtifactColor.GREEN)
-//                color[0]++;
-//            else if (artifactColorArray[i] == ArtifactColor.PURPLE)
-//                color[1]++;
-//            else if (artifactColorArray[i] == ArtifactColor.NONE)
-//                color[2]++;
-//            else color[3]++;
-//        }
-//
-//        if (!(color[0] == 5 || color[1] == 5 || color[2] == 5)) {
-//            for (int j = 0; j < 5; j++) {
-//                artifactColorArray[i] = getPredictedColor(
-//                    colorSensorIntakeLL.getNormalizedColors(),
-//                    colorSensorIntakeLR.getNormalizedColors(),
-//                    ((DistanceSensor) colorSensorIntakeLL).getDistance(DistanceUnit.CM),
-//                    ((DistanceSensor) colorSensorIntakeLR).getDistance(DistanceUnit.CM));
-//                //telemetry.addData("updateBallColors index", i);
-//                //telemetry.addData("updateBallColors color2", artifactColorArray[i]);
-//                //RobotLog.d("updateBallColors color2 %s",artifactColorArray[i]);
-//                if (artifactColorArray[i] == ArtifactColor.GREEN)
-//                    color[0]++;
-//                else if (artifactColorArray[i] == ArtifactColor.PURPLE)
-//                    color[1]++;
-//                else if (artifactColorArray[i] == ArtifactColor.NONE)
-//                    color[2]++;
-//                else color[3]++;
-//            }
-//        }
-//        int mostLikelyColor = 0;
-//        for (int j = 0; j < 3; j++) {
-//            if (color[mostLikelyColor] < color[j + 1]) {
-//                mostLikelyColor = j + 1;
-//            }
-//        }
-//        if (mostLikelyColor == 0)
-//            artifactColorArray[i] = ArtifactColor.GREEN;
-//        else if (mostLikelyColor == 1)
-//            artifactColorArray[i] = ArtifactColor.PURPLE;
-//        else if (mostLikelyColor == 2)
-//            artifactColorArray[i] = ArtifactColor.NONE;
-//        else {
-//            artifactColorArray[i] = ArtifactColor.NONE;
-//            telemetry.addLine("ERROR: color UNKNOWN");
-//        }
-//        //RobotLog.d("updateBallColors color final %s",artifactColorArray[i]);
-//    }
-//
-//    public ArtifactColor[] getBallColors() {
-//
-//        updateBallColors();
-//        return artifactColorArray.clone();
-//    }
-//
-//    public double getIndexerPosition() {
-//        double position = indexerServo.getPosition();
-//        //telemetry.addData("getIndexerPosition position", position);
-//        //RobotLog.d("position get index pos: %.2f", position);
-//        return (double) Math.round(position * 100) / 100.00;
-//    }
-//
-//    public void rotateToPosition(double position) {
-//        targetIdexerPosition = position;
-//        indexerServo.setPosition(position);
-//    }
-//
-//    public void rotateToZeroPosition() {
-//        rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT);
-//    }
-//
-//    public void rotateToOnePosition() {
-//        rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT);
-//    }
-//
-//    public void rotateToTwoPosition() {
-//        rotateToPosition(POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT);
-//    }
-//
-//    public Boolean rotateToZeroIntakePosition() {
-//        if (getIndexerPosition() != POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE);
-//            return true;
-//        }
-//        return false;
-//    }
-//
-//    public Boolean rotateToOneIntakePosition() {
-//        if (getIndexerPosition() != POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE);
-//            return true;
-//        }
-//        return false;
-//    }
-//
-//apperas
-//    public Boolean rotateToTwoIntakePosition() {
-//        if (getIndexerPosition() != POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE);
-//            return true;
-//        }
-//        return false;
-//    }
-//
-//    public void rotateClockwise() {
-//        double position = indexerServo.getPosition();
-//        if ((Math.round(position * 100.0)) / 100.0 == POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT);
-//        } else if ((Math.round(position * 100.0)) / 100.0 == POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT);
-//        } else if ((Math.round(position * 100.0)) / 100.0 == POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT);
-//        }
-//    }
-//
-//    public void rotateCounterClockwise() {
-//        double position = indexerServo.getPosition();
-//        if ((Math.round(position * 100.0)) / 100.0 == POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT);
-//        } else if ((Math.round(position * 100.0)) / 100.0 == POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT);
-//        } else if ((Math.round(position * 100.0)) / 100.0 == POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT) {
-//            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT);
-//        }
-//    }
-//
-//    public int getIndexerSlotPosition() {
-//        return getIndexerPosition() == POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT ? 2 : (getIndexerPosition() == POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT ? 1 : 0);
-//    }
-//
     public boolean checkEmptySlot() {
 
         //Check for empty slot according to current position
@@ -642,15 +413,9 @@ public class Indexer {
         return false;
     }
 
-    public void autoFillColorArray() {
-        artifactColorArray[0] = ArtifactColor.PURPLE;
-        artifactColorArray[1] = ArtifactColor.PURPLE;
-        artifactColorArray[2] = ArtifactColor.PURPLE;
-    }
-
     public boolean turnEmptySlotToIntake() {
         debugManager.spindexer("turnEmptySlotToIntake", "%d", nextEmptySlot);
-        debugManager.log("RRobot: turnEmptySlotToIntake %s", nextEmptySlot);
+        debugManager.log("turnEmptySlotToIntake %s", nextEmptySlot);
         double position = getIndexerPosition();
 
         if (nextEmptySlot == 0) {
@@ -699,7 +464,7 @@ public class Indexer {
     public void turnToClosestIntake(){
         double position = getAxonServoPosition();
         debugManager.spindexer("turnToClosestIntake", "%.2f", position);
-        debugManager.log("turnToClosestIntake", "%.2f", position);
+        debugManager.log("turnToClosestIntake %.2f", position);
 
         if (position <= POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT
             && position != POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE) {
@@ -716,7 +481,7 @@ public class Indexer {
 
     public boolean atIntake() {
         double position = getIndexerPosition();
-        debugManager.log("!atIntake()", "%.2f", position);
+        debugManager.log("!atIntake() %.2f", position);
 
         if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE
                 || position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE
@@ -728,50 +493,6 @@ public class Indexer {
         }
     }
 
-//    public Boolean haveABall(ArtifactColor ballColor) {
-//        //telemetry.addLine("haveABall");
-//        //telemetry.addData("nextShootSlot:", nextShootSlot);
-//
-//        if (getIndexerPosition() == POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT) {
-//            //is there a ball at ZERO?
-//            if (artifactColorArray[0] == ballColor) {
-//                nextShootSlot = 0;
-//                return true;
-//            } else if (artifactColorArray[1] == ballColor) {
-//                nextShootSlot = 1;
-//                return true;
-//            } else if (artifactColorArray[2] == ballColor) {
-//                nextShootSlot = 2;
-//                return true;
-//            }
-//        } else if (getIndexerPosition() == POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT) {
-//            //is there a ball at one?
-//            if (artifactColorArray[1] == ballColor) {
-//                nextShootSlot = 1;
-//                return true;
-//            } else if (artifactColorArray[0] == ballColor) {
-//                nextShootSlot = 0;
-//                return true;
-//            } else if (artifactColorArray[2] == ballColor) {
-//                nextShootSlot = 2;
-//                return true;
-//            }
-//        } else if (getIndexerPosition() == POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT) {
-//            //is there a ball at two?
-//            if (artifactColorArray[2] == ballColor) {
-//                nextShootSlot = 2;
-//                return true;
-//            } else if (artifactColorArray[1] == ballColor) {
-//                nextShootSlot = 1;
-//                return true;
-//            } else if (artifactColorArray[0] == ballColor) {
-//                nextShootSlot = 0;
-//                return true;
-//            }
-//        }
-//        return false;
-//    }
-//
     public Boolean moveToOuttake() {
         debugManager.spindexer("moveToOuttake");
         debugManager.log("moveToOuttake %d", nextShootSlot);
@@ -889,25 +610,6 @@ public class Indexer {
         }
     }
 
-    //    public double getAxonServoPosition() {
-//        //RobotLog.d("getAxonServoPosition: %f", indexerServoVoltage.getVoltage());
-//        return (indexerServoVoltage.getVoltage() - AXON_SERVO_VOLTAGE_OFFSET) * AXON_SERVO_VOLTAGE_SCALER;
-//    }
-//
-//    public boolean getIndexerServoAtPosition(double position, double accuracy) {
-//        double indexerPosition = getAxonServoPosition();
-//        return Math.abs(indexerPosition - position) < accuracy;
-//    }
-//
-//    public boolean indexerFinishedTurning() {
-//        //telemetry.addData("indexerFinishedTurning start", targetIdexerPosition);
-//        //TODO: 0.02 is used to start with. Is 0.02 the best value to use here?
-//        if (getIndexerServoAtPosition(targetIdexerPosition, 0.05))
-//            return true;
-//        else
-//            return false;
-//    }
-//
     // Check to see if there is any ball by distance sensing
     public boolean isBallAtIntake() {
 
@@ -949,8 +651,8 @@ public class Indexer {
         double dis1 = ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM);
         double dis2 = ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM);
         double position = getIndexerPosition();
-        debugManager.spindexer("isBallAtIntake colorSensorIntakeL", "%.2f", dis1);
-        debugManager.spindexer("isBallAtIntake colorSensorIntakeR", "%.2f", dis2);
+        debugManager.spindexer("isBallAtIntakeFast colorSensorIntakeL", "%.2f", dis1);
+        debugManager.spindexer("isBallAtIntakeFast colorSensorIntakeR", "%.2f", dis2);
         debugManager.log("intake ball at %.2f, %.2f", dis1, dis2);
 
         if (dis1 < 3.5 || dis2 < 3.5) {
@@ -960,11 +662,11 @@ public class Indexer {
                     artifactColorArray[1] = ArtifactColor.UNKNOWN;
                 else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
                     artifactColorArray[2] = ArtifactColor.UNKNOWN;
-           debugManager.log("intake ball at %.2f color %s %s %s",
-               position,
-               artifactColorArray[0],
-               artifactColorArray[1],
-               artifactColorArray[2]);
+//           debugManager.log("intake ball at %.2f color %s %s %s",
+//               position,
+//               artifactColorArray[0],
+//               artifactColorArray[1],
+//               artifactColorArray[2]);
             return true;
         } else {
             return false;
@@ -1054,6 +756,23 @@ public class Indexer {
         else {
             return false;
         }
+    }
+
+    public boolean confirmColorMatch() {
+        ArtifactColor[] preArtifactColorArray = artifactColorArray.clone();
+        updateColorAllSlots();
+        if(Arrays.equals(preArtifactColorArray, artifactColorArray)) {
+            return true;
+        }
+        return false;
+    }
+
+    public int countArtifacts() {
+        int count = 0;
+        for (int i = 0; i <= 2; i++) {
+            if (artifactColorArray[i] != ArtifactColor.NONE) count++;
+        }
+        return count;
     }
 
 }

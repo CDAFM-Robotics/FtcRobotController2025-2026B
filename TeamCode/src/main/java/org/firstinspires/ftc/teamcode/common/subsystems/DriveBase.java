@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.common.subsystems;
 import static android.os.SystemClock.sleep;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -38,6 +39,8 @@ public class DriveBase {
 
     private Pose2D pos;
     private boolean isRedSide;
+
+    public boolean kickStandIsSet = false;
 
 
     public DriveBase(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
@@ -92,10 +95,12 @@ public class DriveBase {
             RobotStaticValuesClass.autoCompleted = false;
         }
         else if (isRed) {
-            startPose2D = new Pose2D(DistanceUnit.INCH, 63, 12, AngleUnit.RADIANS, -3.14);
+            //initialized red far position is x=(71in - 8.8in), y=23.5/2, -pi.
+            startPose2D = new Pose2D(DistanceUnit.INCH, 62.2, 11.75, AngleUnit.RADIANS, -3.14);
         }
         else {
-            startPose2D = new Pose2D(DistanceUnit.INCH, 63, -12, AngleUnit.RADIANS, -3.14);
+            //initialized red far position is x=(71in - 8.8in), y=-23.5/2, -pi.
+            startPose2D = new Pose2D(DistanceUnit.INCH, 62.2, -11.75, AngleUnit.RADIANS, -3.14);
         }
 
         // Set the location of the robot - this should be the place you are starting the robot from
@@ -237,14 +242,75 @@ public class DriveBase {
         backLeftMotor.setPower(backLeftPower);
     }
 
+
+
     public void setKickStand() {
         rightKickStand.setPosition(0.81);
         leftKickStand.setPosition(0.19);
+        kickStandIsSet = true;
     }
 
     public void resetKickStand() {
         rightKickStand.setPosition(0.5);
-        leftKickStand.setPosition(0.5);
+        leftKickStand.setPosition(-0.5);
+        kickStandIsSet = false;
+    }
+
+    public void spinFrontWheels() {
+        frontRightMotor.setPower(1);
+        frontLeftMotor.setPower(1);
+        /*
+        frontRightMotor.setPower(0.5);
+        frontLeftMotor.setPower(0.5);
+        sleep(1000);
+        frontRightMotor.setPower(-1);
+        frontLeftMotor.setPower(-1);
+        sleep(1000);
+        frontRightMotor.setPower(0.75);
+        frontLeftMotor.setPower(-0.75);
+        sleep(500);
+        frontRightMotor.setPower(-0.5);
+        frontLeftMotor.setPower(0.5);
+        sleep(500);
+        frontRightMotor.setPower(0.25);
+        frontLeftMotor.setPower(-0.25);
+        sleep(500);
+        frontRightMotor.setPower(1);
+        frontLeftMotor.setPower(1);
+        sleep(1000);
+        frontRightMotor.setPower(-0.8);
+        frontLeftMotor.setPower(-0.8);
+        sleep(700);
+        frontRightMotor.setPower(0.75);
+        frontLeftMotor.setPower(-0.75);
+        sleep(500);
+        frontRightMotor.setPower(-0.5);
+        frontLeftMotor.setPower(0.5);
+        sleep(500);
+        frontRightMotor.setPower(0.25);
+        frontLeftMotor.setPower(-0.25);
+        sleep(500);
+        frontRightMotor.setPower(1);
+        frontLeftMotor.setPower(1);
+        sleep(1000);
+        frontRightMotor.setPower(-0.8);
+        frontLeftMotor.setPower(-0.8);
+        sleep(700);
+        frontRightMotor.setPower(0.75);
+        frontLeftMotor.setPower(0.75);
+        sleep(500);
+        frontRightMotor.setPower(-0.5);
+        frontLeftMotor.setPower(-0.5);
+        sleep(500);
+        frontRightMotor.setPower(0.75);
+        frontLeftMotor.setPower(0.75);
+        sleep(500);
+        frontRightMotor.setPower(-0.25);
+        frontLeftMotor.setPower(-0.25);
+        sleep(4000);
+        frontRightMotor.setPower(1);
+        frontLeftMotor.setPower(1);
+        */
     }
 
     public void setKickStandLight() {
