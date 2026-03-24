@@ -10,6 +10,8 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -26,6 +28,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
@@ -519,6 +522,10 @@ public class Launcher {
         RobotLog.d ("Elevator: pos: %d, vel: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), elevatorTarget);
     }
 
+    public boolean elevatorRunning() {
+        return runElevator;
+    }
+
 
     public double getKickerPosition() {
         return (double) Math.round(kickerServo.getPosition()*100)/100;
@@ -764,6 +771,38 @@ public class Launcher {
         return launcherMotor1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    public void autoSetLauncherToGoal(Pose pose, AutoTaskMaker.Team team) {
+        Pose ftcPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(pose);
+
+        double goalX;
+        double goalY;
+
+        if (team == AutoTaskMaker.Team.RED) {
+            goalX = -64;
+            goalY = 64;
+        }
+        else {
+            goalX = -64;
+            goalY = -64;
+        }
+
+        double dist = Math.sqrt(Math.pow(goalX - ftcPose.getX(), 2) + Math.pow(goalY - ftcPose.getY(), 2));
+        double targetDeg = Math.toDegrees(Math.atan2(goalX - ftcPose.getX(), goalY - ftcPose.getY()) - ftcPose.getHeading());
+
+        targetDeg = ((targetDeg + 180) % 360) - 180;
+        if (targetDeg < 0) {
+            targetDeg += 360;
+        }
+
+        telemetry.addData("Dist", dist);
+        telemetry.addData("Degrees", targetDeg);
+
+
+        setLauncherVelocity(getDistanceVelocity(dist));
+        autoUpdateTurretPID(targetDeg);
+        setHoodServoPosition(getDistanceHoodPos(dist));
+    }
+
     // Turret Methods
     public void setTurretRelativeAngle(double relativeTargetAngle){
 
@@ -909,5 +948,11 @@ public class Launcher {
 
     }
 
+    public double getDistanceVelocity(double dist) {
+        return shootingTable.getData1(dist);
+    }
 
+    public double getDistanceHoodPos(double dist) {
+        return shootingTable.getData2(dist);
+    }
 }

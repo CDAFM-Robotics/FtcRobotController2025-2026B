@@ -15,12 +15,15 @@ import org.firstinspires.ftc.teamcode.common.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 
 @Configurable
 public class Robot {
 
+    private static final Logger log = LoggerFactory.getLogger(Robot.class);
     private DriveBase driveBase;
     private Indexer indexer;
     private Launcher launcher;
@@ -557,7 +560,6 @@ public class Robot {
         double deltaX = blueGoalX - robotX;
         double deltaY = blueGoalY - robotY;
         double distanceToGoal = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-        launcher.setShootingDistance(distanceToGoal);
 
         //calculates the angle in radians between the positive x-axis and a point
         double absoluteAngleRadians = Math.atan2(deltaY, deltaX);
@@ -573,17 +575,17 @@ public class Robot {
 
         relativeAngle = normalizeAngle(relativeAngle);
 
-        debugManager.robot("deltaX:", "%.2f", deltaX);
-        debugManager.robot("deltaY:", "%.2f", deltaY);
-        debugManager.robot("robotX:", "%.2f", robotX);
-        debugManager.robot("robotY:", "%.2f", robotY);
-        debugManager.robot("absoluteAngleRadians:", "%.2f", absoluteAngleRadians);
-        debugManager.robot("absoluteAngleDegree:", "%.2f", absoluteAngleDegree);
-        debugManager.robot("pinPointHeading:", "%.2f", pinPointHeading);
-        debugManager.robot("relativeAngle:", "%.2f", relativeAngle);
-        debugManager.robot("distance to goal", "%.2f", distanceToGoal);
+//        debugManager.robot("deltaX:", "%.2f", deltaX);
+//        debugManager.robot("deltaY:", "%.2f", deltaY);
+//        debugManager.robot("robotX:", "%.2f", robotX);
+//        debugManager.robot("robotY:", "%.2f", robotY);
+//        debugManager.robot("absoluteAngleRadians:", "%.2f", absoluteAngleRadians);
+//        debugManager.robot("absoluteAngleDegree:", "%.2f", absoluteAngleDegree);
+//        debugManager.robot("pinPointHeading:", "%.2f", pinPointHeading);
+//        debugManager.robot("relativeAngle:", "%.2f", relativeAngle);
+//        debugManager.robot("distance to goal", "%.2f", distanceToGoal);
 
-        launcher.setTurretRelativeAngle(relativeAngle);
+        launcher.autoUpdateTurretPID(relativeAngle);
     }
 
     double buffer = 10;

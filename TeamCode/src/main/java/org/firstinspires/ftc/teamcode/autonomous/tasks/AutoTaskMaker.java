@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous.tasks;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 
@@ -26,6 +27,11 @@ public class AutoTaskMaker {
         this.follower = follower;
     }
 
+    public enum Team {
+        RED,
+        BLUE
+    }
+
     public Task setIntakePowerTask(double power) {
         return new InstantTask(() -> robot.getIntake().setIntakeMotorPower(power));
     }
@@ -49,7 +55,10 @@ public class AutoTaskMaker {
     public Task spinUpLauncherTask(double velocity) {
         return new SequentialTask(
             setLauncherMotorVelocityTask(velocity),
-            new WaitUntilTask(() -> robot.getLauncher().getLauncherVelocity() >= velocity - 20)
+            new WaitUntilTask(() -> {
+                robot.getTelemetry().addData("Velocity", velocity);
+                return robot.getLauncher().getLauncherVelocity() >= velocity - 20;
+            })
         );
     }
 
@@ -66,6 +75,22 @@ public class AutoTaskMaker {
             robot.getLauncher().autoUpdateTurretPID(angle);
             return Math.abs(robot.getLauncher().getTurretDegrees() - angle) < 5;
         });
+    }
+
+    public Task setHoodPositionTask(double position) {
+        return new InstantTask(() -> robot.getLauncher().setHoodServoPosition(position));
+    }
+
+
+
+    public Task setLauncherToGoalTask() {
+        return new BasicTask(
+            () -> {},
+            () -> {
+                robot.updateTurretAngleAuto();
+                return false;
+            }
+        );
     }
 
     public Task setIndexerPositionTask(double position) {
@@ -116,6 +141,7 @@ public class AutoTaskMaker {
         return new InstantTask(() -> robot.getLauncher().setKickerServoPosition(position));
     }
 
+    @Deprecated
     public Task setKickerUpTask() {
         return new SequentialTask(
             setKickerPositionTask(Launcher.POSITION_KICKER_SERVO_KICK_BALL),
@@ -123,10 +149,21 @@ public class AutoTaskMaker {
         );
     }
 
+    @Deprecated
     public Task setKickerDownTask() {
         return new SequentialTask(
             setKickerPositionTask(Launcher.POSITION_KICKER_SERVO_INIT),
             new SleepTask(Robot.WAIT_TIME_KICKER_DOWN)
+        );
+    }
+
+    public Task runElevatorTask() {
+        return new BasicTask(
+            () -> robot.getLauncher().elevateBall(),
+            () -> {
+                robot.getLauncher().updateElevator();
+                return !robot.getLauncher().elevatorRunning();
+            }
         );
     }
 
@@ -142,12 +179,6 @@ public class AutoTaskMaker {
     public Task runPickupSequenceTask(PathChain pickupPath, PathChain returnPath, long delay, Side side) {
         return new DeadlineTask(
             new SequentialTask(
-                new FollowPathTask(follower, pickupPath),
-                new HoldPointTask(follower, pickupPath.endPose()),
-                new SleepTask(delay),
-                new FollowPathTask(follower, returnPath)
-            ),
-            new SequentialTask(
                 startIntakeTask(),
                 rotateIndexerIntakeTask(0),
                 waitUntilBallInIntakeTask(),
@@ -157,26 +188,30 @@ public class AutoTaskMaker {
                 waitUntilBallInIntakeTask(),
                 stopIntakeTask(),
                 side.equals(Side.NEAR) ? setCloseLauncherTask() : setFarLauncherTask()
+            ),
+            new SequentialTask(
+                new FollowPathTask(follower, pickupPath),
+                new HoldPointTask(follower, pickupPath.endPose()),
+                new SleepTask(delay),
+                new FollowPathTask(follower, returnPath)
             )
         );
     }
 
-    public Task runShootSequenceTask(Pose hold, Side side) {
-        return new SequentialTask(
-            new HoldPointTask(follower, hold),
-            new ParallelTask(
-                side.equals(Side.NEAR) ? setCloseLauncherTask() : setFarLauncherTask(),
-                rotateIndexerOuttakeTask(0)
+    public Task runShootSequenceTask(Pose hold, Side side, Team team) {
+        return new DeadlineTask (
+            new SequentialTask(
+                new HoldPointTask(follower, hold),
+                setFarLauncherTask(),
+                rotateIndexerOuttakeTask(0),
+                runElevatorTask(),
+                rotateIndexerOuttakeTask(2),
+                runElevatorTask(),
+                rotateIndexerOuttakeTask(1),
+                runElevatorTask(),
+                setLauncherMotorVelocityTask(0)
             ),
-//            setKickerUpTask(),
-//            setKickerDownTask(),
-            rotateIndexerOuttakeTask(2),
-//            setKickerUpTask(),
-//            setKickerDownTask(),
-            rotateIndexerOuttakeTask(1),
-//            setKickerUpTask(),
-//            setKickerDownTask(),
-            setLauncherMotorVelocityTask(0)
+            setLauncherToGoalTask()
         );
     }
 }
