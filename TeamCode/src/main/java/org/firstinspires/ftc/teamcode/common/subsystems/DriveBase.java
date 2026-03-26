@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -41,6 +42,9 @@ public class DriveBase {
     private boolean isRedSide;
 
     public boolean kickStandIsSet = false;
+
+    public ElapsedTime timeKickStand = new ElapsedTime();
+    public ElapsedTime areWeThereYet = new ElapsedTime();
 
 
     public DriveBase(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
@@ -242,9 +246,8 @@ public class DriveBase {
         backLeftMotor.setPower(backLeftPower);
     }
 
-
-
     public void setKickStand() {
+        areWeThereYet.startTime();
         rightKickStand.setPosition(0.81);
         leftKickStand.setPosition(0.19);
         kickStandIsSet = true;
@@ -255,10 +258,25 @@ public class DriveBase {
         leftKickStand.setPosition(0.5);
         kickStandIsSet = false;
     }
-
+    
     public void spinFrontWheels() {
-        frontRightMotor.setPower(1);
-        frontLeftMotor.setPower(1);
+        timeKickStand.reset();
+        while (timeKickStand.milliseconds() <= 1000) {
+            frontRightMotor.setPower(1);
+            frontLeftMotor.setPower(-1);
+        }
+        timeKickStand.reset();
+        while (timeKickStand.milliseconds() <= 600) {
+            if (timeKickStand.milliseconds() <= 300) {
+                frontRightMotor.setPower(-1);
+                frontLeftMotor.setPower(1);
+            }
+             else if (timeKickStand.milliseconds() > 300){
+                frontRightMotor.setPower(1);
+                frontLeftMotor.setPower(-1);
+            }
+        }
+        timeKickStand.reset();
         /*
         frontRightMotor.setPower(0.5);
         frontLeftMotor.setPower(0.5);
