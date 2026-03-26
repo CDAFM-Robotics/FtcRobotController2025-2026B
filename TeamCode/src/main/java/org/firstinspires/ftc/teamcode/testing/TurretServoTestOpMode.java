@@ -15,11 +15,12 @@ import com.qualcomm.robotcore.util.RobotLog;
 @Configurable
 public class TurretServoTestOpMode extends LinearOpMode {
 
-    public static double kF = 0.11; // 0.12
+    public static double kF = 0.115; // 0.12
     public static double kP = 0.004; // 0.01
-    public static double kI = 0;
+    public static double kI = 0.000004;
     public static double kD = 0.000002; // 0.0
     public static double target = 0;
+    public static double deadband = 0.75;
 
     static TelemetryManager panelsTelemetry;
     // TODO Panels telemetry
@@ -185,7 +186,7 @@ public class TurretServoTestOpMode extends LinearOpMode {
 
         double error = target - current;
 
-        if (Math.abs(error) < 2.5) {
+        if (Math.abs(error) < deadband) {
             return 0;
         }
 

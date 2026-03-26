@@ -1,16 +1,25 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.subsystems.Hud;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
+import org.firstinspires.ftc.teamcode.common.util.Drawing;
 
 @Configurable
 @TeleOp(name = "BLUE Bot2 ", group = "0teleop")
@@ -25,8 +34,13 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
     private static final int READ_EVERY_N_LOOPS = 10;
     private boolean colorConfirmed = false;
 
+    private LLResult result;
+
     // TODO add Data to Panels
     static TelemetryManager telemetryM;
+
+    // TODO adding pose for LL<->Pinpoint Sync
+    Pose3D botpose_mt2 ;
 
 
     @Override
@@ -36,8 +50,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // FtcDashboard dashboard = FtcDashboard.getInstance();
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        // TODO Panels telemetry
+        // TODO Panels telemetry and robot drawing
         telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        Drawing.init();
 
         // One line to set up — pass your telemetry and a tag name
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
@@ -56,12 +71,6 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         debugManager.LOG_INTAKE     = false;
         debugManager.LOG_HUD        = false;
         debugManager.LOG_ROBOT      = true;
-
-        // pid tuning only
-        double preElevatorKp = 0;
-        double preElevatorKi = 0;
-        double preElevatorKd = 0;
-        double preElevatorKf = 0;
 
 
         // ───────────────────────────────────────────────────────────
@@ -84,7 +93,11 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         rumbleLauncherTimer.reset();
         ElapsedTime reverseIntakeTimer  = new ElapsedTime();
         reverseIntakeTimer.reset();
-        //robot.getLauncher().setLimelightPipeline(isRedSide);
+
+
+        // TODO Adding localization Pipeline
+        robot.getLauncher().setLimelightPipeline((Robot.LLPipelines.APRIL_TAG.ordinal()));
+
 
         hud = new Hud(hardwareMap, telemetry);
 
@@ -93,6 +106,25 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()){
+
+            // TODO LOCALIZATION UPDATE
+            robot.getLauncher().getLimeiight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
+
+            result = robot.getLauncher().getLimeiight().getLatestResult();
+            if (result != null && result.isValid()) {
+                botpose_mt2 = result.getBotpose_MT2();
+                if (botpose_mt2 != null) {
+                    double x = botpose_mt2.getPosition().toUnit(DistanceUnit.INCH).x;
+                    double y = botpose_mt2.getPosition().toUnit(DistanceUnit.INCH).y;
+                    telemetryM.addData("MT2 Location:", "(" + x + ", " + y + ")");
+                }
+            }
+
+
+            // TODO Check for Drift and Update the PINPOINT
+            // code here
+            // TODO end of LOCALIZATION FIX
+
             previousGamepad1.copy(currentGamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
@@ -300,7 +332,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
             // TODO spit it out to Panels graph
             telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
-            telemetryM.update(telemetry);
+            // telemetryM.update(telemetry);
 
             debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
             // Update ball colors every 20 loops if the robot is in idle
@@ -334,19 +366,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
             // Refresh the indicator lights
             hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);
-//            if (llLastIsValid == true)
-//            {
-//                // RobotLog.d("Aim PID X: %f", xAngle);
-//                if (xAngle < Launcher.aimErrorTolerance)
-//                {
-//                    robot.getHud().setAimIndicator(true);
-//                }
-//            }
-//            else {
-//                robot.getHud().setAimIndicator(false);
-//            }
-
-           //  hud.UpdateBallUI();
+            hud.UpdateBallUI();
 
             // TODO Add timing Log at end of loop
             debugManager.log("Blue TeleOp c0: %s c1: %s c2: %s",
@@ -363,6 +383,23 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //            }
 
             debugManager.update();
+
+            // TODO add panels telem
+            telemetryM.update();
+
+            // TODO update drawing in panels
+            // drawOnlyCurrent();
+            try{
+                Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
+                if (botpose_mt2 != null) {
+                    // Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.1));
+                    Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.5));
+                }
+                Drawing.sendPacket();
+            } catch (Exception e) {
+                throw new RuntimeException("Drawing failed" +e);
+            }
+
         }
     }
 }
