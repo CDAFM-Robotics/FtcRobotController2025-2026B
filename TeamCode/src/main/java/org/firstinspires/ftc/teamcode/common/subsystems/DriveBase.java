@@ -252,7 +252,7 @@ public class DriveBase {
 
     public void resetKickStand() {
         rightKickStand.setPosition(0.5);
-        leftKickStand.setPosition(-0.5);
+        leftKickStand.setPosition(0.5);
         kickStandIsSet = false;
     }
 
