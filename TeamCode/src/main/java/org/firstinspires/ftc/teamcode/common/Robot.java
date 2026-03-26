@@ -73,11 +73,11 @@ public class Robot {
     // turret offset from the center of the robot
     public static final double TURRET_OFFSET = 1.679; //inches
     // blue goal x and y
-    public static final double BLUE_X = -63; //inches
-    public static final double BLUE_Y = -63; //inches
+    public static final double BLUE_X = -63.5; //inches
+    public static final double BLUE_Y = -62; //inches
     // red goal x and y
-    public static final double RED_X = -63; //inches
-    public static final double RED_Y = 63; //inches
+    public static final double RED_X = -63.5; //inches
+    public static final double RED_Y = 62; //inches
 
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
 //    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update

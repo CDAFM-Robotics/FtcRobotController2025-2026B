@@ -41,9 +41,11 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
-//        debugManager.TELEMETRY_ENABLED = false;
-//        debugManager.ROBOT_LOG_ENABLED = false;
 
+        debugManager.TELEMETRY_ENABLED = false;
+        debugManager.ROBOT_LOG_ENABLED = false;
+
+        // Individual Telemetry flags
         debugManager.LOG_DRIVEBASE  = false;
         debugManager.LOG_PINPOINT   = false;
         debugManager.LOG_VISION     = false;
@@ -52,18 +54,6 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         debugManager.LOG_INTAKE     = false;
         debugManager.LOG_HUD        = false;
         debugManager.LOG_ROBOT      = true;
-
-        debugManager.TELEMETRY_ENABLED = true;
-        debugManager.ROBOT_LOG_ENABLED = true;
-//
-//        debugManager.LOG_DRIVEBASE  = true;
-//        debugManager.LOG_PINPOINT   = true;
-//        debugManager.LOG_VISION     = true;
-//        debugManager.LOG_LAUNCHER   = true;
-//        debugManager.LOG_SPINDEXER  = true;
-//        debugManager.LOG_INTAKE     = true;
-//        debugManager.LOG_HUD        = true;
-//        debugManager.LOG_ROBOT      = true;
 
         // ───────────────────────────────────────────────────────────
         debugManager.addData("Red side", "%s", isRedSide);

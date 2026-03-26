@@ -1,22 +1,35 @@
 package org.firstinspires.ftc.teamcode.testing;
 
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
 @TeleOp(name = "Sync Elevoator Motor Test", group = "Testing")
 public class syncLiftMotorTestOpMode extends LinearOpMode {
+    public static double kF = 0;
+    public static double kP = 0;
+    public static double kI = 0;
+    public static double kD = 0;
 
+    static TelemetryManager panelsTelemetry;
 
     double ticksPerElevate = 1960.0/50.0;
 
+    DcMotorEx liftMotor;
+
     @Override
     public void runOpMode() throws InterruptedException {
-        DcMotorEx liftMotor = hardwareMap.get(DcMotorEx.class, "elevatorMotor");
+        liftMotor = hardwareMap.get(DcMotorEx.class, "elevatorMotor");
         ElapsedTime wait = new ElapsedTime();
+
+        panelsTelemetry = PanelsTelemetry.INSTANCE.getTelemetry();
+        telemetry.setMsTransmissionInterval(100);
 
         // Need an Encoder
 
@@ -37,6 +50,7 @@ public class syncLiftMotorTestOpMode extends LinearOpMode {
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         while (opModeIsActive()) {
             boolean aPressed= gamepad1.aWasPressed();
+            boolean bPressed= gamepad1.bWasPressed();
             // liftMotor.setPower(power);
             if (aPressed && !running ) {
                 liftMotor.setTargetPosition((int) (ticksPerElevate * 10)); // -1 or +1 or 0
@@ -66,11 +80,29 @@ public class syncLiftMotorTestOpMode extends LinearOpMode {
                 liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             }
 
+            if(bPressed) {
+                setLiftMotorPIDFCoefficients();
+            }
+
             telemetry.addData("Power", power);
             telemetry.addData("Encoder", encoder);
 
             telemetry.update();
+
+            panelsTelemetry.addData("Power", power);
+            panelsTelemetry.addData("Encoder", encoder);
+
+            panelsTelemetry.update();
+
             RobotLog.d("Lifter pev: %.2f,%.2f,%.2f",power,encoder,velocity );
         }
     }
+
+    //For launch motor coefficients testing only
+    public void setLiftMotorPIDFCoefficients() {
+        // Change coefficients using methods included with DcMotorEx class.
+        PIDFCoefficients pidfNew = new PIDFCoefficients(kP, kI, kD, kF);
+        liftMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfNew);
+    }
+
 }

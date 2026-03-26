@@ -185,7 +185,7 @@ public class Indexer {
     }
 
     public double getAxonServoPosition() {
-        RobotLog.d("getAxonServoPosition: %.3f", indexerServoVoltage.getVoltage());
+        debugManager.log("getAxonServoPosition: %.3f", indexerServoVoltage.getVoltage());
         return (indexerServoVoltage.getVoltage() - AXON_SERVO_VOLTAGE_OFFSET) * AXON_SERVO_VOLTAGE_SCALER;
     }
 
@@ -207,7 +207,7 @@ public class Indexer {
     }
 
     public void rotateToPosition(double position) {
-        RobotLog.d("rotateToPosition %.3f", position);
+        debugManager.log("rotateToPosition %.3f", position);
         targetIndexerPosition = position;
         indexerServo.setPosition(position);
     }
