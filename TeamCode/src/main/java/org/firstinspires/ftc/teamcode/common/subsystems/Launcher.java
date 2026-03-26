@@ -375,19 +375,19 @@ public class Launcher {
 
     }
 
-    private void turnServoToLimitSwitch(){
-        launcherServo.setPower(.01);
-        ElapsedTime turretServoInitTimer = new ElapsedTime();
-
-        while(turretServoInitTimer.milliseconds() < 50000){
-            if(getTurretDegrees() == 76.33 && turretLimitSwitch.isPressed()){
-                launcherServo.setPower(0);
-            }
-            else if(getTurretDegrees() == 76.33 && !turretLimitSwitch.isPressed()){
-                turretServo.setPower(-.01);
-            }
-        }
-    }
+//    private void turnServoToLimitSwitch(){
+//        launcherServo.setPower(.01);
+//        ElapsedTime turretServoInitTimer = new ElapsedTime();
+//
+//        while(turretServoInitTimer.milliseconds() < 50000){
+//            if(getTurretDegrees() == 76.33 && turretLimitSwitch.isPressed()){
+//                launcherServo.setPower(0);
+//            }
+//            else if(getTurretDegrees() == 76.33 && !turretLimitSwitch.isPressed()){
+//                turretServo.setPower(-.01);
+//            }
+//        }
+//    }
 
     public void initializeLauncherDevices () {
         launcherMotor1 = hardwareMap.get(DcMotorEx.class, "launcherMotor1");
@@ -426,7 +426,7 @@ public class Launcher {
 
         //0.7 voltage is the position of the limit switch
 
-        turnServoToLimitSwitch();
+        //TODO turnServoToLimitSwitch();
 
         //348.55 is max with no power
         // 378.33 with power
