@@ -95,8 +95,10 @@ public class Indexer {
         colorSensorBackLL.setGain(8);
         colorSensorBackLR.setGain(8);
 
-        turnToClosestIntake();
-        sleep(1500);
+        //turnToClosestIntake();
+
+        //move to outtake in order to let elevator motor run
+        moveToOuttake();
 
         updateColorAllSlots();
 

@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.common.subsystems;
 
+import static java.lang.Thread.currentThread;
+import static java.lang.Thread.sleep;
+
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -24,6 +27,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
@@ -59,6 +63,7 @@ public class Launcher {
     double hoodPosition;
     double kickerPosition;
     DcMotorEx elevatorMotor;
+    TouchSensor elevatorLimitSwitch;
 
     public Servo kickerServo;
     CRServo turretServo;
@@ -68,6 +73,7 @@ public class Launcher {
     // turret servo
     CRServo launcherServo;
     AnalogInput launcherAnalogInput;
+    TouchSensor turretLimitSwitch;
 
     public Limelight3A limelight;
 
@@ -336,6 +342,53 @@ public class Launcher {
         initializeLauncherDevices();
     }
 
+
+    private void initElevatorMotor(){
+        //give time to indexer to turn to outtake
+        try {
+            currentThread().sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        //initialize device
+        elevatorMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        //run until magnetic limit switch detects
+        elevatorMotor.setPower(.5);
+        ElapsedTime motorTimer = new ElapsedTime();
+        //limit switch detector?????????????
+        while(motorTimer.milliseconds() < 1010){
+            if(elevatorLimitSwitch.isPressed()){
+                elevatorMotor.setPower(0);
+                elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elevatorMotor.setPower(1);
+                elevatorMotor.setTargetPosition(0);
+            }
+            if(motorTimer.milliseconds() > 1000 && !elevatorLimitSwitch.isPressed()){
+                elevatorMotor.setPower(0);
+                throw new Error("The elevator motor has not reached its target position in the allotted timeframe. Please check if it is stuck.");
+            }
+        }
+
+    }
+
+    private void turnServoToLimitSwitch(){
+        launcherServo.setPower(.01);
+        ElapsedTime turretServoInitTimer = new ElapsedTime();
+
+        while(turretServoInitTimer.milliseconds() < 50000){
+            if(getTurretDegrees() == 76.33 && turretLimitSwitch.isPressed()){
+                launcherServo.setPower(0);
+            }
+            else if(getTurretDegrees() == 76.33 && !turretLimitSwitch.isPressed()){
+                turretServo.setPower(-.01);
+            }
+        }
+    }
+
     public void initializeLauncherDevices () {
         launcherMotor1 = hardwareMap.get(DcMotorEx.class, "launcherMotor1");
         launcherMotor2 = hardwareMap.get(DcMotorEx.class, "launcherMotor2");
@@ -355,6 +408,7 @@ public class Launcher {
         launcherServo = hardwareMap.get(CRServo.class, "turretServo");
         launcherAnalogInput = hardwareMap.get(AnalogInput.class, "turretAnalog");
         hoodServo = hardwareMap.get(Servo.class, "hoodServo");
+        turretLimitSwitch = hardwareMap.get(TouchSensor.class, "magneticLimitTurret");
 
         kickerPosition = POSITION_KICKER_SERVO_INIT;
         kickerServo.setPosition(POSITION_KICKER_SERVO_INIT);
@@ -369,6 +423,11 @@ public class Launcher {
         if (RobotStaticValuesClass.autoCompleted) {
             currentAngleOffset = RobotStaticValuesClass.turretAngleOffset;
         }
+
+        //0.7 voltage is the position of the limit switch
+
+        turnServoToLimitSwitch();
+
         //348.55 is max with no power
         // 378.33 with power
         //369 with -power
@@ -386,16 +445,14 @@ public class Launcher {
         debugManager.launcher("Actual Servo Angle", "%.2f", actualAngle);
 
         elevatorMotor = hardwareMap.get(DcMotorEx.class, "elevatorMotor");
+        elevatorLimitSwitch = hardwareMap.get(TouchSensor.class, "magneticLimitElevator");
 
-        elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        initElevatorMotor();
 
-        elevatorMotor.setTargetPosition(0);
-        elevatorMotor.setPower(1);
+        //elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //elevatorMotor.setTargetPosition(0);
+        //elevatorMotor.setPower(1);
 
         PIDFCoefficients elevatorPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
         RobotLog.d("Position PID: %.2f, %.2f, %.2f, %.2f", elevatorPID.p, elevatorPID.i, elevatorPID.d, elevatorPID.f);
