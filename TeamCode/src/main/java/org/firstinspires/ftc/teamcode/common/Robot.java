@@ -15,12 +15,15 @@ import org.firstinspires.ftc.teamcode.common.subsystems.Intake;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.LinkedList;
 
 @Configurable
 public class Robot {
 
+    private static final Logger log = LoggerFactory.getLogger(Robot.class);
     private DriveBase driveBase;
     private Indexer indexer;
     private Launcher launcher;
@@ -65,12 +68,21 @@ public class Robot {
     public static int WAIT_TIME_KICKER_UP = 180; // 140; //170; // 250; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
     public static int WAIT_TIME_KICKER_DOWN = 80; // 45; // 80; // 150; // 75 didn't shoot once  // was 175 // was 275 (SINGLE RB WHEEL)
 
-    public static final long WAIT_TIME_ELEVATOR = 500;
+    public static final long WAIT_TIME_ELEVATOR = 300;
+
+    // turret offset from the center of the robot
+    public static final double TURRET_OFFSET = 1.679; //inches
+    // blue goal x and y
+    public static final double BLUE_X = -63.5; //inches
+    public static final double BLUE_Y = -62; //inches
+    // red goal x and y
+    public static final double RED_X = -63.5; //inches
+    public static final double RED_Y = 62; //inches
 
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update
 //    public final double LIMELIGHT_HEIGHT_OFFSET = 436; //todo: update
 
-    public static double PINPOINT_B1_YAWSCALAR = 1.0033595;
+    public static final double PINPOINT_B1_YAW_SCALAR = 1.0033595;
 
     public Robot(HardwareMap hardwareMap, Telemetry telemetry, boolean isRed) {
         // Create an instance of the hardware map and telemetry in the Robot class
@@ -231,7 +243,7 @@ public class Robot {
                  debugManager.log("Robot: WAIT_FOR_BALLt");
 
                  if (indexer.isBallAtIntakeFast()) {
-                         debugManager.log("Robot: isBallAtIntake");
+                         debugManager.log("Robot: isBallAtIntakeFast");
                          intake1Ball = true;
                          intake.stopIntake();
                          autoIntakeState = AutoIntakeState.INIT;
@@ -456,7 +468,7 @@ public class Robot {
     private double lastRelativeHeading = -5000; // Just to check whether it has been set yet
 
     //updating the turret every loop
-    public void updateTurretAngle(){
+    public void updateShootingDistanceAngle(){
         //read the current pose
         double robotX = driveBase.getPinPointPosX();
         double robotY = driveBase.getPinPointPosY();
@@ -465,23 +477,26 @@ public class Robot {
         pinPointHeading = normalizeAngle(pinPointHeading);
         double robotHeading = Math.toDegrees(pinPointHeading);
 
+        // offset turret x y from the ceneter of the robot
+        double tx = robotX - Math.sin(pinPointHeading) * TURRET_OFFSET;
+        double ty = robotY - Math.cos(pinPointHeading) * TURRET_OFFSET;
+
         //calculate the relative angle of the turret to the robot
-        double blueGoalX;
-        double blueGoalY;
+        double goalX;
+        double goalY;
         // coordinates of the blue goal
         if (isRedSide) {
-            blueGoalX = -64;
-            blueGoalY = 64;
+            goalX = RED_X;
+            goalY = RED_Y;
         }
         else {
-            blueGoalX = -64;
-            blueGoalY = -64;
+            goalX = BLUE_X;
+            goalY = BLUE_Y;
         }
 
-
-        // calculate vector to blue goal
-        double deltaX = blueGoalX - robotX;
-        double deltaY = blueGoalY - robotY;
+        // calculate vector to goal
+        double deltaX = goalX - tx;
+        double deltaY = goalY - ty;
         double distanceToGoal = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
         launcher.setShootingDistance(distanceToGoal);
 
@@ -490,12 +505,13 @@ public class Robot {
         double absoluteAngleDegree = Math.toDegrees(absoluteAngleRadians);
 
         double relativeAngle;
-        if (isRedSide) {
-            relativeAngle = (absoluteAngleDegree - robotHeading);
-        }
-        else {
-            relativeAngle = (absoluteAngleDegree - robotHeading) + 2; //off set on blue side
-        }
+        relativeAngle = (absoluteAngleDegree - robotHeading);
+//        if (isRedSide) {
+//            relativeAngle = (absoluteAngleDegree - robotHeading);
+//        }
+//        else {
+//            relativeAngle = (absoluteAngleDegree - robotHeading); //off set on blue side
+//        }
 
         relativeAngle = normalizeAngle(relativeAngle);
 
@@ -503,6 +519,8 @@ public class Robot {
         debugManager.robot("deltaY:", "%.2f", deltaY);
         debugManager.robot("robotX:", "%.2f", robotX);
         debugManager.robot("robotY:", "%.2f", robotY);
+        debugManager.robot("tx:", "%.2f", tx);
+        debugManager.robot("ty:", "%.2f", ty);
         debugManager.robot("absoluteAngleRadians:", "%.2f", absoluteAngleRadians);
         debugManager.robot("absoluteAngleDegree:", "%.2f", absoluteAngleDegree);
         debugManager.robot("pinPointHeading:", "%.2f", pinPointHeading);
@@ -542,7 +560,6 @@ public class Robot {
         double deltaX = blueGoalX - robotX;
         double deltaY = blueGoalY - robotY;
         double distanceToGoal = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
-        launcher.setShootingDistance(distanceToGoal);
 
         //calculates the angle in radians between the positive x-axis and a point
         double absoluteAngleRadians = Math.atan2(deltaY, deltaX);
@@ -558,17 +575,17 @@ public class Robot {
 
         relativeAngle = normalizeAngle(relativeAngle);
 
-        debugManager.robot("deltaX:", "%.2f", deltaX);
-        debugManager.robot("deltaY:", "%.2f", deltaY);
-        debugManager.robot("robotX:", "%.2f", robotX);
-        debugManager.robot("robotY:", "%.2f", robotY);
-        debugManager.robot("absoluteAngleRadians:", "%.2f", absoluteAngleRadians);
-        debugManager.robot("absoluteAngleDegree:", "%.2f", absoluteAngleDegree);
-        debugManager.robot("pinPointHeading:", "%.2f", pinPointHeading);
-        debugManager.robot("relativeAngle:", "%.2f", relativeAngle);
-        debugManager.robot("distance to goal", "%.2f", distanceToGoal);
+//        debugManager.robot("deltaX:", "%.2f", deltaX);
+//        debugManager.robot("deltaY:", "%.2f", deltaY);
+//        debugManager.robot("robotX:", "%.2f", robotX);
+//        debugManager.robot("robotY:", "%.2f", robotY);
+//        debugManager.robot("absoluteAngleRadians:", "%.2f", absoluteAngleRadians);
+//        debugManager.robot("absoluteAngleDegree:", "%.2f", absoluteAngleDegree);
+//        debugManager.robot("pinPointHeading:", "%.2f", pinPointHeading);
+//        debugManager.robot("relativeAngle:", "%.2f", relativeAngle);
+//        debugManager.robot("distance to goal", "%.2f", distanceToGoal);
 
-        launcher.setTurretRelativeAngle(relativeAngle);
+        launcher.autoUpdateTurretPID(relativeAngle);
     }
 
     double buffer = 10;
@@ -615,8 +632,8 @@ public class Robot {
         return robotInOutState;
     }
 
-    public void setLaunchStateKicker(LaunchBallKickerState state) {
-        launchStateKicker = state;
+    public void setLaunchState(LaunchBallState state) {
+        launchState = state;
     }
 
     public LaunchBallKickerState getLaunchStateKicker() {
@@ -755,6 +772,7 @@ public class Robot {
         }
         return false;
     }
+
 //
 //    public void getMotif() {
 //        LLResult result = limelight.getLatestResult();

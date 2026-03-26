@@ -135,7 +135,7 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
             // since we are keeping the heading from autonomous
             if (currentGamepad1.start && !previousGamepad1.start){
                 // robot.getDriveBase().resetIMU();
-                robot.getDriveBase().setPinpointYScalar(robot.PINPOINT_B1_YAWSCALAR);
+                robot.getDriveBase().setPinpointYScalar(robot.PINPOINT_B1_YAW_SCALAR);
                 gamepad1.rumble(300);
             }
 
@@ -339,7 +339,7 @@ public class DCRedTeleOp_ReLocalizationTest extends LinearOpMode {
 //                    robot.getIndexer().artifactColorArray[2]);
 
             // Update turret angle so that it always point to the goal
-            robot.updateTurretAngle();
+            robot.updateShootingDistanceAngle();
 //
 //            //read oblisk if not ready yet
 //            if (!RobotStaticValuesClass.obliskReady){

@@ -10,6 +10,8 @@ import com.acmerobotics.roadrunner.SleepAction;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.PanelsTelemetry;
 
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -19,6 +21,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -26,6 +29,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
@@ -140,6 +144,31 @@ public class Launcher {
     public static double turretkP = 0.004; // 19m26 was 0.005
     public static double turretkI = 0;
     public static double turretkD = 0.00002; // 19m26 was 0.000005
+
+    // Positional PID
+    public static double elevatorKp = 0;
+    public static double elevatorKi = 0;
+    public static double elevatorKd = 0;
+    // public static double elevatorKf = 0;
+
+    public static double lastelevatorKp = 0;
+    public static double lastelevatorKi = 0;
+    public static double lastelevatorKd = 0;
+    // public static double lastelevatorKf = 0;
+
+
+    // Velocity PID
+    public static double elevatorVelKp = 0;
+    public static double elevatorVelKi = 0;
+    public static double elevatorVelKd = 0;
+    public static double elevatorVelKf = 0;
+
+    public static double lastelevatorVelKp = 0;
+    public static double lastelevatorVelKi = 0;
+    public static double lastelevatorVelKd = 0;
+    public static double lastelevatorVelKf = 0;
+
+
 
     private double currentVoltage;
     private double currentAngle;
@@ -368,6 +397,25 @@ public class Launcher {
         elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        PIDFCoefficients elevatorPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+        RobotLog.d("Position PID: %.2f, %.2f, %.2f, %.2f", elevatorPID.p, elevatorPID.i, elevatorPID.d, elevatorPID.f);
+
+        PIDFCoefficients elevatorVelPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        RobotLog.d("Velocity PID: %.2f, %.2f, %.2f, %.2f", elevatorVelPID.p, elevatorVelPID.i, elevatorVelPID.d, elevatorVelPID.f);
+
+        // Set positional constants
+        elevatorKp = elevatorPID.p;
+        elevatorKi = elevatorPID.i;
+        elevatorKd = elevatorPID.d;
+        // elevatorKf = elevatorPID.f;
+
+        // set velocity constants
+        elevatorVelKp = elevatorVelPID.p;
+        elevatorVelKi = elevatorVelPID.i;
+        elevatorVelKd = elevatorVelPID.d;
+        elevatorVelKf = elevatorVelPID.f;
+
+
         lastAngle = currentAngle;
         lastVoltage = currentVoltage;
 
@@ -376,6 +424,29 @@ public class Launcher {
         // key = distance from goal,
         // data1 = motor power,
         // data2 = shooter hood servo position
+//        shootingTable.add(35,1080,1.0);
+//        shootingTable.add(40.03,1100,1.0);
+//        shootingTable.add(45.29,1120,0.73);
+//        shootingTable.add(50.03,1140,0.72);
+//        shootingTable.add(55.25,1160,0.66);
+//        shootingTable.add(60.17,1180,0.50);
+//        shootingTable.add(64.89,1200,0.32);
+//        shootingTable.add(69.98,1230,0.30);
+//        shootingTable.add(74.92,1250,0.275);
+//        shootingTable.add(80.08,1280,0.24);
+//        shootingTable.add(90,1320,0.13);
+//        shootingTable.add(95.03,1350,0.11);
+//        shootingTable.add(100.17,1370,0.10);
+//        shootingTable.add(105.16,1380,0.10);
+//        shootingTable.add(110.08,1420,0.10);
+//        shootingTable.add(115.05,1480,0.08);
+//        shootingTable.add(120.25,1500,0.03);
+//        shootingTable.add(125.20,1520,0.025);
+//        shootingTable.add(130.20,1550,0.02);
+//        shootingTable.add(135.20,1580,0.01);
+//        shootingTable.add(140.09,1600,0.00);
+//        shootingTable.add(145.39,1640,0.00);
+//        shootingTable.add(149.96,1660,0.00);
         shootingTable.add(35,1080,1.0);
         shootingTable.add(40.03,1100,1.0);
         shootingTable.add(45.29,1120,0.73);
@@ -394,11 +465,11 @@ public class Launcher {
         shootingTable.add(115.05,1480,0.08);
         shootingTable.add(120.25,1500,0.03);
         shootingTable.add(125.20,1520,0.025);
-        shootingTable.add(130.20,1550,0.02);
-        shootingTable.add(135.20,1580,0.01);
-        shootingTable.add(140.09,1600,0.00);
-        shootingTable.add(145.39,1640,0.00);
-        shootingTable.add(149.96,1660,0.00);
+        shootingTable.add(130.20,1540,0.02);
+        shootingTable.add(135.20,1560,0.01);
+        shootingTable.add(140.09,1580,0.00);
+        shootingTable.add(145.39,1620,0.00);
+        shootingTable.add(149.96,1640,0.00);
 
 
 
@@ -516,7 +587,11 @@ public class Launcher {
         else {
             elevatorMotor.setTargetPosition((int) Math.round(elevatorTarget));
         }
-        RobotLog.d ("Elevator: pos: %d, vel: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), elevatorTarget);
+        RobotLog.d ("Elevator: pos: %d, vel: %.2f, launcher: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), launcherMotor1.getVelocity(), launcherVelocity);
+    }
+
+    public boolean elevatorRunning() {
+        return runElevator;
     }
 
 
@@ -764,6 +839,38 @@ public class Launcher {
         return launcherMotor1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
+    public void autoSetLauncherToGoal(Pose pose, AutoTaskMaker.Team team) {
+        Pose ftcPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(pose);
+
+        double goalX;
+        double goalY;
+
+        if (team == AutoTaskMaker.Team.RED) {
+            goalX = -64;
+            goalY = 64;
+        }
+        else {
+            goalX = -64;
+            goalY = -64;
+        }
+
+        double dist = Math.sqrt(Math.pow(goalX - ftcPose.getX(), 2) + Math.pow(goalY - ftcPose.getY(), 2));
+        double targetDeg = Math.toDegrees(Math.atan2(goalX - ftcPose.getX(), goalY - ftcPose.getY()) - ftcPose.getHeading());
+
+        targetDeg = ((targetDeg + 180) % 360) - 180;
+        if (targetDeg < 0) {
+            targetDeg += 360;
+        }
+
+        telemetry.addData("Dist", dist);
+        telemetry.addData("Degrees", targetDeg);
+
+
+        setLauncherVelocity(getDistanceVelocity(dist));
+        autoUpdateTurretPID(targetDeg);
+        setHoodServoPosition(getDistanceHoodPos(dist));
+    }
+
     // Turret Methods
     public void setTurretRelativeAngle(double relativeTargetAngle){
 
@@ -775,7 +882,9 @@ public class Launcher {
         // Find the voltage returned and the angle of the servo
 
         currentVoltage = launcherAnalogInput.getVoltage();
-        currentAngle = currentVoltage / 3.3 * 360;
+        //currentAngle = currentVoltage / 3.3 * 360;
+        // Voltage only outputs angles between 2.5 deg and 355 deg
+        currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360; // max 355, min 2.5
 
         // Find out whether the angle looped around
 
@@ -813,6 +922,7 @@ public class Launcher {
         debugManager.addData("Turret Power", "%.2f", turretPower);
         debugManager.addData("Servo Voltage", "%.2f", currentVoltage);
         debugManager.addData("Servo Angle Raw", "%.2f", currentAngle);
+        debugManager.addData("Turret target angle", "%.2f", turretTarget);
         debugManager.addData("Last Servo Voltage", "%.2f", lastVoltage);
         debugManager.addData("Last Servo Angle Raw", "%.2f", lastAngle);
         debugManager.addData("Difference", "%.2f", diff);
@@ -882,7 +992,7 @@ public class Launcher {
 
         double error = target - current;
 
-        if (Math.abs(error) < 2.5) {
+        if (Math.abs(error) < 1.5) {
             return 0;
         }
 
@@ -906,6 +1016,63 @@ public class Launcher {
     public void setShootingDistance(double distanceToGoal) {
         shootingDistance = distanceToGoal;
 
+
+    }
+
+    public double getDistanceVelocity(double dist) {
+        return shootingTable.getData1(dist);
+    }
+
+    public double getDistanceHoodPos(double dist) {
+        return shootingTable.getData2(dist);
+    }
+
+    //For elevator motor coefficients testing only
+    // TODO REMOVE FOR COMP
+    public void setLiftMotorPIDFCoefficients() {
+        // Change coefficients using methods included with DcMotorEx class.
+
+        if (elevatorKp != lastelevatorKp
+            || elevatorKi != lastelevatorKi
+            || elevatorKd != lastelevatorKd
+            || elevatorVelKp != lastelevatorVelKp
+            || elevatorVelKi != lastelevatorVelKi
+            || elevatorVelKd != lastelevatorVelKd
+            || elevatorVelKf != lastelevatorVelKf)
+        {
+            lastelevatorKp = elevatorKp;
+            lastelevatorKi = elevatorKi;
+            lastelevatorKd = elevatorKd;
+
+            lastelevatorVelKp = elevatorVelKp;
+            lastelevatorVelKi = elevatorVelKi;
+            lastelevatorVelKd = elevatorVelKd;
+            lastelevatorVelKf = elevatorVelKf;
+
+
+
+            // Positional
+            // Be sure not to use PIDF for Positional Constants or it will generate runtime error
+
+
+
+            PIDCoefficients pidNew = new PIDCoefficients(elevatorKp, elevatorKi, elevatorKd);
+            elevatorMotor.setPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidNew);
+
+
+            // Velocity Constnats
+            PIDFCoefficients pidfNew = new PIDFCoefficients(elevatorVelKp, elevatorVelKi, elevatorVelKd, elevatorVelKf);
+            elevatorMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfNew);
+
+
+            // Print one more time
+            PIDFCoefficients elevatorPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+            RobotLog.d("Position PID Upd: %.2f, %.2f, %.2f, %.2f", elevatorPID.p, elevatorPID.i, elevatorPID.d, elevatorPID.f);
+
+            PIDFCoefficients elevatorVelPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+            RobotLog.d("Velocity PID Upd: %.2f, %.2f, %.2f, %.2f", elevatorVelPID.p, elevatorVelPID.i, elevatorVelPID.d, elevatorVelPID.f);
+
+        }
 
     }
 

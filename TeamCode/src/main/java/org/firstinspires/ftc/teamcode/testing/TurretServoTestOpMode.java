@@ -51,7 +51,7 @@ public class TurretServoTestOpMode extends LinearOpMode {
         double greatestDiff = -0x80000000;
 
         boolean firstLoop = true;
-        boolean pid = false;
+        boolean pid = true;
 
         while (opModeInInit()) {
             currentVoltage = launcherAnalogInput.getVoltage();
