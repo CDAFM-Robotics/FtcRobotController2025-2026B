@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
@@ -24,7 +26,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
     private boolean colorConfirmed = false;
 
     // TODO add Data to Panels
-    // static TelemetryManager telemetryM;
+    static TelemetryManager telemetryM;
 
 
     @Override
@@ -35,7 +37,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         // TODO Panels telemetry
-        // telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
 
         // One line to set up — pass your telemetry and a tag name
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
@@ -43,7 +45,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // ─── Master switches ────────────────────────────────────────
 
         debugManager.TELEMETRY_ENABLED = false;
-        debugManager.ROBOT_LOG_ENABLED = false;
+        debugManager.ROBOT_LOG_ENABLED = true;
 
         // Individual Telemetry flags
         debugManager.LOG_DRIVEBASE  = false;
@@ -54,6 +56,13 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         debugManager.LOG_INTAKE     = false;
         debugManager.LOG_HUD        = false;
         debugManager.LOG_ROBOT      = true;
+
+        // pid tuning only
+        double preElevatorKp = 0;
+        double preElevatorKi = 0;
+        double preElevatorKd = 0;
+        double preElevatorKf = 0;
+
 
         // ───────────────────────────────────────────────────────────
         debugManager.addData("Red side", "%s", isRedSide);
@@ -289,8 +298,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             //        robot.getLauncher().getLauncherVelocity());
 
             // TODO spit it out to Panels graph
-            // telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
-            // telemetryM.update(telemetry);
+            telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
+            telemetryM.update(telemetry);
 
             debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
             // Update ball colors every 20 loops if the robot is in idle
@@ -315,6 +324,11 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 }
             }
 
+
+            // TODO REMOVE FOR COMP !
+            robot.getLauncher().setLiftMotorPIDFCoefficients();
+
+
             // turn to output after three balls are confirmed for three times
 
             // Refresh the indicator lights
@@ -331,7 +345,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 //                robot.getHud().setAimIndicator(false);
 //            }
 
-            hud.UpdateBallUI();
+           //  hud.UpdateBallUI();
 
             // TODO Add timing Log at end of loop
             debugManager.log("Blue TeleOp c0: %s c1: %s c2: %s",

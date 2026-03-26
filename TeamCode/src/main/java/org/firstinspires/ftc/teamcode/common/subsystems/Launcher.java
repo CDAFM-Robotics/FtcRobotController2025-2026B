@@ -21,6 +21,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -143,6 +144,31 @@ public class Launcher {
     public static double turretkP = 0.004; // 19m26 was 0.005
     public static double turretkI = 0;
     public static double turretkD = 0.00002; // 19m26 was 0.000005
+
+    // Positional PID
+    public static double elevatorKp = 0;
+    public static double elevatorKi = 0;
+    public static double elevatorKd = 0;
+    // public static double elevatorKf = 0;
+
+    public static double lastelevatorKp = 0;
+    public static double lastelevatorKi = 0;
+    public static double lastelevatorKd = 0;
+    // public static double lastelevatorKf = 0;
+
+
+    // Velocity PID
+    public static double elevatorVelKp = 0;
+    public static double elevatorVelKi = 0;
+    public static double elevatorVelKd = 0;
+    public static double elevatorVelKf = 0;
+
+    public static double lastelevatorVelKp = 0;
+    public static double lastelevatorVelKi = 0;
+    public static double lastelevatorVelKd = 0;
+    public static double lastelevatorVelKf = 0;
+
+
 
     private double currentVoltage;
     private double currentAngle;
@@ -371,6 +397,25 @@ public class Launcher {
         elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
+        PIDFCoefficients elevatorPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+        RobotLog.d("Position PID: %.2f, %.2f, %.2f, %.2f", elevatorPID.p, elevatorPID.i, elevatorPID.d, elevatorPID.f);
+
+        PIDFCoefficients elevatorVelPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+        RobotLog.d("Velocity PID: %.2f, %.2f, %.2f, %.2f", elevatorVelPID.p, elevatorVelPID.i, elevatorVelPID.d, elevatorVelPID.f);
+
+        // Set positional constants
+        elevatorKp = elevatorPID.p;
+        elevatorKi = elevatorPID.i;
+        elevatorKd = elevatorPID.d;
+        // elevatorKf = elevatorPID.f;
+
+        // set velocity constants
+        elevatorVelKp = elevatorVelPID.p;
+        elevatorVelKi = elevatorVelPID.i;
+        elevatorVelKd = elevatorVelPID.d;
+        elevatorVelKf = elevatorVelPID.f;
+
+
         lastAngle = currentAngle;
         lastVoltage = currentVoltage;
 
@@ -542,7 +587,7 @@ public class Launcher {
         else {
             elevatorMotor.setTargetPosition((int) Math.round(elevatorTarget));
         }
-        RobotLog.d ("Elevator: pos: %d, vel: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), elevatorTarget);
+        RobotLog.d ("Elevator: pos: %d, vel: %.2f, launcher: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), launcherMotor1.getVelocity(), launcherVelocity);
     }
 
     public boolean elevatorRunning() {
@@ -981,4 +1026,55 @@ public class Launcher {
     public double getDistanceHoodPos(double dist) {
         return shootingTable.getData2(dist);
     }
+
+    //For elevator motor coefficients testing only
+    // TODO REMOVE FOR COMP
+    public void setLiftMotorPIDFCoefficients() {
+        // Change coefficients using methods included with DcMotorEx class.
+
+        if (elevatorKp != lastelevatorKp
+            || elevatorKi != lastelevatorKi
+            || elevatorKd != lastelevatorKd
+            || elevatorVelKp != lastelevatorVelKp
+            || elevatorVelKi != lastelevatorVelKi
+            || elevatorVelKd != lastelevatorVelKd
+            || elevatorVelKf != lastelevatorVelKf)
+        {
+            lastelevatorKp = elevatorKp;
+            lastelevatorKi = elevatorKi;
+            lastelevatorKd = elevatorKd;
+
+            lastelevatorVelKp = elevatorVelKp;
+            lastelevatorVelKi = elevatorVelKi;
+            lastelevatorVelKd = elevatorVelKd;
+            lastelevatorVelKf = elevatorVelKf;
+
+
+
+            // Positional
+            // Be sure not to use PIDF for Positional Constants or it will generate runtime error
+
+
+
+            PIDCoefficients pidNew = new PIDCoefficients(elevatorKp, elevatorKi, elevatorKd);
+            elevatorMotor.setPIDCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidNew);
+
+
+            // Velocity Constnats
+            PIDFCoefficients pidfNew = new PIDFCoefficients(elevatorVelKp, elevatorVelKi, elevatorVelKd, elevatorVelKf);
+            elevatorMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, pidfNew);
+
+
+            // Print one more time
+            PIDFCoefficients elevatorPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+            RobotLog.d("Position PID Upd: %.2f, %.2f, %.2f, %.2f", elevatorPID.p, elevatorPID.i, elevatorPID.d, elevatorPID.f);
+
+            PIDFCoefficients elevatorVelPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
+            RobotLog.d("Velocity PID Upd: %.2f, %.2f, %.2f, %.2f", elevatorVelPID.p, elevatorVelPID.i, elevatorVelPID.d, elevatorVelPID.f);
+
+        }
+
+    }
+
+
 }

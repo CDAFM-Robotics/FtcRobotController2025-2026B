@@ -166,7 +166,7 @@ public class DriveBase {
             pinpoint.setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR); // initial Factory Yaw Scalar for Pinpoint from Bot1
         }
         pos = pinpoint.getPosition();
-        RobotLog.d("pinpoint heading1 %.2f, yawScalar: %.8f, lastStatus: %s", pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getYawScalar(), lastStatus);
+        // RobotLog.d("pinpoint heading1 %.2f, yawScalar: %.8f, lastStatus: %s", pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getYawScalar(), lastStatus);
 
 
     }

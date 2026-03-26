@@ -98,7 +98,7 @@ public class syncLiftMotorTestOpMode extends LinearOpMode {
         }
     }
 
-    //For launch motor coefficients testing only
+    //For elevator motor coefficients testing only
     public void setLiftMotorPIDFCoefficients() {
         // Change coefficients using methods included with DcMotorEx class.
         PIDFCoefficients pidfNew = new PIDFCoefficients(kP, kI, kD, kF);
