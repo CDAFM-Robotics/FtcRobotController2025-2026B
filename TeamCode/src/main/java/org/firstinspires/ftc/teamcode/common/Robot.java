@@ -110,14 +110,6 @@ public class Robot {
         // Distances in cm, velocities as motor power (0.0 to 1.0)
         // Example values:
 
-        // read the target pattern from autonomous
-        if (RobotStaticValuesClass.autoCompleted) {
-            RobotStaticValuesClass.obliskReady = true;
-        }
-        else {
-            // try to read the oblisk with limelight
-//            getMotif();
-        }
     }
 
     public enum AutoIntakeState {

@@ -35,7 +35,7 @@ public class DriveBase {
 
     // private IMU imu;
 
-    GoBildaPinpointDriver pinpoint;
+    public GoBildaPinpointDriver pinpoint;
     private GoBildaPinpointDriver.DeviceStatus lastStatus;
 
     private Pose2D pos;
@@ -90,34 +90,34 @@ public class DriveBase {
         // TODO will defer to the single pinpoint.update below.
         // pinpoint.update();
 
-        //read the pose value from autonomous or initialized it at start up location
-        Pose2D startPose2D;
-        // if the auto completed, use the value from end of auto
-        if (RobotStaticValuesClass.autoCompleted) {
-            startPose2D = RobotStaticValuesClass.savedPose;
-            // TODO temp fix invalidate the static data (next run must be start at zero)
-            RobotStaticValuesClass.autoCompleted = false;
-        }
-        else if (isRed) {
-            //initialized red far position is x=(71in - 7.75in), y=23.5/2, -pi.
-            startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, 11.75, AngleUnit.RADIANS, -3.14);
-        }
-        else {
-            //initialized red far position is x=(71in - 7.75in), y=-23.5/2, -pi.
-            startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, -11.75, AngleUnit.RADIANS, -3.14);
-        }
-
-        // Set the location of the robot - this should be the place you are starting the robot from
-        pinpoint.setPosition(startPose2D);
-        pinpoint.update();
-        debugManager.addData("DriveBase Pos x, y, heading", "%.2f, %.2f, %.2f",
-            startPose2D.getX(DistanceUnit.INCH),
-            startPose2D.getY(DistanceUnit.INCH),
-            startPose2D.getHeading(AngleUnit.RADIANS));
-        debugManager.log("Pos x: %.2f, y: %2f, heading: %.2f",
-            startPose2D.getX(DistanceUnit.INCH),
-            startPose2D.getY(DistanceUnit.INCH),
-            startPose2D.getHeading(AngleUnit.RADIANS));
+//        //read the pose value from autonomous or initialized it at start up location
+//        Pose2D startPose2D;
+//        // if the auto completed, use the value from end of auto
+//        if (RobotStaticValuesClass.autoCompleted) {
+//            startPose2D = RobotStaticValuesClass.savedPose;
+//            // TODO temp fix invalidate the static data (next run must be start at zero)
+//            RobotStaticValuesClass.autoCompleted = false;
+//        }
+//        else if (isRed) {
+//            //initialized red far position is x=(71in - 7.75in), y=23.5/2, -pi.
+//            startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, 11.75, AngleUnit.RADIANS, -3.14);
+//        }
+//        else {
+//            //initialized red far position is x=(71in - 7.75in), y=-23.5/2, -pi.
+//            startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, -11.75, AngleUnit.RADIANS, -3.14);
+//        }
+//
+//        // Set the location of the robot - this should be the place you are starting the robot from
+//        pinpoint.setPosition(startPose2D);
+//        pinpoint.update();
+//        debugManager.addData("DriveBase Pos x, y, heading", "%.2f, %.2f, %.2f",
+//            startPose2D.getX(DistanceUnit.INCH),
+//            startPose2D.getY(DistanceUnit.INCH),
+//            startPose2D.getHeading(AngleUnit.RADIANS));
+//        debugManager.log("Pos x: %.2f, y: %2f, heading: %.2f",
+//            startPose2D.getX(DistanceUnit.INCH),
+//            startPose2D.getY(DistanceUnit.INCH),
+//            startPose2D.getHeading(AngleUnit.RADIANS));
 
     }
 
