@@ -1,14 +1,25 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.field.Style;
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
+import com.pedropathing.ftc.PoseConverter;
+import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.subsystems.Hud;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
+import org.firstinspires.ftc.teamcode.common.util.Drawing;
 
 @Configurable
 @TeleOp(name = "RED Bot2 ", group = "0teleop")
@@ -20,10 +31,16 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
     // ---- Loop throttle ----
     private int loopCount = 0;
-    private static final int READ_EVERY_N_LOOPS = 20;
+    private static final int READ_EVERY_N_LOOPS = 10;
+    private boolean colorConfirmed = false;
+
+    private LLResult result;
 
     // TODO add Data to Panels
-    // static TelemetryManager telemetryM;
+    static TelemetryManager telemetryM;
+
+    // TODO adding pose for LL<->Pinpoint Sync
+    Pose3D botpose_mt2 ;
 
 
     @Override
@@ -33,16 +50,19 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         // FtcDashboard dashboard = FtcDashboard.getInstance();
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        // TODO Panels telemetry
-        // telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        // TODO Panels telemetry and robot drawing
+        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+        Drawing.init();
 
         // One line to set up — pass your telemetry and a tag name
         DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
+
         debugManager.TELEMETRY_ENABLED = true;
         debugManager.ROBOT_LOG_ENABLED = true;
 
+        // Individual Telemetry flags
         debugManager.LOG_DRIVEBASE  = false;
         debugManager.LOG_PINPOINT   = false;
         debugManager.LOG_VISION     = false;
@@ -52,17 +72,6 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         debugManager.LOG_HUD        = false;
         debugManager.LOG_ROBOT      = true;
 
-//        debugManager.TELEMETRY_ENABLED = true;
-//        debugManager.ROBOT_LOG_ENABLED = true;
-//
-//        debugManager.LOG_DRIVEBASE  = true;
-//        debugManager.LOG_PINPOINT   = true;
-//        debugManager.LOG_VISION     = true;
-//        debugManager.LOG_LAUNCHER   = true;
-//        debugManager.LOG_SPINDEXER  = true;
-//        debugManager.LOG_INTAKE     = true;
-//        debugManager.LOG_HUD        = true;
-//        debugManager.LOG_ROBOT      = true;
 
         // ───────────────────────────────────────────────────────────
         debugManager.addData("Red side", "%s", isRedSide);
@@ -84,7 +93,11 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         rumbleLauncherTimer.reset();
         ElapsedTime reverseIntakeTimer  = new ElapsedTime();
         reverseIntakeTimer.reset();
-        //robot.getLauncher().setLimelightPipeline(isRedSide);
+
+
+        // TODO Adding localization Pipeline
+        robot.getLauncher().setLimelightPipeline((Robot.LLPipelines.APRIL_TAG.ordinal()));
+
 
         hud = new Hud(hardwareMap, telemetry);
 
@@ -93,6 +106,25 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()){
+
+            // TODO LOCALIZATION UPDATE
+            robot.getLauncher().getLimeiight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
+
+            result = robot.getLauncher().getLimeiight().getLatestResult();
+            if (result != null && result.isValid()) {
+                botpose_mt2 = result.getBotpose_MT2();
+                if (botpose_mt2 != null) {
+                    double x = botpose_mt2.getPosition().toUnit(DistanceUnit.INCH).x;
+                    double y = botpose_mt2.getPosition().toUnit(DistanceUnit.INCH).y;
+                    telemetryM.addData("MT2 Location:", "(" + x + ", " + y + ")");
+                }
+            }
+
+
+            // TODO Check for Drift and Update the PINPOINT
+            // code here
+            // TODO end of LOCALIZATION FIX
+
             previousGamepad1.copy(currentGamepad1);
             previousGamepad2.copy(currentGamepad2);
             currentGamepad1.copy(gamepad1);
@@ -118,11 +150,20 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 driveSpeed = driveSpeed == 1 ? 0.5 : 1;
             }
 
-            robot.getDriveBase().setMotorPowers(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x, driveSpeed, fieldCentric);
+
+            if (!robot.getDriveBase().kickStandIsSet) {
+                robot.getDriveBase().setMotorPowers(gamepad1.left_stick_x, -gamepad1.left_stick_y, -gamepad1.right_stick_x, driveSpeed, fieldCentric);
+            }
 
             // Kickstand control
             if (currentGamepad1.a != previousGamepad1.a) {
+                robot.getDriveBase().setMotorPowers(0, 0, 0, driveSpeed, fieldCentric);
                 robot.getDriveBase().setKickStand();
+                sleep(500);
+                if (robot.getDriveBase().kickStandIsSet) {
+
+                    robot.getDriveBase().spinFrontWheels();
+                }
                 //robot.getDriveBase().setKickStandLight();
             }
 
@@ -152,6 +193,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 robot.getIntake().stopIntake();
                 //TODO: reverse intake for 500 milliseconds if there are three ball already
                 robot.setRobotState(Robot.RobotInOutState.IDLE);
+                colorConfirmed = false;
             }
 
             if (currentGamepad1.left_trigger != 0) {
@@ -258,6 +300,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 && robot.isSafeToStopOuttake()) {
                 if (robot.getRobotInOutState() == Robot.RobotInOutState.OUTTAKE) {
                     robot.setRobotState(Robot.RobotInOutState.IDLE);
+                    colorConfirmed = false;
                 }
             }
 
@@ -288,35 +331,41 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             //        robot.getLauncher().getLauncherVelocity());
 
             // TODO spit it out to Panels graph
-            // telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
+            telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
             // telemetryM.update(telemetry);
 
-            // Refresh the indicator lights
-            hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);
-//            if (llLastIsValid == true)
-//            {
-//                // RobotLog.d("Aim PID X: %f", xAngle);
-//                if (xAngle < Launcher.aimErrorTolerance)
-//                {
-//                    robot.getHud().setAimIndicator(true);
-//                }
-//            }
-//            else {
-//                robot.getHud().setAimIndicator(false);
-//            }
-
             debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
-            // Update ball colors every 20 loops if the robot is not intaking or outtaking
-            if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE) {
+            // Update ball colors every 20 loops if the robot is in idle
+            if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE
+                && !colorConfirmed) {
                 if (robot.getIndexer().axonAtIntake()) {
                     loopCount++;
                     // ---- Read sensors every N loops ----
                     if (loopCount % READ_EVERY_N_LOOPS == 0) {
-                        robot.getIndexer().updateColorAllSlots();
+                        if (robot.getIndexer().confirmColorMatch() ) {
+                            colorConfirmed = true;
+                            if (robot.getIndexer().countArtifacts() == 3) {
+                                //turn to output
+                                debugManager.addData("count %d", robot.getIndexer().countArtifacts());
+                                robot.getIndexer().positionForOuttake();
+                            }
+                        }
+                        else {
+                            colorConfirmed = false;
+                        }
                     }
                 }
             }
 
+
+            // TODO REMOVE FOR COMP !
+            robot.getLauncher().setLiftMotorPIDFCoefficients();
+
+
+            // turn to output after three balls are confirmed for three times
+
+            // Refresh the indicator lights
+            hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1],robot.getIndexer().artifactColorArray[2]);
             hud.UpdateBallUI();
 
             // TODO Add timing Log at end of loop
@@ -334,6 +383,23 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 //            }
 
             debugManager.update();
+
+            // TODO add panels telem
+            telemetryM.update();
+
+            // TODO update drawing in panels
+            // drawOnlyCurrent();
+            try{
+                Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
+                if (botpose_mt2 != null) {
+                    // Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.INCH, botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.1));
+                    Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, botpose_mt2.getPosition().x, botpose_mt2.getPosition().y, AngleUnit.DEGREES, botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.5));
+                }
+                Drawing.sendPacket();
+            } catch (Exception e) {
+                throw new RuntimeException("Drawing failed" +e);
+            }
+
         }
     }
 }
