@@ -86,6 +86,9 @@ public class Launcher {
         return currentAngleOffset;
     }
 
+    public void setCurrentAngleOffset(double angleOffset) {
+        currentAngleOffset = angleOffset;
+    }
     public enum QuadrantRotatorServo{
         POSITIVE, NEGATIVE, ZERO
     }
