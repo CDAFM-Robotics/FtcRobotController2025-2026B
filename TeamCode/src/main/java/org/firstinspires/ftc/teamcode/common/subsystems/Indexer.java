@@ -95,14 +95,17 @@ public class Indexer {
         colorSensorBackLL.setGain(8);
         colorSensorBackLR.setGain(8);
 
-        //turnToClosestIntake();
-
-        //move to outtake in order to let elevator motor run
-        moveToOuttake();
-
+        // have to turn to intake to read the ball colors. DON'T REMOVE!
+        turnToClosestIntake();
+        sleep(650);
         updateColorAllSlots();
 
         timeSinceTurnIndex.reset();
+
+        //move to outtake in order to let elevator motor run
+        //moveToOuttake() moves the next shooting slot to outtake
+        // should use positionForOuttake
+        positionForOuttake();
     }
 
     /****************************************************
