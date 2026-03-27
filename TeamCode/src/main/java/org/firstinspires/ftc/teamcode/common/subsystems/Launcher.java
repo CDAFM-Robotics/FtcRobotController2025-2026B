@@ -366,9 +366,11 @@ public class Launcher {
             if(elevatorLimitSwitch.isPressed()){
                 elevatorMotor.setPower(0);
                 elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                elevatorMotor.setTargetPosition(0);
                 elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elevatorMotor.setPower(1);
-                elevatorMotor.setTargetPosition(0);
+                // move this line due to reset on init
+                //elevatorMotor.setTargetPosition(0);
             }
             if(motorTimer.milliseconds() > 1000 && !elevatorLimitSwitch.isPressed()){
                 elevatorMotor.setPower(0);
@@ -424,9 +426,9 @@ public class Launcher {
         currentVoltage = launcherAnalogInput.getVoltage();
         currentAngle = currentVoltage / 3.3 * 360;
         // set the offset to the value from Autonomous
-        if (RobotStaticValuesClass.autoCompleted) {
-            currentAngleOffset = RobotStaticValuesClass.turretAngleOffset;
-        }
+//        if (RobotStaticValuesClass.autoCompleted) {
+//            currentAngleOffset = RobotStaticValuesClass.turretAngleOffset;
+//        }
 
         //0.7 voltage is the position of the limit switch
 

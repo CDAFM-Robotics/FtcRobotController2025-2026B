@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Hud;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.Drawing;
@@ -25,6 +26,10 @@ import org.firstinspires.ftc.teamcode.common.util.Drawing;
 @TeleOp(name = "RED Bot2 ", group = "0teleop")
 public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     public boolean isRedSide = true;
+
+    Robot robot;
+
+    DebugManager debugManager;
 
     // Make a local HUD
     private Hud hud;
@@ -42,6 +47,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     // TODO adding pose for LL<->Pinpoint Sync
     Pose3D botpose_mt2 ;
 
+    RobotStaticValuesClass.Oblisk oblisk = RobotStaticValuesClass.Oblisk.UNKNOW;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -55,7 +61,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         Drawing.init();
 
         // One line to set up — pass your telemetry and a tag name
-        DebugManager debugManager = new DebugManager(telemetry, "TELEOP");
+        debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
 
@@ -72,11 +78,10 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         debugManager.LOG_HUD        = false;
         debugManager.LOG_ROBOT      = true;
 
-
         // ───────────────────────────────────────────────────────────
         debugManager.addData("Red side", "%s", isRedSide);
 
-        Robot robot = new Robot(hardwareMap, telemetry, isRedSide);
+        robot = new Robot(hardwareMap, telemetry, isRedSide);
 
         double driveSpeed = 1;
         boolean fieldCentric = true;
@@ -94,10 +99,8 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         ElapsedTime reverseIntakeTimer  = new ElapsedTime();
         reverseIntakeTimer.reset();
 
-
         // TODO Adding localization Pipeline
         robot.getLauncher().setLimelightPipeline((Robot.LLPipelines.APRIL_TAG.ordinal()));
-
 
         hud = new Hud(hardwareMap, telemetry);
 
@@ -105,7 +108,35 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
         waitForStart();
 
+        boolean firstLoop = true;
+
         while (opModeIsActive()){
+
+            // first loop check the saved pos from auto or last teleOp
+            if (firstLoop) {
+                // check to see if auto successfully saved the pos and turret
+                Pose2D startPose2D;
+                if (RobotStaticValuesClass.autoCompleted
+                    || RobotStaticValuesClass.teleOpCompleted) {
+                    // read the pos and current angle offset from auto
+                    startPose2D = RobotStaticValuesClass.savedPose;
+                    robot.getLauncher().setCurrentAngleOffset(RobotStaticValuesClass.turretAngleOffset);
+                    oblisk = RobotStaticValuesClass.savedOblisk;
+                    RobotStaticValuesClass.autoCompleted = false;
+                    RobotStaticValuesClass.teleOpCompleted = false;
+                } else if (isRedSide) {
+                    //initialized red far position is x=(71in - 7.75in), y=23.5/2, -pi.
+                    startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, 11.75, AngleUnit.RADIANS, -3.14);
+                } else {
+                    //initialized red far position is x=(71in - 7.75in), y=-23.5/2, -pi.
+                    startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, -11.75, AngleUnit.RADIANS, -3.14);
+                }
+
+                // Set the location of the robot - this should be the place you are starting the robot from
+                robot.getDriveBase().pinpoint.setPosition(startPose2D);
+
+                firstLoop = false;
+            }
 
             // TODO LOCALIZATION UPDATE
             robot.getLauncher().getLimeiight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
@@ -401,5 +432,17 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             }
 
         }
+
+        //save the pos, angleoffset, oblisk
+        finalSave();
+    }
+
+    public void finalSave() {
+        robot.getDriveBase().updateSafePinpoint();
+        Pose2D pose2D = robot.getDriveBase().getPinPointPose();
+        RobotStaticValuesClass.saveState(pose2D,
+            robot.getLauncher().getCurrentAngleOffset(),
+            oblisk);
+        RobotStaticValuesClass.teleOpCompleted = true;
     }
 }

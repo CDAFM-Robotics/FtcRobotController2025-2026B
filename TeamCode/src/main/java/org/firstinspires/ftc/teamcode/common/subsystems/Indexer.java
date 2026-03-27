@@ -196,8 +196,8 @@ public class Indexer {
 
     public double getIndexerPosition() {
         double position = indexerServo.getPosition();
-        debugManager.spindexer("getIndexerPosition position", "%.2f", position);
-        debugManager.log("position get index pos: %.2f", position);
+        debugManager.spindexer("getIndexerPosition position", "%.6f", position);
+        debugManager.log("position get index pos: %.6f", position);
         return (double) Math.round(position * 1000) / 1000.00;
     }
 
