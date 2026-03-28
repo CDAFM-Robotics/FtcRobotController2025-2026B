@@ -15,12 +15,12 @@ import com.qualcomm.robotcore.util.RobotLog;
 @Configurable
 public class TurretServoTestOpMode extends LinearOpMode {
 
-    public static double kF = 0.115; // 0.12
-    public static double kP = 0.004; // 0.01
-    public static double kI = 0.000004;
-    public static double kD = 0.000002; // 0.0
+    public static double kF = 0.09; // 0.12
+    public static double kP = 0.002; // 0.01
+    public static double kI = 0.0004;
+    public static double kD = 0.0002; // 0.0
     public static double target = 0;
-    public static double deadband = 0.75;
+    public static double deadband = 1.5;
 
     static TelemetryManager panelsTelemetry;
     // TODO Panels telemetry
@@ -56,7 +56,10 @@ public class TurretServoTestOpMode extends LinearOpMode {
 
         while (opModeInInit()) {
             currentVoltage = launcherAnalogInput.getVoltage();
-            currentAngle = currentVoltage / 3.3 * 360;
+            // currentAngle = currentVoltage / 3.3 * 360;
+            currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360;
+            // currentAngle = currentVoltage / 3.19 * 360; // TODO new one
+
             //348.55 is max with no power
             // 378.33 with power
             //369 with -power
@@ -95,6 +98,7 @@ public class TurretServoTestOpMode extends LinearOpMode {
             // TODO: Voltage only outputs angles between 2.5 deg and 355 deg
             currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360; // max 355, min 2.5
             // currentAngle = currentVoltage / 3.3 * 360.0;
+            // currentAngle = currentVoltage / 3.19 * 360;
 
             // Find out whether the angle looped around
 
@@ -185,19 +189,33 @@ public class TurretServoTestOpMode extends LinearOpMode {
         double dt = turretTime - lastTime;
 
         double error = target - current;
+        double gain = 0.85;
 
-        if (Math.abs(error) < deadband) {
-            return 0;
+
+
+        if ((error >= 0 && lastError < 0) || (error <= 0 && lastError > 0)) {
+            integralSum = 0;
         }
 
         integralSum += error * dt;
 
         double derivative = (error - lastError) / dt;
 
+
         telemetry.addData("Error", "%.2f", error);
         telemetry.addData("Integral", "%.2f", integralSum);
         telemetry.addData("Derivative", "%.2f", derivative);
         telemetry.addLine();
+
+        panelsTelemetry.addData("Error", error);
+        panelsTelemetry.addData("Integral", integralSum);
+        panelsTelemetry.addData("Derivative", derivative);
+
+        lastError = error;
+
+        if (Math.abs(error) < deadband) {
+            return 0;
+        }
 
         return Math.max(Math.min((error * kP) + (integralSum * kI) + (derivative * kD) + (kF * Math.signum(error)), 1), -1);
     }
