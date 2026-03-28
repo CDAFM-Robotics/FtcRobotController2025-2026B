@@ -534,23 +534,28 @@ public class Robot {
         pinPointHeading = normalizeAngle(pinPointHeading);
         double robotHeading = Math.toDegrees(pinPointHeading);
 
+        double tx = robotX - Math.sin(pinPointHeading) * TURRET_OFFSET;
+        double ty = robotY - Math.cos(pinPointHeading) * TURRET_OFFSET;
+
+        telemetry.addData("Position", "x: %.2f, y: %.2f", tx, ty);
+
         //calculate the relative angle of the turret to the robot
         double blueGoalX;
         double blueGoalY;
         // coordinates of the blue goal
         if (isRedSide) {
-            blueGoalX = -64;
-            blueGoalY = 64;
+            blueGoalX = RED_X;
+            blueGoalY = RED_Y;
         }
         else {
-            blueGoalX = -64;
-            blueGoalY = -64;
+            blueGoalX = BLUE_X;
+            blueGoalY = BLUE_Y;
         }
 
 
         // calculate vector to blue goal
-        double deltaX = blueGoalX - robotX;
-        double deltaY = blueGoalY - robotY;
+        double deltaX = blueGoalX - tx;
+        double deltaY = blueGoalY - ty;
         double distanceToGoal = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
 
         //calculates the angle in radians between the positive x-axis and a point
@@ -558,12 +563,7 @@ public class Robot {
         double absoluteAngleDegree = Math.toDegrees(absoluteAngleRadians);
 
         double relativeAngle;
-        if (isRedSide) {
-            relativeAngle = (absoluteAngleDegree - robotHeading);
-        }
-        else {
-            relativeAngle = (absoluteAngleDegree - robotHeading) + 6; //off set on blue side
-        }
+        relativeAngle = (absoluteAngleDegree - robotHeading);
 
         relativeAngle = normalizeAngle(relativeAngle);
 

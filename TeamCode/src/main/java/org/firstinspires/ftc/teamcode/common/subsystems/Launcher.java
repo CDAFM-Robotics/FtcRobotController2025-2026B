@@ -89,6 +89,10 @@ public class Launcher {
     public void setCurrentAngleOffset(double angleOffset) {
         currentAngleOffset = angleOffset;
     }
+    public boolean getAutoTurretAimed() {
+        return autoTurretAimed;
+    }
+
     public enum QuadrantRotatorServo{
         POSITIVE, NEGATIVE, ZERO
     }
@@ -149,10 +153,10 @@ public class Launcher {
     private InterpolationTable shootingTable;
 
     // Bot2 Turret control variables
-    public static double turretkF = 0.11; // 19m26 was 0.10
-    public static double turretkP = 0.004; // 19m26 was 0.005
-    public static double turretkI = 0;
-    public static double turretkD = 0.00002; // 19m26 was 0.000005
+    public static double turretkF = 0.115; // 03/19/26 was 0.10
+    public static double turretkP = 0.004; // 03/19/26 was 0.005
+    public static double turretkI = 0.000004;
+    public static double turretkD = 0.000002; // 19m26 was 0.000005
 
     // Positional PID
     public static double elevatorKp = 0;
@@ -363,7 +367,7 @@ public class Launcher {
         ElapsedTime motorTimer = new ElapsedTime();
         //limit switch detector?????????????
         while(motorTimer.milliseconds() < 1010){
-            if(elevatorLimitSwitch.isPressed()){
+            if (elevatorLimitSwitch.isPressed()) {
                 elevatorMotor.setPower(0);
                 elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 elevatorMotor.setTargetPosition(0);
@@ -902,37 +906,7 @@ public class Launcher {
         return launcherMotor1.getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void autoSetLauncherToGoal(Pose pose, AutoTaskMaker.Team team) {
-        Pose ftcPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(pose);
 
-        double goalX;
-        double goalY;
-
-        if (team == AutoTaskMaker.Team.RED) {
-            goalX = -64;
-            goalY = 64;
-        }
-        else {
-            goalX = -64;
-            goalY = -64;
-        }
-
-        double dist = Math.sqrt(Math.pow(goalX - ftcPose.getX(), 2) + Math.pow(goalY - ftcPose.getY(), 2));
-        double targetDeg = Math.toDegrees(Math.atan2(goalX - ftcPose.getX(), goalY - ftcPose.getY()) - ftcPose.getHeading());
-
-        targetDeg = ((targetDeg + 180) % 360) - 180;
-        if (targetDeg < 0) {
-            targetDeg += 360;
-        }
-
-        telemetry.addData("Dist", dist);
-        telemetry.addData("Degrees", targetDeg);
-
-
-        setLauncherVelocity(getDistanceVelocity(dist));
-        autoUpdateTurretPID(targetDeg);
-        setHoodServoPosition(getDistanceHoodPos(dist));
-    }
 
     // Turret Methods
     public void setTurretRelativeAngle(double relativeTargetAngle){
@@ -1011,6 +985,8 @@ public class Launcher {
         return actualAngle / 2;
     }
 
+    private boolean autoTurretAimed;
+
     public void autoUpdateTurretPID (double target) {
 
         double turretLastTime = turretTime;
@@ -1051,6 +1027,8 @@ public class Launcher {
         firstLoop = false;
     }
 
+
+
     public double updateTurretPID(double target, double current, double dt) {
 
         double error = target - current;
@@ -1065,13 +1043,6 @@ public class Launcher {
         turretLastError = error;
 
         double turretPower = Math.max(Math.min((error * turretkP) + (turretIntegralSum * turretkI) + (derivative * turretkD) + (turretkF * Math.signum(error)), 1), -1);
-
-//        debugManager.launcher("turret target angle", "%.2f", target);
-//        debugManager.launcher("turret current angle", "%.2f", current);
-//        debugManager.launcher("turret Error", "%.2f", error);
-//        debugManager.launcher("turret Integral", "%.2f", turretIntegralSum);
-//        debugManager.launcher("turret Derivative", "%.2f", derivative);
-//        debugManager.launcher("turret Power", "%.2f", turretPower);
 
         return turretPower;
     }

@@ -63,7 +63,7 @@ public class AutoTaskMaker {
     }
 
     public Task setFarLauncherTask() {
-        return spinUpLauncherTask(1610);
+        return spinUpLauncherTask(1590);
     }
 
     public Task setCloseLauncherTask() {
@@ -73,7 +73,7 @@ public class AutoTaskMaker {
     public Task setTurretPositionTask(double angle) {
         return new BasicTask(() -> {}, () -> {
             robot.getLauncher().autoUpdateTurretPID(angle);
-            return Math.abs(robot.getLauncher().getTurretDegrees() - angle) < 5;
+            return Math.abs(robot.getLauncher().getTurretDegrees() - angle) < 2;
         });
     }
 
@@ -176,34 +176,40 @@ public class AutoTaskMaker {
         FAR
     }
 
-    public Task runPickupSequenceTask(PathChain pickupPath, PathChain returnPath, long delay, Side side) {
-        return new DeadlineTask(
-            new SequentialTask(
-                startIntakeTask(),
-                rotateIndexerIntakeTask(0),
-                waitUntilBallInIntakeTask(),
-                rotateIndexerIntakeTask(1),
-                waitUntilBallInIntakeTask(),
-                rotateIndexerIntakeTask(2),
-                waitUntilBallInIntakeTask(),
-                stopIntakeTask(),
-                side.equals(Side.NEAR) ? setCloseLauncherTask() : setFarLauncherTask()
+    public Task runPickupSequenceTask(PathChain pickupPath, PathChain returnPath, long delay, Side side, Team team) {
+        return new SequentialTask(
+            new DeadlineTask(
+                new SequentialTask(
+                    new FollowPathTask(follower, pickupPath),
+                    new HoldPointTask(follower, pickupPath.endPose()),
+                    new SleepTask(delay),
+                    new FollowPathTask(follower, returnPath)
+                ),
+                new SequentialTask(
+                    startIntakeTask(),
+                    rotateIndexerIntakeTask(0),
+                    waitUntilBallInIntakeTask(),
+                    rotateIndexerIntakeTask(1),
+                    waitUntilBallInIntakeTask(),
+                    rotateIndexerIntakeTask(2),
+                    waitUntilBallInIntakeTask(),
+                    stopIntakeTask(),
+                    side.equals(Side.NEAR) ? setCloseLauncherTask() : setFarLauncherTask()
+                ),
+                side == Side.FAR ? (team == Team.BLUE ? setTurretPositionTask(-60) : setTurretPositionTask(60)) : (team == Team.BLUE ? setTurretPositionTask(-45) : setTurretPositionTask(45))
             ),
-            new SequentialTask(
-                new FollowPathTask(follower, pickupPath),
-                new HoldPointTask(follower, pickupPath.endPose()),
-                new SleepTask(delay),
-                new FollowPathTask(follower, returnPath)
-            )
+            stopIntakeTask()
         );
     }
 
     public Task runShootSequenceTask(Pose hold, Side side, Team team) {
-        return new DeadlineTask (
+        return new DeadlineTask(
             new SequentialTask(
                 new HoldPointTask(follower, hold),
-                setFarLauncherTask(),
-                rotateIndexerOuttakeTask(0),
+                new ParallelTask(
+                    side == Side.FAR ? setFarLauncherTask() : setCloseLauncherTask(),
+                    rotateIndexerOuttakeTask(0)
+                ),
                 runElevatorTask(),
                 rotateIndexerOuttakeTask(2),
                 runElevatorTask(),

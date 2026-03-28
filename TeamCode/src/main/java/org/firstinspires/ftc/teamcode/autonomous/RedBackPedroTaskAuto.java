@@ -45,10 +45,10 @@ public class RedBackPedroTaskAuto extends OpMode {
                 new SleepTask(27000),
                 new SequentialTask(
                     taskMaker.runShootSequenceTask(new Pose(144 - 60, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED),
-                    taskMaker.runPickupSequenceTask(paths.getRedFarPickupThirdMark(), paths.getRedFarReturnFromThirdMark(), 250, AutoTaskMaker.Side.FAR),
+                    taskMaker.runPickupSequenceTask(paths.getRedFarPickupThirdMark(), paths.getRedFarReturnFromThirdMark(), 250, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
                     new RepeatTask(() -> new SequentialTask(
                         taskMaker.runShootSequenceTask(new Pose(144 - 60, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED),
-                        taskMaker.runPickupSequenceTask(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR)
+                        taskMaker.runPickupSequenceTask(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE)
                     ))
                 )
             ),

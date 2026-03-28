@@ -45,11 +45,11 @@ public class BlueFrontPedroTaskAuto extends OpMode {
                 new SleepTask(27000),
                 new SequentialTask(
                     taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 250, AutoTaskMaker.Side.NEAR),
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
                     taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 250, AutoTaskMaker.Side.NEAR),
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
                     taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 250, AutoTaskMaker.Side.NEAR)
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE)
                 )
             ),
             new FollowPathTask(follower, follower.pathBuilder()
