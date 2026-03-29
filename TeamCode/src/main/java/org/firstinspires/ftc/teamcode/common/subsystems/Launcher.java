@@ -153,10 +153,11 @@ public class Launcher {
     private InterpolationTable shootingTable;
 
     // Bot2 Turret control variables
-    public static double turretkF = 0.115; // 03/19/26 was 0.10
-    public static double turretkP = 0.004; // 03/19/26 was 0.005
-    public static double turretkI = 0.000004;
-    public static double turretkD = 0.000002; // 19m26 was 0.000005
+    public static double turretkF = 0.07; // 29Mar26 was 0.115 0.10
+    public static double turretkP = 0.008; // 29Mar26 was 0.004 // 03/19/26 was 0.005
+    public static double turretkI = 0; // 29Mar26 was 0.000004
+    public static double turretkD = 0; // 29Mar26 0.000002  19m26 was 0.000005
+    public static double deadband = 0; // 29Mar26 Used to be 1.5 0.75 2.5 now turned off mostly stable
 
     // Positional PID
     public static double elevatorKp = 0;
@@ -366,20 +367,21 @@ public class Launcher {
         elevatorMotor.setPower(.5);
         ElapsedTime motorTimer = new ElapsedTime();
         //limit switch detector?????????????
-        while(motorTimer.milliseconds() < 1010){
+        while(motorTimer.milliseconds() < 2010){ // TODO: added more time
             if (elevatorLimitSwitch.isPressed()) {
                 elevatorMotor.setPower(0);
                 elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 elevatorMotor.setTargetPosition(0);
                 elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elevatorMotor.setPower(1);
+                break; // TODO leave loop as soon as it happens
                 // move this line due to reset on init
                 //elevatorMotor.setTargetPosition(0);
             }
-            if(motorTimer.milliseconds() > 1000 && !elevatorLimitSwitch.isPressed()){
-                elevatorMotor.setPower(0);
-                throw new Error("The elevator motor has not reached its target position in the allotted timeframe. Please check if it is stuck.");
-            }
+//            if(motorTimer.milliseconds() > 1000 && !elevatorLimitSwitch.isPressed()){
+//                elevatorMotor.setPower(0);
+//                throw new Error("The elevator motor has not reached its target position in the allotted timeframe. Please check if it is stuck.");
+//            }
         }
 
     }
@@ -428,7 +430,8 @@ public class Launcher {
 
         // initialized turret variables
         currentVoltage = launcherAnalogInput.getVoltage();
-        currentAngle = currentVoltage / 3.3 * 360;
+        // currentAngle = currentVoltage / 3.3 * 360;
+        currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360;
         // set the offset to the value from Autonomous
 //        if (RobotStaticValuesClass.autoCompleted) {
 //            currentAngleOffset = RobotStaticValuesClass.turretAngleOffset;
@@ -998,7 +1001,8 @@ public class Launcher {
         // Find the voltage returned and the angle of the servo
 
         currentVoltage = launcherAnalogInput.getVoltage();
-        currentAngle = currentVoltage / 3.3 * 360;
+        // currentAngle = currentVoltage / 3.3 * 360;
+        currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360;
 
         // Find out whether the angle looped around
 
@@ -1033,8 +1037,8 @@ public class Launcher {
 
         double error = target - current;
 
-        if (Math.abs(error) < 1.5) {
-            return 0;
+        if (Math.abs(error) < deadband) {
+            return 0.001; // always add a tiny bit of power (rumor is this cause volts to be more accurate)
         }
 
         turretIntegralSum += error * dt;
