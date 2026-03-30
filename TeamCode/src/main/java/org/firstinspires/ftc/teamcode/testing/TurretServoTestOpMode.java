@@ -21,7 +21,7 @@ public class TurretServoTestOpMode extends LinearOpMode {
     public static double kD = 0.0; // 0.0002; // 0.0
 
     public static double target = 0.0;
-    public static double deadband = 0 // 1.5;
+    public static double deadband = 0; // 1.5;
 
     static TelemetryManager panelsTelemetry;
     // TODO Panels telemetry

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.common.subsystems;
 
-import static java.lang.Thread.currentThread;
 import static java.lang.Thread.sleep;
 
 import androidx.annotation.NonNull;
@@ -11,10 +10,7 @@ import com.acmerobotics.roadrunner.Action;
 import com.acmerobotics.roadrunner.SequentialAction;
 import com.acmerobotics.roadrunner.SleepAction;
 import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.telemetry.PanelsTelemetry;
 
-import com.pedropathing.ftc.InvertedFTCCoordinates;
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -33,9 +29,6 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
-import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.InterpolationTable;
@@ -44,8 +37,6 @@ import org.firstinspires.ftc.teamcode.common.util.WaitUntilAction;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 @Config
 @Configurable
@@ -80,7 +71,7 @@ public class Launcher {
     public void setLimelightPipeline(int ordinal) {
         limelight.pipelineSwitch(ordinal);
     }
-    public Limelight3A getLimeiight() { return this.limelight; }
+    public Limelight3A getLimeLight() { return this.limelight; }
 
     public double getCurrentAngleOffset() {
         return currentAngleOffset;
@@ -153,11 +144,11 @@ public class Launcher {
     private InterpolationTable shootingTable;
 
     // Bot2 Turret control variables
-    public static double turretkF = 0.07; // 29Mar26 was 0.115 0.10
-    public static double turretkP = 0.008; // 29Mar26 was 0.004 // 03/19/26 was 0.005
+    public static double turretkF = 0.08; // 29Mar26 was 0.115 0.10
+    public static double turretkP = 0.004; // 29Mar26 was 0.004 // 03/19/26 was 0.005
     public static double turretkI = 0; // 29Mar26 was 0.000004
-    public static double turretkD = 0; // 29Mar26 0.000002  19m26 was 0.000005
-    public static double deadband = 0; // 29Mar26 Used to be 1.5 0.75 2.5 now turned off mostly stable
+    public static double turretkD = 0.00005; // 29Mar26 0.000002  19m26 was 0.000005
+    public static double deadband = 1.7; // 29Mar26 Used to be 1.5 0.75 2.5 now turned off mostly stable
 
     // Positional PID
     public static double elevatorKp = 0;
@@ -353,13 +344,24 @@ public class Launcher {
 
     private void initElevatorMotor(){
         //give time to indexer to turn to outtake
-        try {
-            currentThread().sleep(500);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            currentThread().sleep(500);
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException(e);
+//        }
         //initialize device
-        elevatorMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if (elevatorLimitSwitch.isPressed()) {
+            elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            elevatorMotor.setTargetPosition(0);
+            elevatorMotor.setPower(1);
+
+            elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+            elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            return;
+        }
+
+        elevatorMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
@@ -369,11 +371,13 @@ public class Launcher {
         //limit switch detector?????????????
         while(motorTimer.milliseconds() < 2010){ // TODO: added more time
             if (elevatorLimitSwitch.isPressed()) {
-                elevatorMotor.setPower(0);
+                // elevatorMotor.setPower(0);
                 elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                 elevatorMotor.setTargetPosition(0);
-                elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 elevatorMotor.setPower(1);
+
+                elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
                 break; // TODO leave loop as soon as it happens
                 // move this line due to reset on init
                 //elevatorMotor.setTargetPosition(0);
@@ -383,6 +387,19 @@ public class Launcher {
 //                throw new Error("The elevator motor has not reached its target position in the allotted timeframe. Please check if it is stuck.");
 //            }
         }
+
+    }
+
+    private void initElevatorOld() {
+        elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        elevatorMotor.setTargetPosition(0);
+        elevatorMotor.setPower(1);
+
+        elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        elevatorMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
 
@@ -461,11 +478,9 @@ public class Launcher {
         elevatorLimitSwitch = hardwareMap.get(TouchSensor.class, "magneticLimitElevator");
 
         initElevatorMotor();
+        //initElevatorOld();
 
-        //elevatorMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        //elevatorMotor.setTargetPosition(0);
-        //elevatorMotor.setPower(1);
 
         PIDFCoefficients elevatorPID=elevatorMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
         RobotLog.d("Position PID: %.2f, %.2f, %.2f, %.2f", elevatorPID.p, elevatorPID.i, elevatorPID.d, elevatorPID.f);

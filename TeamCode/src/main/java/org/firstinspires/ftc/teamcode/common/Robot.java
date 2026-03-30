@@ -506,6 +506,7 @@ public class Robot {
 //        }
 
         relativeAngle = normalizeAngle(relativeAngle);
+        last_TurretAngle_Target = relativeAngle; // TODO need this in telemetry in main
 
         debugManager.robot("deltaX:", "%.2f", deltaX);
         debugManager.robot("deltaY:", "%.2f", deltaY);

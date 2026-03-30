@@ -137,9 +137,9 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             }
 
             // TODO LOCALIZATION UPDATE
-            robot.getLauncher().getLimeiight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
+            robot.getLauncher().getLimeLight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
 
-            result = robot.getLauncher().getLimeiight().getLatestResult();
+            result = robot.getLauncher().getLimeLight().getLatestResult();
             if (result != null && result.isValid()) {
                 botpose_mt2 = result.getBotpose_MT2();
                 if (botpose_mt2 != null) {

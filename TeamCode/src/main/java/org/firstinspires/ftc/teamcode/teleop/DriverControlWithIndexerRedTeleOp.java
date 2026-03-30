@@ -65,8 +65,8 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
 
-        debugManager.TELEMETRY_ENABLED = true;
-        debugManager.ROBOT_LOG_ENABLED = true;
+        debugManager.TELEMETRY_ENABLED = false;
+        debugManager.ROBOT_LOG_ENABLED = false;
 
         // Individual Telemetry flags
         debugManager.LOG_DRIVEBASE  = false;
@@ -139,9 +139,9 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             }
 
             // TODO LOCALIZATION UPDATE
-            robot.getLauncher().getLimeiight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
+            robot.getLauncher().getLimeLight().updateRobotOrientation(Math.toDegrees(robot.getDriveBase().getPinPointHeading()));
 
-            result = robot.getLauncher().getLimeiight().getLatestResult();
+            result = robot.getLauncher().getLimeLight().getLatestResult();
             if (result != null && result.isValid()) {
                 botpose_mt2 = result.getBotpose_MT2();
                 if (botpose_mt2 != null) {
@@ -363,6 +363,9 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
             // TODO spit it out to Panels graph
             telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
+            telemetryM.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
+            telemetryM.addData("Target", robot.last_TurretAngle_Target);
+
             // telemetryM.update(telemetry);
 
             debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
