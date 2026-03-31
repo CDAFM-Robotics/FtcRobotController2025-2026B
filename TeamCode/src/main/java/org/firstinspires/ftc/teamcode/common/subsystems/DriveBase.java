@@ -3,7 +3,8 @@ package org.firstinspires.ftc.teamcode.common.subsystems;
 import static android.os.SystemClock.sleep;
 
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.hardware.limelightvision.LLResult;
+import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -15,9 +16,11 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.Robot;
-import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
+
+import java.util.List;
 
 public class DriveBase {
 
@@ -33,10 +36,17 @@ public class DriveBase {
     private Servo rightKickStand = null;
     private Servo kickStandLight = null;
 
-    // private IMU imu;
+    // public IMU imu;
+    // public double internalIMUHeadingOffset;
+
+    // TODO adding poses for LL<->Pinpoint Sync
+    public Pose3D botpose_mt2 ;
+    public Pose3D botpose;
+    private ElapsedTime PinpointTimer = new ElapsedTime();
+
 
     public GoBildaPinpointDriver pinpoint;
-    private GoBildaPinpointDriver.DeviceStatus lastStatus;
+    // private GoBildaPinpointDriver.DeviceStatus lastStatus;
 
     private Pose2D pos;
     private boolean isRedSide;
@@ -65,6 +75,9 @@ public class DriveBase {
         leftKickStand = hardwareMap.get(Servo.class, "leftKickStand");
         // kickStandLight = hardwareMap.get(Servo.class, "kickStandLight");
 
+        // TODO bring back our old Friend MrInternalIMU
+        // imu = hardwareMap.get(IMU.class, "imu");
+
         frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         frontRightMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -89,6 +102,17 @@ public class DriveBase {
         configurePinpoint();
         // TODO will defer to the single pinpoint.update below.
         // pinpoint.update();
+
+        // Configure onboard IMU (for localization error correction)
+//        imu.initialize(new IMU.Parameters(
+//                new RevHubOrientationOnRobot(
+//                    RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+//                    RevHubOrientationOnRobot.UsbFacingDirection.UP
+//                    )
+//                )
+//        );
+//        imu.resetYaw();
+
 
 //        //read the pose value from autonomous or initialized it at start up location
 //        Pose2D startPose2D;
@@ -120,6 +144,9 @@ public class DriveBase {
 //            startPose2D.getHeading(AngleUnit.RADIANS));
 
     }
+
+//    public void resetIMU_internal() { imu.resetYaw(); }
+//    public IMU getIMU_internal() { return imu; }
 
     public void resetIMU() {
         resetPinpointIMU();
@@ -153,11 +180,11 @@ public class DriveBase {
     public void updateSafePinpoint()
     {
 //        telemetry.addData("X", pinpoint.getPosX(DistanceUnit.INCH));
-//        telemetry.addData("y", pinpoint.getPosY(DistanceUnit.INCH));
+//        telemetry.addData("Y", pinpoint.getPosY(DistanceUnit.INCH));
 
         try {
             pinpoint.update();
-            lastStatus = pinpoint.getDeviceStatus();
+            // lastStatus = pinpoint.getDeviceStatus();
         }
         catch (Exception e) {
             RobotLog.e("PINPOINT ERROR DURING UPDATE", e.getMessage());
@@ -176,7 +203,7 @@ public class DriveBase {
     }
     public void setMotorPowers(double x, double y, double rx, double speed, boolean fieldCentric) {
 
-        // TODO pinpoint update moved out
+        // TODO pinpoint update once per loop (this function also checks for sane yawScalar)
         updateSafePinpoint();
 
         double heading = 0;
@@ -195,7 +222,7 @@ public class DriveBase {
             //if (adjustedHeading > 180)  adjustedHeading -= 360;
             //if (adjustedHeading < -180) adjustedHeading += 360;
         } else {
-            adjustedHeading = 0;
+            adjustedHeading = 180; // 31mar26 test was 0 (reversed controls)
         }
 
         double rotX = x * Math.cos(adjustedHeading) - y * Math.sin(adjustedHeading);
@@ -277,58 +304,6 @@ public class DriveBase {
             }
         }
         timeKickStand.reset();
-        /*
-        frontRightMotor.setPower(0.5);
-        frontLeftMotor.setPower(0.5);
-        sleep(1000);
-        frontRightMotor.setPower(-1);
-        frontLeftMotor.setPower(-1);
-        sleep(1000);
-        frontRightMotor.setPower(0.75);
-        frontLeftMotor.setPower(-0.75);
-        sleep(500);
-        frontRightMotor.setPower(-0.5);
-        frontLeftMotor.setPower(0.5);
-        sleep(500);
-        frontRightMotor.setPower(0.25);
-        frontLeftMotor.setPower(-0.25);
-        sleep(500);
-        frontRightMotor.setPower(1);
-        frontLeftMotor.setPower(1);
-        sleep(1000);
-        frontRightMotor.setPower(-0.8);
-        frontLeftMotor.setPower(-0.8);
-        sleep(700);
-        frontRightMotor.setPower(0.75);
-        frontLeftMotor.setPower(-0.75);
-        sleep(500);
-        frontRightMotor.setPower(-0.5);
-        frontLeftMotor.setPower(0.5);
-        sleep(500);
-        frontRightMotor.setPower(0.25);
-        frontLeftMotor.setPower(-0.25);
-        sleep(500);
-        frontRightMotor.setPower(1);
-        frontLeftMotor.setPower(1);
-        sleep(1000);
-        frontRightMotor.setPower(-0.8);
-        frontLeftMotor.setPower(-0.8);
-        sleep(700);
-        frontRightMotor.setPower(0.75);
-        frontLeftMotor.setPower(0.75);
-        sleep(500);
-        frontRightMotor.setPower(-0.5);
-        frontLeftMotor.setPower(-0.5);
-        sleep(500);
-        frontRightMotor.setPower(0.75);
-        frontLeftMotor.setPower(0.75);
-        sleep(500);
-        frontRightMotor.setPower(-0.25);
-        frontLeftMotor.setPower(-0.25);
-        sleep(4000);
-        frontRightMotor.setPower(1);
-        frontLeftMotor.setPower(1);
-        */
     }
 
     public void setKickStandLight() {
@@ -358,4 +333,94 @@ public class DriveBase {
     public Pose2D getPinPointPose() { return pinpoint.getPosition();}
 
 
+    // TODO LOCALIZATION STUFF
+    public void setPinPointPose(Pose2D pose) {
+        pinpoint.setPosition(pose);
+    }
+
+    // This method can be changed to use an internal IMU or Pinpoint by uncommenting lines
+    // Returns the current Heading IN DEGREES
+    public double getHeadingDegrees()
+    {
+        // INTERNAL IMU ( if using internal, need to init at same time as pinpoint and set startposeoffset)
+        // double heading = robot.getDriveBase().getIMU_internal().getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+        // double startPoseOffset = robot.getDriveBase().internalIMUHeadingOffset;
+        // heading += startingPoseOffset;
+
+        // PINPOINT IMU
+        double heading = AngleUnit.RADIANS.toDegrees(getPinPointHeading()); // Convert to DEGREES
+        // RobotLog.d("DRIFT IMU: heading:%.2f, offset:%.2f",heading,startPoseOffset);
+        return heading;
+    }
+
+    public void correctHeadingFromVision(LLResult result, Robot robot)
+    {
+        if (result == null || !result.isValid()) return;
+        List<LLResultTypes.FiducialResult> tags = result.getFiducialResults();
+
+        // Need 2+ tags for reliable independent heading fix
+        if (tags == null || tags.size() < 2) return;
+
+        botpose = result.getBotpose(); // MegaTag1 (needs 2 tags, but doesn't need IMU)
+        if (botpose == null) return;
+
+        double visionHeading = botpose.getOrientation().getYaw(AngleUnit.DEGREES); // DEGREES
+        double imuHeading = getHeadingDegrees(); // DEGREES
+        double error =  AngleUnit.normalizeDegrees(visionHeading - imuHeading);
+        // RobotLog.d("DRIFT correctHeading: v:%.2f, i:%.2f, e:%.2f",visionHeading,imuHeading,error);
+
+        // Only correct if the heading error is significant, but not insane (bad tag read)
+        if (Math.abs(error)>1.0 && Math.abs(error) < 30)
+        {
+            // correctedHeadingOffset += error; // * 0.2;
+            // RobotLog.d("DRIFT correctedHeadingOffset: %.2f",correctedHeadingOffset);
+            double correctedHeadingDegs = robot.normalizeAngle(imuHeading + error);
+            // RobotLog.d("DRIFT unormHeading: %.2f newHeading: %.2f",getHeading(),correctedHeadingDegs);
+            // TODO Update Pinpoint with Adjusted MT1 Heading (only)
+            pinpoint.setHeading(correctedHeadingDegs, AngleUnit.DEGREES);
+        }
+
+    }
+
+    public void correctPositionFromVision(LLResult result, Robot robot)
+    {
+
+        botpose_mt2 = result.getBotpose_MT2();
+        if (botpose_mt2 == null) return;
+
+        double lx = botpose_mt2.getPosition().toUnit(DistanceUnit.INCH).x;
+        double ly = botpose_mt2.getPosition().toUnit(DistanceUnit.INCH).y;
+        double lr = botpose_mt2.getOrientation().getYaw(AngleUnit.DEGREES);
+
+        // TODO Check for Sane values and Drift then Update the PINPOINT with XY correction from MT2
+        if (Math.round(lx) != 0 && Math.abs(Math.round(lx)) < 72 && Math.round(ly) != 0 && Math.abs(Math.round(ly)) < 72 && PinpointTimer.milliseconds() > 250) {
+            double px = getPinPointPosX();
+            double py = getPinPointPosY();
+            // double pr = AngleUnit.RADIANS.toDegrees(getPinPointHeading()); // convert from radians to degrees
+            // RobotLog.d("DRIFT L:%.2f,%.2f,%.2f P:%.2f,%.2f,%.2f", lx, ly, lr, px, py, pr);
+
+            // Check for a Delta greater than 2in avg and update pinpoint
+            if (Math.abs(lx - px) > 2 || Math.abs(ly - py) > 2 && PinpointTimer.milliseconds() > 250) {
+                PinpointTimer.reset();
+                // TODO avg the result
+                px = (px + lx) / 2;
+                py = (py + ly) / 2;
+                //pr = correctedHeadingDegs;
+
+                // TODO Update Pinpoint with Drifted X,Y
+                pinpoint.setPosX(px, DistanceUnit.INCH);
+                pinpoint.setPosY(py, DistanceUnit.INCH);
+                // setPinPointPose(new Pose2D(DistanceUnit.INCH, px, py, AngleUnit.DEGREES, pr));
+//                RobotLog.d("DRIFTED Pn:%.2f,%.2f,%.2f Po:%.2f,%.2f,%.2f", px, py, pr,
+//                        getPinPointPosX(),
+//                        getPinPointPosY(),
+//                        AngleUnit.RADIANS.toDegrees(getPinPointHeading()));
+            }
+        }
+    }
+
+
+    public void resetPinpointTimer() {
+        PinpointTimer.reset();
+    }
 }
