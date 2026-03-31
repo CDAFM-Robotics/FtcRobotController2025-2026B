@@ -29,6 +29,7 @@ import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.InterpolationTable;
@@ -67,6 +68,7 @@ public class Launcher {
     TouchSensor turretLimitSwitch;
 
     public Limelight3A limelight;
+    public static boolean flipTurret = false;
 
     public void setLimelightPipeline(int ordinal) {
         limelight.pipelineSwitch(ordinal);
@@ -181,7 +183,7 @@ public class Launcher {
 
     private double currentVoltage;
     private double currentAngle;
-    private double currentAngleOffset = 0;
+    public static double currentAngleOffset = 0;
     private double lastAngleOffset = currentAngleOffset;
 
     private double lastVoltage = 0;
@@ -452,12 +454,8 @@ public class Launcher {
 
         // initialized turret variables
         currentVoltage = launcherAnalogInput.getVoltage();
-        // currentAngle = currentVoltage / 3.3 * 360;
-        currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360;
-        // set the offset to the value from Autonomous
-//        if (RobotStaticValuesClass.autoCompleted) {
-//            currentAngleOffset = RobotStaticValuesClass.turretAngleOffset;
-//        }
+        currentAngle = currentVoltage / 3.2 * 360;
+        // currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360;
 
         //0.7 voltage is the position of the limit switch
 
@@ -942,9 +940,21 @@ public class Launcher {
         // Find the voltage returned and the angle of the servo
 
         currentVoltage = launcherAnalogInput.getVoltage();
-        //currentAngle = currentVoltage / 3.3 * 360;
+        currentAngle = currentVoltage / 3.2 * 360;
         // Voltage only outputs angles between 2.5 deg and 355 deg
-        currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360; // max 355, min 2.5
+        // currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360; // max 355, min 2.5
+
+        // TODO flip turret test
+        if (flipTurret)
+        {
+            RobotLog.d("currentAngle1 %.2f", currentAngle);
+            currentAngle += 180;
+            RobotLog.d("currentAngle2 %.2f", currentAngle);
+            currentAngle = AngleUnit.normalizeDegrees(currentAngle);
+            RobotLog.d("currentAngle3 %.2f", currentAngle);
+
+            flipTurret = false;
+        }
 
         // Find out whether the angle looped around
 
@@ -1021,8 +1031,8 @@ public class Launcher {
         // Find the voltage returned and the angle of the servo
 
         currentVoltage = launcherAnalogInput.getVoltage();
-        // currentAngle = currentVoltage / 3.3 * 360;
-        currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360;
+        currentAngle = currentVoltage / 3.2 * 360;
+        // currentAngle = ((currentVoltage / 3.3 * 360) - 2.5) / 352.5 * 360;
 
         // Find out whether the angle looped around
 

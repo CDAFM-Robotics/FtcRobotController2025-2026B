@@ -87,12 +87,43 @@ public class Drawing {
         drawRobot(pose, robotLook);
     }
 
-    /**
-     * This draws a Path with a specified look.
-     *
-     * @param path  the Path to draw
-     * @param style the parameters used to draw the Path with
-     */
+
+
+    // TODO new feature
+    public static void drawRobotWithTurret(Pose pose, Pose pose2 ,Style style) {
+        if (pose == null || Double.isNaN(pose.getX()) || Double.isNaN(pose.getY()) || Double.isNaN(pose.getHeading())) {
+            return;
+        }
+
+        panelsField.setStyle(style);
+        panelsField.moveCursor(pose.getX(), pose.getY());
+        panelsField.circle(ROBOT_RADIUS);
+
+        Vector v = pose.getHeadingAsUnitVector();
+        v.setMagnitude(v.getMagnitude() * ROBOT_RADIUS);
+        double x1 = pose.getX() + v.getXComponent() / 2, y1 = pose.getY() + v.getYComponent() / 2;
+        double x2 = pose.getX() + v.getXComponent(), y2 = pose.getY() + v.getYComponent();
+
+        panelsField.setStyle(style);
+        panelsField.moveCursor(x1, y1);
+        panelsField.line(x2, y2);
+
+        Vector t = pose2.getHeadingAsUnitVector();
+        v.setMagnitude(t.getMagnitude() * ROBOT_RADIUS);
+        x1 = pose2.getX() + t.getXComponent() / 2;
+        y1 = pose2.getY() + t.getYComponent() / 2;
+        x2 = pose2.getX() + t.getXComponent();
+        y2 = pose2.getY() + t.getYComponent();
+
+        panelsField.setStyle(historyLook);
+        panelsField.moveCursor(x1, y1);
+        panelsField.line(x2, y2);
+    }
+
+
+    // TODO new Feature
+    public static void drawRobotWithTurret(Pose pose, Pose pose2) { drawRobotWithTurret(pose, pose2, robotLook);}
+
     public static void drawPath(Path path, Style style) {
         double[][] points = path.getPanelsDrawingPoints();
 

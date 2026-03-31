@@ -43,7 +43,7 @@ public class Robot {
     public boolean intake3Balls = false; //Picked up all three balls
     public boolean intake1Ball = false; //Picked up one ball
     private boolean safeToStop = true; //if kicker is down
-    public static boolean enableDriftCorrection = true; // use vision to correct pp drift in tele
+    public static boolean enableDriftCorrection = false; // use vision to correct pp drift in tele
     private boolean isRedSide = false;
 
 
@@ -76,10 +76,10 @@ public class Robot {
     public static final double TURRET_OFFSET = 1.679; //inches
     // blue goal x and y
     public static final double BLUE_X = -63.5; //inches
-    public static final double BLUE_Y = -62; //inches
+    public static final double BLUE_Y = -63.5; //inches
     // red goal x and y
     public static final double RED_X = -63.5; //inches
-    public static final double RED_Y = 62; //inches
+    public static final double RED_Y = 63.5; //inches
 
 
 //    public final double LIMELIGHT_OFFSET = 17.4; //todo: update

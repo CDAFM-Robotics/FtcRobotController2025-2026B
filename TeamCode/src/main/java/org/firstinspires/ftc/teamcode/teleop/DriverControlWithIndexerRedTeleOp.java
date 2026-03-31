@@ -63,8 +63,8 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
 
-        debugManager.TELEMETRY_ENABLED = false;
-        debugManager.ROBOT_LOG_ENABLED = false;
+        debugManager.TELEMETRY_ENABLED = true;
+        debugManager.ROBOT_LOG_ENABLED = true;
 
         // Individual Telemetry flags
         debugManager.LOG_DRIVEBASE  = false;
@@ -131,10 +131,10 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                         RobotStaticValuesClass.teleOpCompleted = false;
                     } else if (isRedSide) {
                         //initialized red far position is x=(71in - 7.75in), y=23.5/2, -pi.
-                        startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, 11.75, AngleUnit.RADIANS, -3.14);
+                        startPose2D = new Pose2D(DistanceUnit.INCH, 63.16, 12, AngleUnit.RADIANS, -Math.PI);
                     } else {
                         //initialized red far position is x=(71in - 7.75in), y=-23.5/2, -pi.
-                        startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, -11.75, AngleUnit.RADIANS, -3.14);
+                        startPose2D = new Pose2D(DistanceUnit.INCH, 63.16, -12, AngleUnit.RADIANS, -Math.PI);
                     }
 
                     // Set the location of the robot - this should be the place you are starting the robot from
@@ -175,10 +175,14 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
                 // Disabled the driver's ability to reset robot heading
                 // since we are keeping the heading from autonomous
-//            if (currentGamepad1.start && !previousGamepad1.start){
-//                robot.getDriveBase().resetIMU();
-//                gamepad1.rumble(300);
-//            }
+                if (currentGamepad1.start && !previousGamepad1.start){
+                    // robot.getDriveBase().resetIMU();
+                    // gamepad1.rumble(300);
+
+                    // TODO test flip the turret
+                    robot.getLauncher().flipTurret = !robot.getLauncher().flipTurret;
+                    RobotLog.d("flipTurret %s", robot.getLauncher().flipTurret);
+                }
 
                 if (currentGamepad1.right_bumper != previousGamepad1.right_bumper) {
                     driveSpeed = driveSpeed == 1 ? 0.5 : 1;
@@ -235,6 +239,20 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 } else if (currentGamepad1.left_trigger == 0.0 && previousGamepad1.left_trigger != 0) {
                     //robot update artifact colors
                     robot.getIntake().stopIntake();
+                }
+
+                if (currentGamepad1.dpad_up)
+                {
+                    robot.enableDriftCorrection = !robot.enableDriftCorrection;
+                    if (robot.enableDriftCorrection) {
+                        gamepad1.rumble(100);
+                        gamepad1.setLedColor(0, 255, 0, 100);
+                    }
+                    else
+                    {
+                        gamepad1.rumble(1000);
+                        gamepad1.setLedColor(255, 0, 0, 100);
+                    }
                 }
 
                 // TODO: When indexer stuck or out of alignment, recover the color of the balls
@@ -366,8 +384,9 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
                 telemetryM.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
                 telemetryM.addData("Target", robot.last_TurretAngle_Target);
-
-                // telemetryM.update(telemetry);
+                telemetryM.addData("currentAngleOffset", robot.getLauncher().getCurrentAngleOffset());
+                telemetryM.addData("currentAngle", robot.getLauncher().getTurretDegrees());
+                RobotLog.d("Angles currentAngle: %.2f currentAngleOffset: %.2f", robot.getLauncher().getTurretDegrees() ,robot.getLauncher().getCurrentAngleOffset() );
 
                 debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
                 // Update ball colors every 20 loops if the robot is in idle
@@ -423,12 +442,22 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 // TODO update drawing in panels
                 try {
                     // Draw the Pinpoint Pose
-                    Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
+                    // Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
+                    // create Turret Pose
+                    Pose2D pose2 = new Pose2D(DistanceUnit.INCH, robot.getDriveBase().getPinPointPosX(),
+                            robot.getDriveBase().getPinPointPosY(),
+                            AngleUnit.DEGREES,
+                            robot.getLauncher().getTurretDegrees()
+                    );
+                    Drawing.drawRobotWithTurret(
+                            PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE),
+                            PoseConverter.pose2DToPose(pose2, InvertedFTCCoordinates.INSTANCE)
+                            );
                     // Draw the MT2 pose
                     if (robot.getDriveBase().botpose_mt2 != null) {
                         Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose_mt2.getPosition().x, robot.getDriveBase().botpose_mt2.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.5));
                     }
-                    // Draw the MT2 pose
+                    // Draw the MT1 pose
                     if(robot.getDriveBase().botpose != null) {
                         Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose.getPosition().x, robot.getDriveBase().botpose.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Green", 0.5));
                     }
