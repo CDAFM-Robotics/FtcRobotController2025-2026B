@@ -27,7 +27,8 @@ public class RepeatTask extends Task{
     @Override
     public boolean run() {
         if (currentTask.run()) {
-            init();
+            currentTask = taskSupplier.get();
+            currentTask.init();
         }
 
         return false;

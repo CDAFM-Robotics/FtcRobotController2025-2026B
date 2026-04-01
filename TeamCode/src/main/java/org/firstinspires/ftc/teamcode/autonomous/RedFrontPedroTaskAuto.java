@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -13,6 +14,8 @@ import org.firstinspires.ftc.teamcode.pedropathing.commands.Paths;
 import org.firstinspires.ftc.teamcode.tasks.DeadlineTask;
 import org.firstinspires.ftc.teamcode.tasks.FollowPathTask;
 import org.firstinspires.ftc.teamcode.tasks.HoldPointTask;
+import org.firstinspires.ftc.teamcode.tasks.InstantTask;
+import org.firstinspires.ftc.teamcode.tasks.ParallelTask;
 import org.firstinspires.ftc.teamcode.tasks.SequentialTask;
 import org.firstinspires.ftc.teamcode.tasks.SleepTask;
 import org.firstinspires.ftc.teamcode.tasks.TaskMaster;
@@ -43,20 +46,32 @@ public class RedFrontPedroTaskAuto extends OpMode {
             new DeadlineTask(
                 new SleepTask(27000),
                 new SequentialTask(
+                    new DeadlineTask(
+                        new FollowPathTask(follower, paths.getRedCloseStartToShoot2()),
+                        taskMaker.setLauncherToGoalTask(),
+                        taskMaker.setCloseLauncherTask()
+                    ),
                     taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED),
-                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupSecondMark(), paths.getRedCloseReturnFromSecondMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED),
-                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupFirstMark(), paths.getRedCloseReturnFromFirstMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED),
-                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupThirdMark(), paths.getRedCloseReturnFromThirdMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE)
+                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupSecondMark(), paths.getRedCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED),
+                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupFirstMark(), paths.getRedCloseReturnFromFirstMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED),
+                    taskMaker.runPickupSequenceTask(paths.getRedClosePickupThirdMark(), paths.getRedCloseReturnFromThirdMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED)
                 )
             ),
-            new FollowPathTask(follower, follower.pathBuilder()
-                .addPath(new BezierLine(follower.getPose(), new Pose(144 - 54, 126))).setConstantHeadingInterpolation(Math.toRadians(0))
-                .build()
-            ),
-
-            new HoldPointTask(follower, new Pose(144 - 36, 126, Math.toRadians(0)))
+            new ParallelTask(
+                new SequentialTask(
+                    new FollowPathTask(follower, follower.pathBuilder()
+                        .addPath(new BezierLine(follower.getPose(), new Pose(90, 126))).setConstantHeadingInterpolation(Math.toRadians(0))
+                        .build()
+                    ),
+                    new HoldPointTask(follower, new Pose(90, 126, Math.toRadians(0)))
+                ),
+                taskMaker.setLauncherMotorVelocityTask(0),
+                taskMaker.stopIntakeTask(),
+                taskMaker.stopTurretTask()
+            )
         ));
     }
 
@@ -64,10 +79,14 @@ public class RedFrontPedroTaskAuto extends OpMode {
     public void loop() {
         taskMaster.update();
 
+        robot.getLauncher().updateElevator();
+
+        if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
+            ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+        }
+
         follower.update();
         telemetry.addData("Status", taskMaster.getStatus());
-
-        telemetry.addData("Task", taskMaster.getTask().toString());
 
         telemetry.update();
     }
