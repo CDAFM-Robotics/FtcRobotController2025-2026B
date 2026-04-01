@@ -241,7 +241,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                     robot.getIntake().stopIntake();
                 }
 
-                if (currentGamepad1.dpad_up)
+                if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up)
                 {
                     robot.enableDriftCorrection = !robot.enableDriftCorrection;
                     if (robot.enableDriftCorrection) {
