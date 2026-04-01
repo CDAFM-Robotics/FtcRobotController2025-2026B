@@ -331,7 +331,9 @@ public class Robot {
 
                 case UPDATE_INDEXER:
                     debugManager.log("shootAllBalls: UPDATE_INDEXER");
-                    if (timeSinceElevate.milliseconds() > WAIT_TIME_ELEVATOR) {
+                    // check timer
+                    //if (timeSinceElevate.milliseconds() > WAIT_TIME_ELEVATOR) {
+                    if (launcher.isElevatorOutOfWay()) {
                         safeToStop = true;
                         indexer.updateAfterShoot();
                         shootQueue.removeFirst();
