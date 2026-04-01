@@ -116,7 +116,7 @@ public class Launcher {
     public static final double LAUNCH_VELOCITY_FULL= 2200;
     public static final double LAUNCH_VELOCITY_LOW= 1060;   // TODO find lowest valuable power and set this
 
-    public static final double ELEVATOR_SAFE = 110.57; //50.785; (1/8 of one cycle
+    public static final double ELEVATOR_SAFE = 203.12; // 304.71; works (dangerous) // 203.12; (works 1.43s) // 110.57; //50.785; (start after 1/8 of one cycle)
     //rotate autoaim PID Constants
     private double rotateIntegralSum = 0.0;
     public static double rotateKp = 0.1;
@@ -880,8 +880,8 @@ public class Launcher {
     }
 
     public void setLauncherVelocity(double velocity) {
-        launcherMotor2.setVelocity(launcherVelocity);
-        launcherMotor1.setVelocity(launcherVelocity);
+        launcherMotor2.setVelocity(Math.round(launcherVelocity));
+        launcherMotor1.setVelocity(Math.round(launcherVelocity));
     }
 
     public void setAutoVelocity(double velocity) {
