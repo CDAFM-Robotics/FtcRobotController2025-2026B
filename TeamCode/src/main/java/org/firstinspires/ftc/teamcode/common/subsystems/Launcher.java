@@ -184,7 +184,7 @@ public class Launcher {
 
     private double currentVoltage;
     private double currentAngle;
-    public static double currentAngleOffset = 0;
+    public double currentAngleOffset = 0;
     private double lastAngleOffset = currentAngleOffset;
 
     private double lastVoltage = 0;
@@ -996,8 +996,9 @@ public class Launcher {
 
         // Set launcher power
         launcherVelocity = shootingTable.getData1(shootingDistance);
-        if (isLauncherActive())
+        if (isLauncherActive()) {
             setLauncherVelocity(launcherVelocity);
+        }
 
         // Add telemetry data for debugging
 
@@ -1038,7 +1039,6 @@ public class Launcher {
         turretTime = System.nanoTime() / 1000000000.0;
         double dt = turretTime - turretLastTime;
 
-
         double turretTarget = target * 2;
         // Find the voltage returned and the angle of the servo
 
@@ -1071,6 +1071,8 @@ public class Launcher {
         lastVoltage = currentVoltage;
 
         firstLoop = false;
+
+        RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
     }
 
 
@@ -1078,6 +1080,8 @@ public class Launcher {
     public double updateTurretPID(double target, double current, double dt) {
 
         double error = target - current;
+
+        autoTurretAimed = Math.abs(error) < deadband;
 
         if (Math.abs(error) < deadband) {
             return 0.001; // always add a tiny bit of power (rumor is this cause volts to be more accurate)
@@ -1154,6 +1158,11 @@ public class Launcher {
 
         }
 
+    }
+
+
+    public void setTurretPower0() {
+        turretServo.setPower(0);
     }
 
 

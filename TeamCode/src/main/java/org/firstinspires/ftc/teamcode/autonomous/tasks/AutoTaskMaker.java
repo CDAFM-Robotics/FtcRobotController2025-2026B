@@ -4,6 +4,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
@@ -63,11 +64,11 @@ public class AutoTaskMaker {
     }
 
     public Task setFarLauncherTask() {
-        return spinUpLauncherTask(1590);
+        return spinUpLauncherTask(1570);
     }
 
     public Task setCloseLauncherTask() {
-        return spinUpLauncherTask(1280);
+        return spinUpLauncherTask(1300);
     }
 
     public Task setTurretPositionTask(double angle) {
@@ -75,6 +76,10 @@ public class AutoTaskMaker {
             robot.getLauncher().autoUpdateTurretPID(angle);
             return Math.abs(robot.getLauncher().getTurretDegrees() - angle) < 2;
         });
+    }
+
+    public Task stopTurretTask() {
+        return new InstantTask(() -> robot.getLauncher().setTurretPower0());
     }
 
     public Task setHoodPositionTask(double position) {
@@ -100,7 +105,10 @@ public class AutoTaskMaker {
     public Task rotateIndexerTask(double position) {
         return new SequentialTask(
             setIndexerPositionTask(position),
-            new WaitUntilTask(() -> robot.getIndexer().getIndexerServoAtPosition(position, 0.03))
+            new WaitUntilTask(() -> {
+                RobotLog.d("Indexer Position: position: %.4f, target: %.4f", robot.getIndexer().getIndexerPosition(), position);
+                return robot.getIndexer().getIndexerServoAtPosition(position, 0.03);
+            })
         );
     }
 
@@ -160,15 +168,20 @@ public class AutoTaskMaker {
     public Task runElevatorTask() {
         return new BasicTask(
             () -> robot.getLauncher().elevateBall(),
-            () -> {
-                robot.getLauncher().updateElevator();
-                return !robot.getLauncher().elevatorRunning();
-            }
+            () -> !robot.getLauncher().elevatorRunning()
         );
     }
 
+    public Task logTask(String value) {
+        return new InstantTask(() -> RobotLog.d(value));
+    }
+
     public Task waitUntilBallInIntakeTask() {
-        return new WaitUntilTask(() -> robot.getIndexer().isBallAtIntake());
+        return new WaitUntilTask(() -> robot.getIndexer().isBallAtIntakeFast());
+    }
+
+    public Task waitUntilTurretAimedTask() {
+        return new WaitUntilTask(() -> robot.getLauncher().getAutoTurretAimed());
     }
 
     public enum Side {
@@ -177,47 +190,93 @@ public class AutoTaskMaker {
     }
 
     public Task runPickupSequenceTask(PathChain pickupPath, PathChain returnPath, long delay, Side side, Team team) {
-        return new SequentialTask(
-            new DeadlineTask(
-                new SequentialTask(
-                    new FollowPathTask(follower, pickupPath),
-                    new HoldPointTask(follower, pickupPath.endPose()),
-                    new SleepTask(delay),
-                    new FollowPathTask(follower, returnPath)
-                ),
-                new SequentialTask(
-                    startIntakeTask(),
-                    rotateIndexerIntakeTask(0),
-                    waitUntilBallInIntakeTask(),
-                    rotateIndexerIntakeTask(1),
-                    waitUntilBallInIntakeTask(),
-                    rotateIndexerIntakeTask(2),
-                    waitUntilBallInIntakeTask(),
+        return new DeadlineTask(
+            new ParallelTask(
+            logTask("Task: RunPickupSequenceTask"),
+            new SequentialTask(
+                    new DeadlineTask(
+                        new SequentialTask(
+                            new FollowPathTask(follower, pickupPath, 0.8),
+                            logTask("Pickup Task: Finished Path"),
+                            new HoldPointTask(follower, pickupPath.endPose()),
+                            logTask("Pickup Task: Hold Pose"),
+                            new SleepTask(delay),
+                            logTask("Pickup Task: Slept")
+                        ),
+                        new SequentialTask(
+                            startIntakeTask(),
+                            logTask("Pickup Task: Start Intake"),
+                            rotateIndexerIntakeTask(0),
+                            logTask("Pickup Task: Index to 0"),
+                            waitUntilBallInIntakeTask(),
+                            logTask("Pickup Task: Ball in Robot 0"),
+                            rotateIndexerIntakeTask(1),
+                            logTask("Pickup Task: Index to 1"),
+                            waitUntilBallInIntakeTask(),
+                            logTask("Pickup Task: Ball in Robot 1"),
+                            rotateIndexerIntakeTask(2),
+                            logTask("Pickup Task: Index to 2"),
+                            waitUntilBallInIntakeTask(),
+                            logTask("Pickup Task: Ball in Robot 2")
+                        )
+                    ),
+                    logTask("Pickup Task: Finished First Deadline Task"),
+
+                    new DeadlineTask(
+                        new SequentialTask(
+                            new FollowPathTask(follower, returnPath),
+                            logTask("Pickup Task: Finish Return Path")
+                        ),
+                        new ParallelTask(
+                            new SequentialTask(
+                                reverseIntakeTask(),
+                                logTask("Pickup Task: Reverse Intake"),
+
+                                new SleepTask(1000),
+                                logTask("Pickup Task: Slept"),
+
+                                stopIntakeTask(),
+                                logTask("Pickup Task: Intake Stopped")
+                            ),
+                            new SequentialTask(
+                                side.equals(Side.NEAR) ? setCloseLauncherTask() : setFarLauncherTask(),
+                                logTask("Pickup Task: Launcher Set")
+                            )
+                        )
+                    ),
                     stopIntakeTask(),
-                    side.equals(Side.NEAR) ? setCloseLauncherTask() : setFarLauncherTask()
-                ),
-                side == Side.FAR ? (team == Team.BLUE ? setTurretPositionTask(-60) : setTurretPositionTask(60)) : (team == Team.BLUE ? setTurretPositionTask(-45) : setTurretPositionTask(45))
+                    logTask("Task: End of Pickup Sequence")
+                )
             ),
-            stopIntakeTask()
+            setLauncherToGoalTask()
         );
     }
 
     public Task runShootSequenceTask(Pose hold, Side side, Team team) {
         return new DeadlineTask(
             new SequentialTask(
+                logTask("Task: RunShootSequenceTask"),
+                stopIntakeTask(),
                 new HoldPointTask(follower, hold),
                 new ParallelTask(
                     side == Side.FAR ? setFarLauncherTask() : setCloseLauncherTask(),
                     rotateIndexerOuttakeTask(0)
                 ),
+                logTask("Shoot Task: Index 0"),
                 runElevatorTask(),
+                logTask("Shoot Task: Shoot 0"),
                 rotateIndexerOuttakeTask(2),
+                logTask("Shoot Task: Index 1"),
                 runElevatorTask(),
+                logTask("Shoot Task: Shoot 1"),
                 rotateIndexerOuttakeTask(1),
+                logTask("Shoot Task: Index 2"),
                 runElevatorTask(),
+                logTask("Shoot Task: Shoot 2"),
                 setLauncherMotorVelocityTask(0)
             ),
-            setLauncherToGoalTask()
+            setLauncherToGoalTask(),
+            logTask("Task: End of Shoot Sequence")
         );
     }
 }

@@ -106,6 +106,8 @@ public class Indexer {
         //moveToOuttake() moves the next shooting slot to outtake
         // should use positionForOuttake
         positionForOuttake();
+
+        while (indexerFinishedTurning()) {}
     }
 
     /****************************************************

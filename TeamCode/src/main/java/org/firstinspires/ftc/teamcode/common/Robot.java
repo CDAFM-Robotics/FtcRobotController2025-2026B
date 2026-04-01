@@ -543,8 +543,6 @@ public class Robot {
         double tx = robotX - Math.sin(pinPointHeading) * TURRET_OFFSET;
         double ty = robotY - Math.cos(pinPointHeading) * TURRET_OFFSET;
 
-        telemetry.addData("Position", "x: %.2f, y: %.2f", tx, ty);
-
         //calculate the relative angle of the turret to the robot
         double blueGoalX;
         double blueGoalY;
@@ -571,7 +569,7 @@ public class Robot {
         double relativeAngle;
         relativeAngle = (absoluteAngleDegree - robotHeading);
 
-        relativeAngle = normalizeAngle(relativeAngle);
+        relativeAngle = normalizeAngle(relativeAngle - 5);
 
 //        debugManager.robot("deltaX:", "%.2f", deltaX);
 //        debugManager.robot("deltaY:", "%.2f", deltaY);
@@ -799,5 +797,8 @@ public class Robot {
 //    public void setTagPipeline(int pipeline) {
 //        limelight.pipelineSwitch(pipeline);
 //    }
+
+
+
 
 }
