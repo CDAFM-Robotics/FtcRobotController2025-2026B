@@ -52,12 +52,12 @@ public class Indexer {
     public ArtifactColor[] artifactColorArray = new ArtifactColor[]{ArtifactColor.NONE, ArtifactColor.NONE, ArtifactColor.NONE};
 
     // TODO +0.03 after indexer rebuild on 20Mar26
-    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.209 ; // 0.177 + 0.03; //0.176
-    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.965; // 0.934 + 0.03 ; //0.938
-    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.585; // 0.55955 + 0.03; //0.555
-    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.783; // 0.757 + 0.03; //0.746
-    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.403 ; // 0.380 + 0.03 ; // 0.365
-    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.03; //  0.00; //0.0
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.210 ; // 0.209 last value 0.177 + 0.03; //0.176
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT = 0.973; // last value 0.965 0.934 + 0.03 ; //0.938
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT = 0.590; // last value 0.583 0.55955 + 0.03; //0.555
+    public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE = 0.776; // 0.783 last value 0.757 + 0.03; //0.746
+    public static final double POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE = 0.393 ; // 0.403 last value 0.380 + 0.03 ; // 0.365
+    public static final double POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE = 0.017; // 0.03 last value 0.00; //0.0
 
     public static final double AXON_SERVO_VOLTAGE_OFFSET = 0.228;
     public static final double AXON_SERVO_VOLTAGE_SCALER = 0.1 / 0.2815;

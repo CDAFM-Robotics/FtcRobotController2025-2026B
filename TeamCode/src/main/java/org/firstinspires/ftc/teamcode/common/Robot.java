@@ -503,14 +503,13 @@ public class Robot {
 
         double relativeAngle;
         relativeAngle = (absoluteAngleDegree - robotHeading);
-//        if (isRedSide) {
-//            relativeAngle = (absoluteAngleDegree - robotHeading);
-//        }
-//        else {
-//            relativeAngle = (absoluteAngleDegree - robotHeading); //off set on blue side
-//        }
+        if (isRedSide) {
+            relativeAngle = normalizeAngle(relativeAngle);
+        }
+        else {
+            relativeAngle = normalizeAngle(relativeAngle - 5); //off set on blue side
+        }
 
-        relativeAngle = normalizeAngle(relativeAngle);
         last_TurretAngle_Target = relativeAngle; // TODO need this in telemetry in main
 
         debugManager.robot("deltaX:", "%.2f", deltaX);
@@ -544,22 +543,22 @@ public class Robot {
         double ty = robotY - Math.cos(pinPointHeading) * TURRET_OFFSET;
 
         //calculate the relative angle of the turret to the robot
-        double blueGoalX;
-        double blueGoalY;
+        double goalX;
+        double goalY;
         // coordinates of the blue goal
         if (isRedSide) {
-            blueGoalX = RED_X;
-            blueGoalY = RED_Y;
+            goalX = RED_X;
+            goalY = RED_Y;
         }
         else {
-            blueGoalX = BLUE_X;
-            blueGoalY = BLUE_Y;
+            goalX = BLUE_X;
+            goalY = BLUE_Y;
         }
 
 
         // calculate vector to blue goal
-        double deltaX = blueGoalX - tx;
-        double deltaY = blueGoalY - ty;
+        double deltaX = goalX - tx;
+        double deltaY = goalY - ty;
         double distanceToGoal = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
 
         //calculates the angle in radians between the positive x-axis and a point
