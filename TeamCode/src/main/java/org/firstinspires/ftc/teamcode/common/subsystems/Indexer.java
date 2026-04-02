@@ -97,17 +97,14 @@ public class Indexer {
 
         // have to turn to intake to read the ball colors. DON'T REMOVE!
         turnToClosestIntake();
-        sleep(650);
+        while (!indexerFinishedTurning()) {}
         updateColorAllSlots();
-
-        timeSinceTurnIndex.reset();
 
         //move to outtake in order to let elevator motor run
         //moveToOuttake() moves the next shooting slot to outtake
         // should use positionForOuttake
         positionForOuttake();
-
-        while (indexerFinishedTurning()) {}
+        while (!indexerFinishedTurning()) {}
     }
 
     /****************************************************

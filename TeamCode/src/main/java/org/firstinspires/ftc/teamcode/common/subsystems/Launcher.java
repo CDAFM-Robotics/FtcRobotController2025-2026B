@@ -374,7 +374,7 @@ public class Launcher {
         elevatorMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         //run until magnetic limit switch detects
-        elevatorMotor.setPower(.5);
+        elevatorMotor.setPower(.3);
         ElapsedTime motorTimer = new ElapsedTime();
         //limit switch detector?????????????
         while(motorTimer.milliseconds() < 2010){ // TODO: added more time
