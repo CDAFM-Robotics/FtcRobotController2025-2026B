@@ -677,7 +677,11 @@ public class Launcher {
         else {
             elevatorMotor.setTargetPosition((int) Math.round(elevatorTarget));
         }
-        RobotLog.d ("Elevator: pos: %d, vel: %.2f, launcher: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), launcherMotor1.getVelocity(), launcherVelocity);
+        // RobotLog.d ("Elevator: pos: %d, vel: %.2f, launcher: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), launcherMotor1.getVelocity(), launcherVelocity);
+    }
+
+    public DcMotorEx getElevatorMotor() {
+        return elevatorMotor;
     }
 
     public boolean isElevatorOutOfWay() {
@@ -885,8 +889,8 @@ public class Launcher {
     }
 
     public void setAutoVelocity(double velocity) {
-        launcherMotor2.setVelocity(velocity);
-        launcherMotor1.setVelocity(velocity);
+        launcherMotor2.setVelocity(Math.floor(velocity));
+        launcherMotor1.setVelocity(Math.floor(velocity));
         launcherActive = true;
     }
 

@@ -381,12 +381,16 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 //        robot.getLauncher().getLauncherVelocity());
 
                 // TODO spit it out to Panels graph
-                telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
+                //telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
                 telemetryM.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
                 telemetryM.addData("Target", robot.last_TurretAngle_Target);
                 telemetryM.addData("currentAngleOffset", robot.getLauncher().getCurrentAngleOffset());
                 telemetryM.addData("currentAngle", robot.getLauncher().getTurretDegrees());
-                RobotLog.d("Angles currentAngle: %.2f currentAngleOffset: %.2f", robot.getLauncher().getTurretDegrees() ,robot.getLauncher().getCurrentAngleOffset() );
+                telemetryM.addData("elevatorPos", robot.getLauncher().getElevatorMotor().getCurrentPosition());
+                telemetryM.addData("elevatorVel", robot.getLauncher().getElevatorMotor().getVelocity());
+                telemetryM.addData("elevatorTarget", robot.getLauncher().getElevatorMotor().getTargetPosition());
+                // RobotLog.d("Angles currentAngle: %.2f currentAngleOffset: %.2f", robot.getLauncher().getTurretDegrees() ,robot.getLauncher().getCurrentAngleOffset() );
+                RobotLog.d ("Elevator: elevPos: %d, eleVel: %.2f, launcherVel: %.2f, spinPos: %.2f", robot.getLauncher().getElevatorMotor().getCurrentPosition(), robot.getLauncher().getElevatorMotor().getVelocity(), robot.getLauncher().getLauncherVelocity(), robot.getIndexer().getAxonServoPosition());
 
                 debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
                 // Update ball colors every 20 loops if the robot is in idle
