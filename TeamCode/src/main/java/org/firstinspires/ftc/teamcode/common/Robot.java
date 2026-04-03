@@ -6,6 +6,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.subsystems.DriveBase;
@@ -474,9 +475,9 @@ public class Robot {
         pinPointHeading = normalizeAngle(pinPointHeading);
         double robotHeading = Math.toDegrees(pinPointHeading);
 
-        // offset turret x y from the ceneter of the robot
-        double tx = robotX - Math.sin(pinPointHeading) * TURRET_OFFSET;
-        double ty = robotY - Math.cos(pinPointHeading) * TURRET_OFFSET;
+        // offset turret x y from the center of the robot rotation
+        double tx = robotX - Math.cos(pinPointHeading)*TURRET_OFFSET; /*- Math.sin(pinPointHeading) * TURRET_OFFSET;*/
+        double ty = robotY - Math.sin(pinPointHeading)*TURRET_OFFSET;  /*- Math.cos(pinPointHeading) * TURRET_OFFSET;*/
 
         //calculate the relative angle of the turret to the robot
         double goalX;
