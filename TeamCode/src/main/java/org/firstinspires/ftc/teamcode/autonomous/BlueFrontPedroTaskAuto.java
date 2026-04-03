@@ -47,22 +47,32 @@ public class BlueFrontPedroTaskAuto extends OpMode {
             new DeadlineTask(
                 new SleepTask(27000),
                 new SequentialTask(
+                    new DeadlineTask(
+                        new FollowPathTask(follower, paths.getBlueCloseStartToShoot2()),
+                        taskMaker.setLauncherToGoalTask(),
+                        taskMaker.setCloseLauncherTask()
+                    ),
                     taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 250, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
-                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE)
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runPickupSequenceTask(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE),
+                    new ParallelTask(
+                        taskMaker.setLauncherMotorVelocityTask(0),
+                        taskMaker.stopIntakeTask(),
+                        new InstantTask(() -> robot.getLauncher().setTurretPower0())
+                    )
                 )
             ),
             new ParallelTask(
                 new SequentialTask(
                     new FollowPathTask(follower, follower.pathBuilder()
-                        .addPath(new BezierLine(follower.getPose(), new Pose(54, 126))).setConstantHeadingInterpolation(Math.toRadians(0))
+                        .addPath(new BezierLine(follower.getPose(), new Pose(54, 126))).setConstantHeadingInterpolation(Math.toRadians(180))
                         .build()
                     ),
-                    new HoldPointTask(follower, new Pose(54, 126, Math.toRadians(0)))
+                    new HoldPointTask(follower, new Pose(54, 126, Math.toRadians(180)))
                 ),
                 taskMaker.setLauncherMotorVelocityTask(0),
                 taskMaker.stopIntakeTask(),

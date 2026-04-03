@@ -569,7 +569,7 @@ public class Robot {
         double relativeAngle;
         relativeAngle = (absoluteAngleDegree - robotHeading);
 
-        relativeAngle = normalizeAngle(relativeAngle - 5);
+        relativeAngle = normalizeAngle(relativeAngle);
 
 //        debugManager.robot("deltaX:", "%.2f", deltaX);
 //        debugManager.robot("deltaY:", "%.2f", deltaY);

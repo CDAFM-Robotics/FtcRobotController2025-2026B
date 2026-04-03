@@ -58,7 +58,6 @@ public class Launcher {
     TouchSensor elevatorLimitSwitch;
 
     public Servo kickerServo;
-    CRServo turretServo;
     Servo hoodServo;
     AnalogInput RSFeedback;
 
@@ -726,7 +725,7 @@ public class Launcher {
      ***********ROTATOR SERVO***********
      ***********************************/
     public double getRawRotatorServoPower(){
-        double output = turretServo.getPower();
+        double output = launcherServo.getPower();
         return output;
     }
 
@@ -763,7 +762,7 @@ public class Launcher {
     }
 
     public void setRotatorServoPower(double power){
-        turretServo.setPower(power);
+        launcherServo.setPower(power);
 
         if(power > 0 && getRawRotatorServoPosition() >= 180){
             currentQuadrant = QuadrantRotatorServo.POSITIVE;
@@ -1166,7 +1165,7 @@ public class Launcher {
 
 
     public void setTurretPower0() {
-        turretServo.setPower(0);
+        launcherServo.setPower(0);
     }
 
 
