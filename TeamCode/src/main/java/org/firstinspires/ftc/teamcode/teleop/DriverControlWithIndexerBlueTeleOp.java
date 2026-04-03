@@ -391,12 +391,13 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                         else if (loopCount % READ_EVERY_N_LOOPS == 2) {
                             // Read back right
                             robot.getIndexer().updateBallColorAtBackR(robot.getIndexer().getIndexerPosition());
-                        }
-
-                        if (robot.getIndexer().countArtifacts() == 3) {
-                            //turn to output
-                            robot.getIndexer().positionForOuttake();
-                            colorConfirmed = robot.getIndexer().confirmColorMatch();
+                        } else if (loopCount % READ_EVERY_N_LOOPS == 3) {
+                            if (robot.getIndexer().countArtifacts() == 3) {
+                                //turn to output
+                                colorConfirmed = robot.getIndexer().confirmColorMatch();
+                                if (colorConfirmed)
+                                    robot.getIndexer().positionForOuttake();
+                            }
                         }
                     }
                 }
