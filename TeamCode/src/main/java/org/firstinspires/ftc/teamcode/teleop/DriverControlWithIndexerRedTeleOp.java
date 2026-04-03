@@ -36,7 +36,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
     // ---- Loop throttle ----
     private int loopCount = 0;
-    private static final int READ_EVERY_N_LOOPS = 10;
+    private static final int READ_EVERY_N_LOOPS = 20;
     private boolean colorConfirmed = false;
 
     private LLResult result;
@@ -63,7 +63,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
 
-        debugManager.TELEMETRY_ENABLED = true;
+        debugManager.TELEMETRY_ENABLED = false;
         debugManager.ROBOT_LOG_ENABLED = true;
 
         // Individual Telemetry flags
@@ -180,8 +180,8 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                     // gamepad1.rumble(300);
 
                     // TODO test flip the turret
-                    robot.getLauncher().flipTurret = !robot.getLauncher().flipTurret;
-                    RobotLog.d("flipTurret %s", robot.getLauncher().flipTurret);
+//                    robot.getLauncher().flipTurret = !robot.getLauncher().flipTurret;
+//                    RobotLog.d("flipTurret %s", robot.getLauncher().flipTurret);
                 }
 
                 if (currentGamepad1.right_bumper != previousGamepad1.right_bumper) {
@@ -393,22 +393,31 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 RobotLog.d ("Elevator: elevPos: %d, eleVel: %.2f, launcherVel: %.2f, spinPos: %.2f", robot.getLauncher().getElevatorMotor().getCurrentPosition(), robot.getLauncher().getElevatorMotor().getVelocity(), robot.getLauncher().getLauncherVelocity(), robot.getIndexer().getAxonServoPosition());
 
                 debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
+
                 // Update ball colors every 20 loops if the robot is in idle
-                if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE
-                    && !colorConfirmed) {
+                // To reduce loop time spike, read one slot per loop.
+                if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE && !colorConfirmed) {
                     if (robot.getIndexer().axonAtIntake()) {
                         loopCount++;
                         // ---- Read sensors every N loops ----
                         if (loopCount % READ_EVERY_N_LOOPS == 0) {
-                            if (robot.getIndexer().confirmColorMatch()) {
-                                colorConfirmed = true;
-                                if (robot.getIndexer().countArtifacts() == 3) {
-                                    //turn to output
-                                    debugManager.addData("count %d", robot.getIndexer().countArtifacts());
+                            robot.getIndexer().cloneArtifactColors();
+                            // Read intake
+                            robot.getIndexer().updateBallColorAtIntake(robot.getIndexer().getIndexerPosition());
+                        }
+                        else if (loopCount % READ_EVERY_N_LOOPS == 1) {
+                            // Read back left
+                            robot.getIndexer().updateBallColorAtBackL(robot.getIndexer().getIndexerPosition());
+                        }
+                        else if (loopCount % READ_EVERY_N_LOOPS == 2) {
+                            // Read back right
+                            robot.getIndexer().updateBallColorAtBackR(robot.getIndexer().getIndexerPosition());
+                        } else if (loopCount % READ_EVERY_N_LOOPS == 3) {
+                            if (robot.getIndexer().countArtifacts() == 3) {
+                                //turn to output
+                                colorConfirmed = robot.getIndexer().confirmColorMatch();
+                                if (colorConfirmed)
                                     robot.getIndexer().positionForOuttake();
-                                }
-                            } else {
-                                colorConfirmed = false;
                             }
                         }
                     }
@@ -416,14 +425,16 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
 
                 // TODO REMOVE FOR COMP !
-                robot.getLauncher().setLiftMotorPIDFCoefficients();
+                // robot.getLauncher().setLiftMotorPIDFCoefficients();
 
 
                 // turn to output after three balls are confirmed for three times
 
                 // Refresh the indicator lights
-                hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1], robot.getIndexer().artifactColorArray[2]);
-                hud.UpdateBallUI();
+                // if (loopCount%READ_EVERY_N_LOOPS == 4) {
+                    hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1], robot.getIndexer().artifactColorArray[2]);
+                    hud.UpdateBallUI();
+                // }
 
                 // TODO Add timing Log at end of loop
                 debugManager.log("Blue TeleOp c0: %s c1: %s c2: %s",
@@ -446,17 +457,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 // TODO update drawing in panels
                 try {
                     // Draw the Pinpoint Pose
-                    // Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
-                    // create Turret Pose
-                    Pose2D pose2 = new Pose2D(DistanceUnit.INCH, robot.getDriveBase().getPinPointPosX(),
-                            robot.getDriveBase().getPinPointPosY(),
-                            AngleUnit.DEGREES,
-                            robot.getLauncher().getTurretDegrees()
-                    );
-                    Drawing.drawRobotWithTurret(
-                            PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE),
-                            PoseConverter.pose2DToPose(pose2, InvertedFTCCoordinates.INSTANCE)
-                            );
+                    Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
                     // Draw the MT2 pose
                     if (robot.getDriveBase().botpose_mt2 != null) {
                         Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose_mt2.getPosition().x, robot.getDriveBase().botpose_mt2.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.5));

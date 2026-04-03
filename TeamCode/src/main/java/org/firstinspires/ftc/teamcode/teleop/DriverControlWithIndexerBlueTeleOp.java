@@ -65,7 +65,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
 
-        debugManager.TELEMETRY_ENABLED = true;
+        debugManager.TELEMETRY_ENABLED = false;
         debugManager.ROBOT_LOG_ENABLED = true;
 
         // Individual Telemetry flags
@@ -133,10 +133,10 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                         RobotStaticValuesClass.teleOpCompleted = false;
                     } else if (isRedSide) {
                         //initialized red far position is x=(71in - 7.75in), y=23.5/2, -pi.
-                        startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, 11.75, AngleUnit.RADIANS, -3.14);
+                        startPose2D = new Pose2D(DistanceUnit.INCH, 63.16, 12, AngleUnit.RADIANS, -Math.PI);
                     } else {
                         //initialized red far position is x=(71in - 7.75in), y=-23.5/2, -pi.
-                        startPose2D = new Pose2D(DistanceUnit.INCH, 63.25, -11.75, AngleUnit.RADIANS, -3.14);
+                        startPose2D = new Pose2D(DistanceUnit.INCH, 63.16, -12, AngleUnit.RADIANS, -Math.PI);
                     }
 
                     // Set the location of the robot - this should be the place you are starting the robot from
@@ -237,6 +237,20 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 } else if (currentGamepad1.left_trigger == 0.0 && previousGamepad1.left_trigger != 0) {
                     //robot update artifact colors
                     robot.getIntake().stopIntake();
+                }
+
+                if (currentGamepad1.dpad_up && !previousGamepad1.dpad_up)
+                {
+                    robot.enableDriftCorrection = !robot.enableDriftCorrection;
+                    if (robot.enableDriftCorrection) {
+                        gamepad1.rumble(100);
+                        gamepad1.setLedColor(0, 255, 0, 100);
+                    }
+                    else
+                    {
+                        gamepad1.rumble(1000);
+                        gamepad1.setLedColor(255, 0, 0, 100);
+                    }
                 }
 
                 // TODO: When indexer stuck or out of alignment, recover the color of the balls
@@ -365,11 +379,16 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 //        robot.getLauncher().getLauncherVelocity());
 
                 // TODO spit it out to Panels graph
-                telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
+                //telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
                 telemetryM.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
                 telemetryM.addData("Target", robot.last_TurretAngle_Target);
-
-                // telemetryM.update(telemetry);
+                telemetryM.addData("currentAngleOffset", robot.getLauncher().getCurrentAngleOffset());
+                telemetryM.addData("currentAngle", robot.getLauncher().getTurretDegrees());
+                telemetryM.addData("elevatorPos", robot.getLauncher().getElevatorMotor().getCurrentPosition());
+                telemetryM.addData("elevatorVel", robot.getLauncher().getElevatorMotor().getVelocity());
+                telemetryM.addData("elevatorTarget", robot.getLauncher().getElevatorMotor().getTargetPosition());
+                // RobotLog.d("Angles currentAngle: %.2f currentAngleOffset: %.2f", robot.getLauncher().getTurretDegrees() ,robot.getLauncher().getCurrentAngleOffset() );
+                RobotLog.d ("Elevator: elevPos: %d, eleVel: %.2f, launcherVel: %.2f, spinPos: %.2f", robot.getLauncher().getElevatorMotor().getCurrentPosition(), robot.getLauncher().getElevatorMotor().getVelocity(), robot.getLauncher().getLauncherVelocity(), robot.getIndexer().getAxonServoPosition());
 
                 debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
 
@@ -404,14 +423,16 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
 
                 // TODO REMOVE FOR COMP !
-                robot.getLauncher().setLiftMotorPIDFCoefficients();
+                // robot.getLauncher().setLiftMotorPIDFCoefficients();
 
 
                 // turn to output after three balls are confirmed for three times
 
                 // Refresh the indicator lights
-                hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1], robot.getIndexer().artifactColorArray[2]);
-                hud.UpdateBallUI();
+                // if (loopCount%READ_EVERY_N_LOOPS == 4) {
+                    hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1], robot.getIndexer().artifactColorArray[2]);
+                    hud.UpdateBallUI();
+                // }
 
                 // TODO Add timing Log at end of loop
                 debugManager.log("Blue TeleOp c0: %s c1: %s c2: %s",
@@ -439,7 +460,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                     if (robot.getDriveBase().botpose_mt2 != null) {
                         Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose_mt2.getPosition().x, robot.getDriveBase().botpose_mt2.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.5));
                     }
-                    // Draw the MT2 pose
+                    // Draw the MT1 pose
                     if(robot.getDriveBase().botpose != null) {
                         Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose.getPosition().x, robot.getDriveBase().botpose.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Green", 0.5));
                     }

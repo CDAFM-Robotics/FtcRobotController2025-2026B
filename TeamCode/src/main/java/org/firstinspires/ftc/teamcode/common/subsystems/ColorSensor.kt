@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.common.util.ArtifactColor
 import kotlin.math.min
 import kotlin.math.pow
 
-public class ColorSensor( hardwareMap: HardwareMap )  {
+public class ColorSensor( hardwareMap: HardwareMap, name: String )  {
     // The normal color sensor
     private lateinit var colorSensor: RevColorSensorV3
 
@@ -25,6 +25,7 @@ public class ColorSensor( hardwareMap: HardwareMap )  {
     private lateinit var device: I2cDeviceSynchSimple
 
     private var hardwareMap = hardwareMap
+    private var name = name
 
 
     var detectedArtifact: ArtifactColor? = null
@@ -69,7 +70,7 @@ public class ColorSensor( hardwareMap: HardwareMap )  {
 
     fun initialize() {
 
-        colorSensor = hardwareMap.get(RevColorSensorV3::class.java, "colorSensor")
+        colorSensor = hardwareMap.get(RevColorSensorV3::class.java, name)
 
         // Basically, this gets the field deviceClient from the far removed ancestor of RevColorSensorV3.java (I think it's I2cDeviceSimple.java)
         // then makes it accessible here using reflection, then finally gets that field from our color sensor in order to have access to its i2c register.

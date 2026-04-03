@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.common.subsystems.ColorSensor;
 
 @Configurable
 @TeleOp(name = "Test: Color Sensor", group = "Test")
-public class ColorSensorTest extends LinearOpMode {
+public class ColorSensorFastExtExample extends LinearOpMode {
     static TelemetryManager telemetryM;
 
     public static boolean on = true;
@@ -24,7 +24,7 @@ public class ColorSensorTest extends LinearOpMode {
     @Override
     public void runOpMode() {
         // Initialize the color sensor subsystem
-        ColorSensor colorSensor = new ColorSensor(hardwareMap);
+        ColorSensor colorSensor = new ColorSensor(hardwareMap, "colorSensor");
         colorSensor.initialize();
 
         // Set up telemetry to combine FTC telemetry with upstream submission

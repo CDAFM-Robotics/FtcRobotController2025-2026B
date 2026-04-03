@@ -164,10 +164,10 @@ public class SubsystemCommands {
 
     public Command waitUntilBallInIndexerIntake() {
         return new WaitUntilCommand(() -> !robot.getIndexer().getPredictedColor(
-            robot.getIndexer().colorSensorIntakeL.getNormalizedColors(),
-            robot.getIndexer().colorSensorIntakeR.getNormalizedColors(),
-            ((DistanceSensor) robot.getIndexer().colorSensorIntakeL).getDistance(DistanceUnit.CM),
-            ((DistanceSensor) robot.getIndexer().colorSensorIntakeR).getDistance(DistanceUnit.CM)).equals(ArtifactColor.NONE))
+            robot.getIndexer().colorSensorIntakeL.getColors(),
+            robot.getIndexer().colorSensorIntakeR.getColors(),
+            (robot.getIndexer().colorSensorIntakeL).getDistance(),
+            (robot.getIndexer().colorSensorIntakeR).getDistance()).equals(ArtifactColor.NONE))
             .withTimeout(4000);
     }
 

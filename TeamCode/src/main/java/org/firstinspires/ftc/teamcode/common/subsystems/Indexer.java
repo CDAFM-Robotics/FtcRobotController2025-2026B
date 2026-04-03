@@ -38,18 +38,20 @@ public class Indexer {
     private double targetIndexerPosition;
 
     //after indexer HW change, this is the left color sensor on the intake
-    public NormalizedColorSensor colorSensorIntakeL = null;
-    public NormalizedColorSensor colorSensorIntakeR = null;
+//    public NormalizedColorSensor colorSensorIntakeL = null;
+    public ColorSensor colorSensorIntakeL = null;
+    public ColorSensor colorSensorIntakeR = null;
     //after indexer HW change, this is the left color sensor on the back left
-    public NormalizedColorSensor colorSensorBackRL = null;
-    public NormalizedColorSensor colorSensorBackRR = null;
+    public ColorSensor colorSensorBackRL = null;
+    public ColorSensor colorSensorBackRR = null;
     //after indexer HW change, this is the left color sensor on the back right
-    public NormalizedColorSensor colorSensorBackLL = null;
-    public NormalizedColorSensor colorSensorBackLR = null;
+    public ColorSensor colorSensorBackLL = null;
+    public ColorSensor colorSensorBackLR = null;
 
     private AnalogInput indexerServoVoltage = null;
 
     public ArtifactColor[] artifactColorArray = new ArtifactColor[]{ArtifactColor.NONE, ArtifactColor.NONE, ArtifactColor.NONE};
+    public ArtifactColor[] preArtifactColorArray = artifactColorArray;
 
     // TODO +0.03 after indexer rebuild on 20Mar26
     public static final double POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT = 0.210 ; // 0.209 last value 0.177 + 0.03; //0.176
@@ -81,19 +83,47 @@ public class Indexer {
         indexerServo.setDirection(Servo.Direction.FORWARD);
         indexerServo.scaleRange(0.0, 1.0);
 
-        colorSensorIntakeL = hardwareMap.get(NormalizedColorSensor.class, "colorSensorIntakeLeftLeft");
+        /* colorSensorIntakeL = hardwareMap.get(NormalizedColorSensor.class, "colorSensorIntakeLeftLeft");
         colorSensorIntakeR = hardwareMap.get(NormalizedColorSensor.class, "colorSensorIntakeLeftRight");
         colorSensorBackLL = hardwareMap.get(NormalizedColorSensor.class, "colorSensorIntakeRightLeft");
         colorSensorBackLR = hardwareMap.get(NormalizedColorSensor.class, "colorSensorIntakeRightRight");
         colorSensorBackRL = hardwareMap.get(NormalizedColorSensor.class, "colorSensorOutLeft");
         colorSensorBackRR = hardwareMap.get(NormalizedColorSensor.class, "colorSensorOutRight");
 
+
+
         colorSensorIntakeL.setGain(8);
         colorSensorIntakeR.setGain(8);
         colorSensorBackRL.setGain(8);
         colorSensorBackRR.setGain(8);
         colorSensorBackLL.setGain(8);
-        colorSensorBackLR.setGain(8);
+        colorSensorBackLR.setGain(8);8
+
+         */
+
+
+        colorSensorIntakeL = new ColorSensor(hardwareMap, "colorSensorIntakeLeftLeft");
+        colorSensorIntakeL.initialize();
+
+        colorSensorIntakeR = new ColorSensor(hardwareMap, "colorSensorIntakeLeftRight");
+        colorSensorIntakeR.initialize();
+
+        colorSensorBackLL = new ColorSensor(hardwareMap, "colorSensorIntakeRightLeft");
+        colorSensorBackLL.initialize();
+
+        colorSensorBackLR = new ColorSensor(hardwareMap, "colorSensorIntakeRightRight");
+        colorSensorBackLR.initialize();
+
+        colorSensorBackRL = new ColorSensor(hardwareMap, "colorSensorOutLeft");
+        colorSensorBackRL.initialize();
+
+        colorSensorBackRR = new ColorSensor(hardwareMap, "colorSensorOutRight");
+        colorSensorBackRR.initialize();
+
+
+
+
+
 
         // have to turn to intake to read the ball colors. DON'T REMOVE!
         turnToClosestIntake();
@@ -165,10 +195,10 @@ public class Indexer {
         return new RunTimeoutAction(
             new WaitUntilAction(
                 () -> getPredictedColor(
-                    colorSensorIntakeL.getNormalizedColors(),
-                    colorSensorIntakeR.getNormalizedColors(),
-                    ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM),
-                    ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM)) != ArtifactColor.NONE),
+                    colorSensorIntakeL.getColors(),
+                    colorSensorIntakeR.getColors(),
+                    (colorSensorIntakeL).getDistance(),
+                    (colorSensorIntakeR).getDistance()) != ArtifactColor.NONE),
 
             timeout
         );
@@ -269,6 +299,10 @@ public class Indexer {
         debugManager.spindexer("updateBallColorAtBackL() start", "%.2f", position);
         debugManager.log("Indexer: updateBallColorAtBackL() start");
 
+        colorSensorBackLL.periodic();
+        colorSensorBackLR.periodic();
+
+
         int i = 0;
 
         if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
@@ -285,10 +319,10 @@ public class Indexer {
         }
 
         artifactColorArray[i] = getPredictedColor(
-            colorSensorBackLL.getNormalizedColors(),
-            colorSensorBackLR.getNormalizedColors(),
-            ((DistanceSensor) colorSensorBackLL).getDistance(DistanceUnit.CM),
-            ((DistanceSensor) colorSensorBackLR).getDistance(DistanceUnit.CM));
+            colorSensorBackLL.getColors(),
+            colorSensorBackLR.getColors(),
+            (colorSensorBackLL).getDistance(),
+            (colorSensorBackLR).getDistance());
         debugManager.spindexer("updateBallColorAtBackL index", "%d", i);
         debugManager.spindexer("updateBallColorAtBackL color1", "%s", artifactColorArray[i]);
         debugManager.log("updateBallColorAtBackL color1 %d %s", i, artifactColorArray[i]);
@@ -299,6 +333,8 @@ public class Indexer {
         debugManager.spindexer("updateBallColorAtIntake() start", "%.2f", position);
         debugManager.log("Indexer: updateBallColorAtIntake() start");
 
+        colorSensorIntakeL.periodic();
+        colorSensorIntakeR.periodic();
         int i = 0;
 
         if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE) {
@@ -312,19 +348,27 @@ public class Indexer {
         }
 
         artifactColorArray[i] = getPredictedColor(
-            colorSensorIntakeL.getNormalizedColors(),
-            colorSensorIntakeR.getNormalizedColors(),
-            ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM),
-            ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM));
+            colorSensorIntakeL.getColors(),
+            colorSensorIntakeR.getColors(),
+            (colorSensorIntakeL).getDistance(),
+            (colorSensorIntakeR).getDistance());
         debugManager.spindexer("updateBallColorAtIntake index", "%d", i);
         debugManager.spindexer("updateBallColorAtIntake color1","%s",  artifactColorArray[i]);
         debugManager.log("updateBallColors color Intake %d %s", i, artifactColorArray[i]);
 
     }
 
+    public void cloneArtifactColors() {
+        preArtifactColorArray = artifactColorArray.clone();
+    }
+
     public void updateBallColorAtBackR(double position) {
         debugManager.spindexer("updateBallColorAtBackR() start", "%.2f", position);
         debugManager.log("Indexer: updateBallColorAtBackR() start");
+
+        colorSensorBackRL.periodic();
+        colorSensorBackRR.periodic();
+
 
         int i = 0;
 
@@ -339,10 +383,10 @@ public class Indexer {
         }
 
         artifactColorArray[i] = getPredictedColor(
-            colorSensorBackRL.getNormalizedColors(),
-            colorSensorBackRR.getNormalizedColors(),
-            ((DistanceSensor) colorSensorBackRL).getDistance(DistanceUnit.CM),
-            ((DistanceSensor) colorSensorBackRR).getDistance(DistanceUnit.CM));
+            colorSensorBackRL.getColors(),
+            colorSensorBackRR.getColors(),
+            (colorSensorBackRL).getDistance(),
+            (colorSensorBackRR).getDistance());
         debugManager.spindexer("updateBallColorAtBackR index", "%d", i);
         debugManager.spindexer("updateBallColorAtBackR color1", "%s", artifactColorArray[i]);
         debugManager.log("updateBallColorAtBackR  %d %s", i, artifactColorArray[i]);
@@ -618,12 +662,13 @@ public class Indexer {
     }
 
     // Check to see if there is any ball by distance sensing
+    @Deprecated
     public boolean isBallAtIntake() {
 
-        double dis1 = ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM);
-        double dis2 = ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM);
-        NormalizedRGBA colorSensorNormalizedColors1 = colorSensorIntakeL.getNormalizedColors();;
-        NormalizedRGBA colorSensorNormalizedColors2 = colorSensorIntakeR.getNormalizedColors();;
+        double dis1 = (colorSensorIntakeL).getDistance();
+        double dis2 = (colorSensorIntakeR).getDistance();
+        NormalizedRGBA colorSensorNormalizedColors1 = colorSensorIntakeL.getColors();
+        NormalizedRGBA colorSensorNormalizedColors2 = colorSensorIntakeR.getColors();
         double position = getIndexerPosition();
         debugManager.spindexer("isBallAtIntake colorSensorIntakeL", "%.2f", dis1);
         debugManager.spindexer("isBallAtIntake colorSensorIntakeR", "%.2f", dis2);
@@ -655,8 +700,10 @@ public class Indexer {
 
     // Check to see if there is any ball by distance sensing
     public boolean isBallAtIntakeFast() {
-        double dis1 = ((DistanceSensor) colorSensorIntakeL).getDistance(DistanceUnit.CM);
-        double dis2 = ((DistanceSensor) colorSensorIntakeR).getDistance(DistanceUnit.CM);
+        colorSensorIntakeL.periodic();
+        colorSensorIntakeR.periodic();
+        double dis1 = (colorSensorIntakeL).getDistance();
+        double dis2 = (colorSensorIntakeR).getDistance();
         double position = getIndexerPosition();
         debugManager.spindexer("isBallAtIntakeFast colorSensorIntakeL", "%.2f", dis1);
         debugManager.spindexer("isBallAtIntakeFast colorSensorIntakeR", "%.2f", dis2);
@@ -766,8 +813,6 @@ public class Indexer {
     }
 
     public boolean confirmColorMatch() {
-        ArtifactColor[] preArtifactColorArray = artifactColorArray.clone();
-        updateColorAllSlots();
         if(Arrays.equals(preArtifactColorArray, artifactColorArray)) {
             return true;
         }
