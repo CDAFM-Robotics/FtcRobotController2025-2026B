@@ -222,7 +222,7 @@ public class Robot {
                      //No empty slot
                      // - update color double check
                      // This line is removed to save time.
-                     indexer.updateColorAllSlots();
+                     // indexer.updateColorAllSlots();
                      intake3Balls = true;
                      break;
                  }

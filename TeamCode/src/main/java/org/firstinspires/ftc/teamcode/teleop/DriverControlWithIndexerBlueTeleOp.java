@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import androidx.annotation.NonNull;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -36,7 +38,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
     // ---- Loop throttle ----
     private int loopCount = 0;
-    private static final int READ_EVERY_N_LOOPS = 10;
+    private static final int READ_EVERY_N_LOOPS = 20;
     private boolean colorConfirmed = false;
 
     private LLResult result;
@@ -370,23 +372,31 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 // telemetryM.update(telemetry);
 
                 debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
+
                 // Update ball colors every 20 loops if the robot is in idle
-                if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE
-                    && !colorConfirmed) {
+                // To reduce loop time spike, read one slot per loop.
+                if (robot.getRobotInOutState() == Robot.RobotInOutState.IDLE && !colorConfirmed) {
                     if (robot.getIndexer().axonAtIntake()) {
                         loopCount++;
                         // ---- Read sensors every N loops ----
                         if (loopCount % READ_EVERY_N_LOOPS == 0) {
-                            if (robot.getIndexer().confirmColorMatch()) {
-                                colorConfirmed = true;
-                                if (robot.getIndexer().countArtifacts() == 3) {
-                                    //turn to output
-                                    debugManager.addData("count %d", robot.getIndexer().countArtifacts());
-                                    robot.getIndexer().positionForOuttake();
-                                }
-                            } else {
-                                colorConfirmed = false;
-                            }
+                            robot.getIndexer().cloneArtifactColors();
+                            // Read intake
+                            robot.getIndexer().updateBallColorAtIntake(robot.getIndexer().getIndexerPosition());
+                        }
+                        else if (loopCount % READ_EVERY_N_LOOPS == 1) {
+                            // Read back left
+                            robot.getIndexer().updateBallColorAtBackL(robot.getIndexer().getIndexerPosition());
+                        }
+                        else if (loopCount % READ_EVERY_N_LOOPS == 2) {
+                            // Read back right
+                            robot.getIndexer().updateBallColorAtBackR(robot.getIndexer().getIndexerPosition());
+                        }
+
+                        if (robot.getIndexer().countArtifacts() == 3) {
+                            //turn to output
+                            robot.getIndexer().positionForOuttake();
+                            colorConfirmed = robot.getIndexer().confirmColorMatch();
                         }
                     }
                 }
@@ -456,6 +466,6 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES),
             RobotStaticValuesClass.turretAngleOffset, RobotStaticValuesClass.savedOblisk,
             robot.getLauncher().getCurrentAngleOffset());
-
     }
+
 }
