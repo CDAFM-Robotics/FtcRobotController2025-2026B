@@ -346,7 +346,7 @@ public class Robot {
                 case READY_TO_INTAKE:
                     debugManager.log("shootAllBalls: READY_TO_INTAKE");
                     if (indexer.indexerFinishedTurning()) {
-                        updateColorAllSlots();
+                        //updateColorAllSlots();
                         if (indexer.findABall()) {
                             // for some reason, there is a ball in the indexer
                             shootOrder();
