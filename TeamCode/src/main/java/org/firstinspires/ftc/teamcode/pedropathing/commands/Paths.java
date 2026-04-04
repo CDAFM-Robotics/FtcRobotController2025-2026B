@@ -96,7 +96,7 @@ public class Paths {
                 new BezierCurve(
                     new Pose(60.000, 8.5),
                     new Pose(60.000, 37.0),
-                    new Pose(10, 36.000)
+                    new Pose(12, 36.000)
                 )
             ).setTangentHeadingInterpolation()
 
@@ -109,7 +109,7 @@ public class Paths {
     public PathChain getBlueFarReturnFromThirdMark() {
         blueFarReturnFromThirdMark = follower.pathBuilder().addPath(
                 new BezierLine(
-                    new Pose(10, 36.000),
+                    new Pose(12, 36.000),
 
                     new Pose(60.000, 14)
                 )
@@ -126,7 +126,7 @@ public class Paths {
                         new BezierCurve(
                                 new Pose(84.000, 8.5),
                                 new Pose(84.000, 37.7),
-                                new Pose(134, 36.000)
+                                new Pose(129, 36.000)
                         )
                 ).setTangentHeadingInterpolation()
 
@@ -183,7 +183,7 @@ public class Paths {
                 .addPath(
                         new BezierLine(
                                 new Pose(84.000, 14),
-                                new Pose(136, 10)
+                                new Pose(132, 10)
                         )).setConstantHeadingInterpolation(Math.toRadians(0))
 
                 .build();
@@ -199,7 +199,7 @@ public class Paths {
         redFarReturnFromHumanPlayerZone = follower.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                new Pose(136.000, 10),
+                                new Pose(132.000, 10),
                                 new Pose(84.000, 14)
                         )).setConstantHeadingInterpolation(Math.toRadians(0))
 
@@ -269,8 +269,8 @@ public class Paths {
         redClosePickupSecondMark = follower.pathBuilder().addPath(
                         new BezierCurve(
                                 new Pose(90.0, 84.000),
-                                new Pose(78.000, 54.000),
-                                new Pose(128, 57.5)
+                                new Pose(78.000, 52.000),
+                                new Pose(128, 55.5)
                         )
                 ).setConstantHeadingInterpolation(Math.toRadians(0))
 
@@ -283,7 +283,7 @@ public class Paths {
     public PathChain getRedCloseReturnFromSecondMark() {
         redCloseReturnFromSecondMark = follower.pathBuilder().addPath(
                 new BezierCurve(
-                    new Pose(128.000, 57.500),
+                    new Pose(128.000, 56.500),
                     new Pose(99.572, 66.008),
                     new Pose(90.000, 84.000)
                 )
@@ -315,7 +315,7 @@ public class Paths {
                         new BezierLine(
                                 new Pose(84.000, 84.000),
 
-                                new Pose(124.000, 84.000)
+                                new Pose(121.000, 84.000)
                         )
                 ).setConstantHeadingInterpolation(Math.toRadians(0))
 
@@ -328,7 +328,7 @@ public class Paths {
     public PathChain getRedCloseReturnFromFirstMark() {
         redCloseReturnFromFirstMark = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(124.000, 84.000),
+                                new Pose(121.000, 84.000),
 
                                 new Pose(84.000, 84.000)
                         )
@@ -438,7 +438,7 @@ public class Paths {
                 new BezierCurve(
                     new Pose(90.000, 84.000),
                     new Pose(78.000, 30.000),
-                    new Pose(128.000, 33.500)
+                    new Pose(124.000, 33.500)
                 )
             ).setConstantHeadingInterpolation(Math.toRadians(0))
 
@@ -451,7 +451,7 @@ public class Paths {
     public PathChain getRedCloseReturnFromThirdMark() {
         redCloseReturnFromThirdMark = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(128.000, 33.5),
+                                new Pose(124.000, 33.5),
                                 new Pose(90.000, 84.000)
                         )
                 ).setConstantHeadingInterpolation(Math.toRadians(0))

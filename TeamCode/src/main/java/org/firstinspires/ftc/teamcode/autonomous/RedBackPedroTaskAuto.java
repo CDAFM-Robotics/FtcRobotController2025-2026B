@@ -7,20 +7,24 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.util.TelemetrySelector;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import org.firstinspires.ftc.teamcode.pedropathing.commands.Paths;
 import org.firstinspires.ftc.teamcode.tasks.DeadlineTask;
 import org.firstinspires.ftc.teamcode.tasks.FollowPathTask;
 import org.firstinspires.ftc.teamcode.tasks.HoldPointTask;
 import org.firstinspires.ftc.teamcode.tasks.InstantTask;
+import org.firstinspires.ftc.teamcode.tasks.NullTask;
 import org.firstinspires.ftc.teamcode.tasks.ParallelTask;
 import org.firstinspires.ftc.teamcode.tasks.RepeatTask;
 import org.firstinspires.ftc.teamcode.tasks.SequentialTask;
 import org.firstinspires.ftc.teamcode.tasks.SleepTask;
+import org.firstinspires.ftc.teamcode.tasks.Task;
 import org.firstinspires.ftc.teamcode.tasks.TaskMaster;
 
 @Autonomous(name = "Red Back", group = "0Competition")
@@ -32,6 +36,8 @@ public class RedBackPedroTaskAuto extends OpMode {
 
     Paths paths;
     AutoTaskMaker taskMaker;
+
+    TelemetrySelector telemetrySelector;
 
     @Override
     public void init() {
@@ -47,19 +53,62 @@ public class RedBackPedroTaskAuto extends OpMode {
 
         taskMaker = new AutoTaskMaker(robot, follower);
 
-        taskMaster = new TaskMaster(new SequentialTask(
-            new DeadlineTask(
-                new SleepTask(27000),
-                new SequentialTask(
-                    taskMaker.runShootSequenceTask(new Pose(84, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED),
-                    taskMaker.runPickupSequenceTask(paths.getRedFarPickupThirdMark(), paths.getRedFarReturnFromThirdMark(), 500, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
-                    new RepeatTask(() -> new SequentialTask(
-                        taskMaker.runShootSequenceTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED),
-                        taskMaker.runPickupSequenceTask(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE)
-                    ))
-                )
-            ),
-            new ParallelTask(
+        telemetrySelector = new TelemetrySelector(telemetry);
+
+        telemetrySelector.addLine("Third Mark", 2);
+        telemetrySelector.addLine("Second Mark", 2);
+        telemetrySelector.addLine("Loading Zone", 2);
+        telemetrySelector.addLine("Loading Zone Repeat", 2);
+    }
+
+    private Gamepad currentGamepad1 = new Gamepad();
+    private Gamepad previousGamepad1 = new Gamepad();
+
+    @Override
+    public void init_loop() {
+        previousGamepad1.copy(currentGamepad1);
+        currentGamepad1.copy(gamepad1);
+
+        telemetrySelector.setInput(currentGamepad1.dpad_up && !previousGamepad1.dpad_up, currentGamepad1.dpad_down && !previousGamepad1.dpad_down, currentGamepad1.dpad_right && !previousGamepad1.dpad_right, currentGamepad1.dpad_left && !previousGamepad1.dpad_right);
+        telemetrySelector.update();
+    }
+
+    @Override
+    public void start() {
+
+        Task autoTask = new NullTask();
+
+        autoTask = autoTask.append(taskMaker.runShootSequenceTask(new Pose(84, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED));
+
+
+        if (telemetrySelector.getBool(0)) {
+            autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedFarPickupThirdMark(), paths.getRedFarReturnFromThirdMark(), 500, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE))
+                .append(taskMaker.runShootSequenceTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED));
+        }
+        if (telemetrySelector.getBool(1)) {
+
+        }
+        if (telemetrySelector.getBool(3)) {
+            autoTask = autoTask.append(new RepeatTask(() -> new SequentialTask(
+                taskMaker.runPickupSequenceTask(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
+                taskMaker.runShootSequenceTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED)
+            )));
+        }
+        else {
+            if (telemetrySelector.getBool(2)) {
+                autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE))
+                    .append(taskMaker.runShootSequenceTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED));
+            }
+
+            autoTask = autoTask.append(new ParallelTask(
+                taskMaker.setLauncherMotorVelocityTask(0),
+                taskMaker.stopIntakeTask(),
+                new InstantTask(() -> robot.getLauncher().setTurretPower0())
+            ));
+        }
+
+        autoTask = autoTask.addDeadline(new SleepTask(27000))
+            .append(new ParallelTask(
                 new SequentialTask(
                     new FollowPathTask(follower, follower.pathBuilder()
                         .addPath(new BezierLine(follower.getPose(), new Pose(108, 36))).setConstantHeadingInterpolation(Math.toRadians(0))
@@ -69,9 +118,11 @@ public class RedBackPedroTaskAuto extends OpMode {
                 ),
                 taskMaker.setLauncherMotorVelocityTask(0),
                 taskMaker.stopIntakeTask(),
-                new InstantTask(() -> robot.getLauncher().setTurretPower0())
-            )
-        ));
+                taskMaker.stopTurretTask()
+            ));
+
+
+        taskMaster = new TaskMaster(autoTask);
     }
 
     @Override
