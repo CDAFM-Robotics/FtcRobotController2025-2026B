@@ -13,7 +13,7 @@ public class RobotStaticValuesClass {
         UNKNOW
     }
 
-    // Static variables persist between OpModes
+    // Static variablSes persist between OpModes
     public static boolean autoCompleted = false;
     public static boolean teleOpCompleted = false;
     public static Pose2D savedPose = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0);
