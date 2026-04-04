@@ -708,14 +708,19 @@ public class Indexer {
         debugManager.spindexer("isBallAtIntakeFast colorSensorIntakeL", "%.2f", dis1);
         debugManager.spindexer("isBallAtIntakeFast colorSensorIntakeR", "%.2f", dis2);
         debugManager.log("intake ball at %.2f, %.2f", dis1, dis2);
+        ArtifactColor color = getPredictedColor(
+            colorSensorIntakeL.getColors(),
+            colorSensorIntakeR.getColors(),
+            dis1,
+            dis2);
 
         if (dis1 < 3.5 || dis2 < 3.5) {
                 if (position == POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE)
-                    artifactColorArray[0] = ArtifactColor.UNKNOWN;
+                    artifactColorArray[0] = color;
                 else if (position == POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE)
-                    artifactColorArray[1] = ArtifactColor.UNKNOWN;
+                    artifactColorArray[1] = color;
                 else if (position == POSITION_INDEXER_SERVO_SLOT_TWO_INTAKE)
-                    artifactColorArray[2] = ArtifactColor.UNKNOWN;
+                    artifactColorArray[2] = color;
 //           debugManager.log("intake ball at %.2f color %s %s %s",
 //               position,
 //               artifactColorArray[0],

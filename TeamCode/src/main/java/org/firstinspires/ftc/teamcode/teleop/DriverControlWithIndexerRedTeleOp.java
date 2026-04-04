@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
+import androidx.annotation.NonNull;
+
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.field.Style;
 import com.bylazar.telemetry.PanelsTelemetry;
@@ -175,14 +177,10 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
                 // Disabled the driver's ability to reset robot heading
                 // since we are keeping the heading from autonomous
-                if (currentGamepad1.start && !previousGamepad1.start){
-                    // robot.getDriveBase().resetIMU();
-                    // gamepad1.rumble(300);
-
-                    // TODO test flip the turret
-//                    robot.getLauncher().flipTurret = !robot.getLauncher().flipTurret;
-//                    RobotLog.d("flipTurret %s", robot.getLauncher().flipTurret);
-                }
+//            if (currentGamepad1.start && !previousGamepad1.start){
+//                robot.getDriveBase().resetIMU();
+//                gamepad1.rumble(300);
+//            }
 
                 if (currentGamepad1.right_bumper != previousGamepad1.right_bumper) {
                     driveSpeed = driveSpeed == 1 ? 0.5 : 1;
@@ -413,9 +411,9 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                             // Read back right
                             robot.getIndexer().updateBallColorAtBackR(robot.getIndexer().getIndexerPosition());
                         } else if (loopCount % READ_EVERY_N_LOOPS == 3) {
+                            colorConfirmed = robot.getIndexer().confirmColorMatch();
                             if (robot.getIndexer().countArtifacts() == 3) {
                                 //turn to output
-                                colorConfirmed = robot.getIndexer().confirmColorMatch();
                                 if (colorConfirmed)
                                     robot.getIndexer().positionForOuttake();
                             }
@@ -490,6 +488,6 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES),
             RobotStaticValuesClass.turretAngleOffset, RobotStaticValuesClass.savedOblisk,
             robot.getLauncher().getCurrentAngleOffset());
-
     }
+
 }
