@@ -115,7 +115,7 @@ public class Launcher {
     public static final double LAUNCH_VELOCITY_FULL= 2200;
     public static final double LAUNCH_VELOCITY_LOW= 1060;   // TODO find lowest valuable power and set this
 
-    public static final double ELEVATOR_SAFE = 162.512; //50.785; (1/8 of one cycle
+    public static final double ELEVATOR_SAFE = 81.256; //50.785; (1/8 of one cycle)
     //rotate autoaim PID Constants
     private double rotateIntegralSum = 0.0;
     public static double rotateKp = 0.1;
@@ -671,12 +671,13 @@ public class Launcher {
             if (elevatorEncoderPosition >= elevatorTarget) {
                 runElevator = false;
                 elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                elevatorMotor.setPower(0.2);  // lower hold power prevents oscillation while still holding against gravity
             }
         }
         else {
             elevatorMotor.setTargetPosition((int) Math.round(elevatorTarget));
         }
-        // RobotLog.d ("Elevator: pos: %d, vel: %.2f, launcher: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorMotor.getVelocity(), launcherMotor1.getVelocity(), launcherVelocity);
+        RobotLog.d ("Elevator: pos: %d, target position, vel: %.2f, launcher: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorTarget, elevatorMotor.getVelocity(), launcherMotor1.getVelocity(), launcherVelocity);
     }
 
     public DcMotorEx getElevatorMotor() {
