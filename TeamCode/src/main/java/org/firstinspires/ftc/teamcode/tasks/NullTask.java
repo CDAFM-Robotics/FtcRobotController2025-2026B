@@ -4,9 +4,7 @@ import androidx.annotation.NonNull;
 
 public class NullTask extends Task{
     @Override
-    public void init() {
-
-    }
+    public void init() {}
 
     @Override
     public boolean run() {

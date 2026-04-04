@@ -540,16 +540,16 @@ public class Robot {
         pinPointHeading = normalizeAngle(pinPointHeading);
         double robotHeading = Math.toDegrees(pinPointHeading);
 
-        double tx = robotX - Math.sin(pinPointHeading) * TURRET_OFFSET;
-        double ty = robotY - Math.cos(pinPointHeading) * TURRET_OFFSET;
+        double tx = robotX - Math.cos(pinPointHeading) * TURRET_OFFSET;
+        double ty = robotY - Math.sin(pinPointHeading) * TURRET_OFFSET;
 
         //calculate the relative angle of the turret to the robot
         double goalX;
         double goalY;
         // coordinates of the blue goal
         if (isRedSide) {
-            goalX = RED_X;
-            goalY = RED_Y;
+            goalX = RED_X + 1;
+            goalY = RED_Y + 2; //TODO total hack!
         }
         else {
             goalX = BLUE_X;

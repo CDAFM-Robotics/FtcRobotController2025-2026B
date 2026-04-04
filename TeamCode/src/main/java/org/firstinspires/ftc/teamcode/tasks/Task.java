@@ -10,4 +10,20 @@ public abstract class Task {
 
     @NonNull
     abstract public String toString();
+
+    public Task append(Task toAppend) {
+        return new SequentialTask(this, toAppend);
+    }
+
+    public Task with(Task runWith) {
+        return new ParallelTask(this, runWith);
+    }
+
+    public Task addDeadline(Task deadline) {
+        return new DeadlineTask(deadline, this);
+    }
+
+    public Task raceWith(Task race) {
+        return new RaceTask(this, race);
+    }
 }
