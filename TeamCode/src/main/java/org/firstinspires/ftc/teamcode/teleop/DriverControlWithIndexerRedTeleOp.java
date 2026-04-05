@@ -40,6 +40,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     private int loopCount = 0;
     private static final int READ_EVERY_N_LOOPS = 20;
     private boolean colorConfirmed = false;
+    private ElapsedTime LoopTime = new ElapsedTime();
 
     private LLResult result;
 
@@ -113,6 +114,9 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
         try {
             while (opModeIsActive()) {
+                LoopTime.reset();
+
+
 
                 // first loop check the saved pos from auto or last teleOp
                 if (firstLoop) {
@@ -149,17 +153,15 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                     firstLoop = false;
                 }
 
+                // TODO LOCALIZATION UPDATE
+                // Get april tags
+                result = robot.getLauncher().getLimeLight().getLatestResult();
+                robot.getDriveBase().correctHeadingFromVision(result, robot);
 
-                if (robot.enableDriftCorrection) {
-                    // TODO LOCALIZATION UPDATE
-                    // Get april tags
-                    result = robot.getLauncher().getLimeLight().getLatestResult();
-                    robot.getDriveBase().correctHeadingFromVision(result, robot);
+                // set PINPOINT HEADING once per loop to LL for good MT2 reads
+                robot.getLauncher().getLimeLight().updateRobotOrientation(robot.getDriveBase().pinpoint.getHeading(AngleUnit.DEGREES));
+                robot.getDriveBase().correctPositionFromVision(result, robot);
 
-                    // set PINPOINT HEADING once per loop to LL for good MT2 reads
-                    robot.getLauncher().getLimeLight().updateRobotOrientation(robot.getDriveBase().pinpoint.getHeading(AngleUnit.DEGREES));
-                    robot.getDriveBase().correctPositionFromVision(result, robot);
-                }
 
                 previousGamepad1.copy(currentGamepad1);
                 previousGamepad2.copy(currentGamepad2);
@@ -168,7 +170,8 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
                 // Driving controls for the robot
                 if (currentGamepad1.left_stick_button && !previousGamepad1.left_stick_button) {
-                    driveSpeed = driveSpeed == 1 ? 0.5 : 1;
+                    // TODO Disabling slow mode toggle on left stick 4Apr26 (too sensitive)
+                    // driveSpeed = driveSpeed == 1 ? 0.5 : 1;
                 }
 
                 if (currentGamepad1.back && !previousGamepad1.back) {
@@ -432,6 +435,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 // if (loopCount%READ_EVERY_N_LOOPS == 4) {
                     hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1], robot.getIndexer().artifactColorArray[2]);
                     hud.UpdateBallUI();
+                    // hud.update(); // New  hudUpdate 1 ball per loop max
                 // }
 
                 // TODO Add timing Log at end of loop
@@ -449,8 +453,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 //             }
                 debugManager.update();
 
-                // TODO add panels telem
-                telemetryM.update();
+
 
                 // TODO update drawing in panels
                 try {
@@ -469,7 +472,13 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                     throw new RuntimeException("Drawing failed" + e);
                 }
 
-            }
+                double lastLoopTime = LoopTime.milliseconds();
+                telemetryM.addData("LoopTime", lastLoopTime);
+                RobotLog.d("LoopTime %.4f", lastLoopTime);
+
+                // TODO add panels telem
+                telemetryM.update();
+            } // end While Opmode
         }
         finally {
             finalSave();
