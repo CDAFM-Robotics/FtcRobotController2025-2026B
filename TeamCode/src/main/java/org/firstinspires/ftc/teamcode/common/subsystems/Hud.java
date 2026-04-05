@@ -6,8 +6,10 @@ import androidx.annotation.ColorInt;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.common.util.QwiicLEDStick;
 
@@ -25,6 +27,16 @@ public class Hud {
 
     // ColorTable2 is the possible COLORS for 2025-2026 Decode
     public enum ColorTable {PURPLE, GREEN, NONE, RED, WHITE}
+
+    public enum HudUpdateState {
+        INIT,
+        BALL1,
+        BALL2,
+        BALL3,
+        READY_TO_UPDATE
+    }
+
+    HudUpdateState hudState = HudUpdateState.INIT;
 
     // instance vars to hold Ball colors (2025-2026 Decode)
     public ColorTable ball1= ColorTable.NONE, last1 = ColorTable.NONE;
@@ -126,6 +138,65 @@ public class Hud {
 
     }
 
+    // TODO Hud.update() will run a continuous state machine that only updates one ball per loop
+    // spreading the long running update tasks across multiple control loops
+    public void update()
+    {
+        switch (hudState) {
+            case INIT:
+                RobotLog.d("HUD STATE: INIT");
+                hudState = HudUpdateState.BALL1;
+            case BALL1:
+                if (ball1 != last1) {
+                    last1 = ball1;
+                    RobotLog.d("HUD STATE: BALL1 Update LED %s", Balls[ball1.ordinal()]);
+                    ledstripRear.setColor(0, Balls[ball1.ordinal()]);
+                    sleep(ms_delay);
+                    ledstripRear.setColor(1, Balls[ball1.ordinal()]);
+                    sleep(ms_delay);
+                    ledstripRear.setColor(2, Balls[ball1.ordinal()]);
+                    sleep(ms_delay);
+                    hudState = HudUpdateState.BALL2;
+                    break;
+                }
+                    hudState = HudUpdateState.BALL2;
+            case BALL2:
+                if (ball2 != last2) {
+                    RobotLog.d("HUD STATE: BALL2 Update LED %s", Balls[ball2.ordinal()]);
+                    last2 = ball2;
+                    // Ball2
+                    ledstripRear.setColor(3, Balls[ball2.ordinal()]);
+                    sleep(ms_delay);
+                    ledstripRear.setColor(4, Balls[ball2.ordinal()]);
+                    sleep(ms_delay);
+                    ledstripRear.setColor(5, Balls[ball2.ordinal()]);
+                    sleep(ms_delay);
+                    hudState = HudUpdateState.BALL3;
+                    break;
+                }
+                hudState = HudUpdateState.BALL3;
+            case BALL3:
+                if (ball3 != last3) {
+                    RobotLog.d("HUD STATE: BALL3 Update LED %s", Balls[ball3.ordinal()]);
+                    last3 = ball3;
+                    ledstripRear.setColor(6, Balls[ball3.ordinal()]);
+                    sleep(ms_delay);
+                    ledstripRear.setColor(7, Balls[ball3.ordinal()]);
+                    sleep(ms_delay);
+                    ledstripRear.setColor(8, Balls[ball3.ordinal()]);
+                    sleep(ms_delay);
+
+                    if (aimLED != lastAimLED) {
+                        lastAimLED = aimLED;
+                        ledstripRear.setColor(9, Balls[aimLED.ordinal()]);
+                        sleep(ms_delay);
+                    }
+                    hudState = HudUpdateState.BALL1;
+                    break;
+                }
+                hudState = HudUpdateState.BALL1;
+        }
+    }
 
     // This is the older UpdateUI routine (no longer used). kept here to show how to address individual
     // LED colors and the associated delay between I2C messages to prevent confusing the LED stick

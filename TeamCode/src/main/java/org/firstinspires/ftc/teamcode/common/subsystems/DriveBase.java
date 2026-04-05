@@ -377,7 +377,9 @@ public class DriveBase {
             double correctedHeadingDegs = robot.normalizeAngle(imuHeading + error);
             // RobotLog.d("DRIFT unormHeading: %.2f newHeading: %.2f",getHeading(),correctedHeadingDegs);
             // TODO Update Pinpoint with Adjusted MT1 Heading (only)
-            pinpoint.setHeading(correctedHeadingDegs, AngleUnit.DEGREES);
+            if (robot.enableDriftCorrection) {
+                pinpoint.setHeading(correctedHeadingDegs, AngleUnit.DEGREES);
+            }
         }
 
     }
@@ -408,13 +410,15 @@ public class DriveBase {
                 //pr = correctedHeadingDegs;
 
                 // TODO Update Pinpoint with Drifted X,Y
-                pinpoint.setPosX(px, DistanceUnit.INCH);
-                pinpoint.setPosY(py, DistanceUnit.INCH);
-                // setPinPointPose(new Pose2D(DistanceUnit.INCH, px, py, AngleUnit.DEGREES, pr));
+                if (robot.enableDriftCorrection) {
+                    pinpoint.setPosX(px, DistanceUnit.INCH);
+                    pinpoint.setPosY(py, DistanceUnit.INCH);
+                    // setPinPointPose(new Pose2D(DistanceUnit.INCH, px, py, AngleUnit.DEGREES, pr));
 //                RobotLog.d("DRIFTED Pn:%.2f,%.2f,%.2f Po:%.2f,%.2f,%.2f", px, py, pr,
 //                        getPinPointPosX(),
 //                        getPinPointPosY(),
 //                        AngleUnit.RADIANS.toDegrees(getPinPointHeading()));
+                }
             }
         }
     }
