@@ -388,7 +388,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 telemetryM.addData("elevatorVel", robot.getLauncher().getElevatorMotor().getVelocity());
                 telemetryM.addData("elevatorTarget", robot.getLauncher().getElevatorMotor().getTargetPosition());
                 // RobotLog.d("Angles currentAngle: %.2f currentAngleOffset: %.2f", robot.getLauncher().getTurretDegrees() ,robot.getLauncher().getCurrentAngleOffset() );
-                RobotLog.d ("Elevator: elevPos: %d, eleVel: %.2f, launcherVel: %.2f, spinPos: %.2f", robot.getLauncher().getElevatorMotor().getCurrentPosition(), robot.getLauncher().getElevatorMotor().getVelocity(), robot.getLauncher().getLauncherVelocity(), robot.getIndexer().getAxonServoPosition());
+                //RobotLog.d ("Elevator: elevPos: %d, eleVel: %.2f, launcherVel: %.2f, spinPos: %.2f", robot.getLauncher().getElevatorMotor().getCurrentPosition(), robot.getLauncher().getElevatorMotor().getVelocity(), robot.getLauncher().getLauncherVelocity(), robot.getIndexer().getAxonServoPosition());
 
                 debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
 

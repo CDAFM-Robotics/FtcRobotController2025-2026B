@@ -653,6 +653,9 @@ public class Launcher {
     double elevatorTarget = 0;
 
     double ticksPerElevate = 78.4;
+    public static double ELEVATOR_COAST_TICKS  = 160;  // safe coast window past target (406.28 → 606.28)
+    public static double ELEVATOR_RETURN_POWER = 0.5;  // RUN_TO_POSITION power to return to target quickly
+    public static double ELEVATOR_BRAKE_POWER  = 0.5;  // emergency reverse power if kicker reaches danger zone
 
 
     public void elevateBall() {
@@ -666,18 +669,26 @@ public class Launcher {
 
     public void updateElevator() {
         if (runElevator) {
-            elevatorMotor.setPower(1);
             elevatorEncoderPosition = elevatorMotor.getCurrentPosition();
-            if (elevatorEncoderPosition >= elevatorTarget) {
+            double overshot = elevatorEncoderPosition - elevatorTarget;  // positive once past target
+
+            if (overshot < 0) {
+                // Full power kick zone: 0 → 406.28
+                elevatorMotor.setPower(1);
+            } else if (overshot < ELEVATOR_COAST_TICKS) {
+                // Crossed target — immediately hand off to RUN_TO_POSITION to return without delay
                 runElevator = false;
                 elevatorMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                elevatorMotor.setPower(0.2);  // lower hold power prevents oscillation while still holding against gravity
+                elevatorMotor.setPower(ELEVATOR_RETURN_POWER);
+            } else {
+                // Danger zone: 606.28+ — emergency reverse brake to protect the indexer plate
+                elevatorMotor.setPower(-ELEVATOR_BRAKE_POWER);
             }
         }
         else {
             elevatorMotor.setTargetPosition((int) Math.round(elevatorTarget));
         }
-        RobotLog.d ("Elevator: pos: %d, target position, vel: %.2f, launcher: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorTarget, elevatorMotor.getVelocity(), launcherMotor1.getVelocity(), launcherVelocity);
+        //RobotLog.d ("Elevator: pos: %d, target position, vel: %.2f, launcher: %.2f, target: %.2f", elevatorMotor.getCurrentPosition(), elevatorTarget, elevatorMotor.getVelocity(), launcherMotor1.getVelocity(), launcherVelocity);
     }
 
     public DcMotorEx getElevatorMotor() {
@@ -1022,7 +1033,7 @@ public class Launcher {
 
 
         // Logging
-        RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
+        //RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
         // Set last variables for next loop
 
         lastAngle = currentAngle;
