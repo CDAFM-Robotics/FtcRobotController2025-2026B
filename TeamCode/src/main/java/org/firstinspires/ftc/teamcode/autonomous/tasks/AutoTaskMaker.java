@@ -7,10 +7,13 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
 import org.firstinspires.ftc.teamcode.common.subsystems.Launcher;
+import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.tasks.BasicTask;
 import org.firstinspires.ftc.teamcode.tasks.DeadlineTask;
+import org.firstinspires.ftc.teamcode.tasks.DeferredTask;
 import org.firstinspires.ftc.teamcode.tasks.FollowPathTask;
 import org.firstinspires.ftc.teamcode.tasks.HoldPointTask;
 import org.firstinspires.ftc.teamcode.tasks.InstantTask;
@@ -255,6 +258,95 @@ public class AutoTaskMaker {
             ),
             setLauncherToGoalTask()
         );
+    }
+
+    /**
+     * Builds the shoot order at runtime after the obelisk has been detected.
+     * The Supplier reads RobotStaticValuesClass.savedObelisk and the indexer colors
+     * when init() is called — not at construction time.
+     */
+    public Task runShootSequenceForObeliskTask(Pose hold, Side side, Team team) {
+        return new DeferredTask(() -> {
+            RobotStaticValuesClass.Obelisk obelisk = RobotStaticValuesClass.savedObelisk;
+
+            // Determine where the green ball needs to go in the shoot order
+            // GPP = green 1st, PGP = green 2nd, PPG = green 3rd
+            int greenPosition;
+            switch (obelisk) {
+                case GPP: greenPosition = 0; break;
+                case PGP: greenPosition = 1; break;
+                case PPG: greenPosition = 2; break;
+                default:  greenPosition = -1; break; // UNKNOWN — use default order
+            }
+
+            // Default shoot order: 0 → 2 → 1
+            int[] shootOrder = {0, 2, 1};
+
+            if (greenPosition >= 0) {
+                // Find which slot has the green ball
+                ArtifactColor[] colors = robot.getIndexer().artifactColorArray;
+                int greenSlot = -1;
+                for (int i = 0; i < colors.length; i++) {
+                    if (colors[i] == ArtifactColor.GREEN) {
+                        greenSlot = i;
+                        break;
+                    }
+                }
+
+                if (greenSlot >= 0) {
+                    // Remove greenSlot from default order, insert at greenPosition
+                    int[] nonGreen = new int[2];
+                    int idx = 0;
+                    for (int s : shootOrder) {
+                        if (s != greenSlot) {
+                            nonGreen[idx++] = s;
+                        }
+                    }
+                    shootOrder = new int[3];
+                    int ni = 0;
+                    for (int i = 0; i < 3; i++) {
+                        if (i == greenPosition) {
+                            shootOrder[i] = greenSlot;
+                        } else {
+                            shootOrder[i] = nonGreen[ni++];
+                        }
+                    }
+                }
+            }
+
+            RobotLog.d("Deferred shoot order for obelisk %s: %d → %d → %d",
+                obelisk, shootOrder[0], shootOrder[1], shootOrder[2]);
+
+            int slot0 = shootOrder[0];
+            int slot1 = shootOrder[1];
+            int slot2 = shootOrder[2];
+
+            return new DeadlineTask(
+                new SequentialTask(
+                    logTask("Task: RunShootSequenceTask obelisk=" + obelisk),
+                    stopIntakeTask(),
+                    new HoldPointTask(follower, hold),
+                    new ParallelTask(
+                        side == Side.FAR ? setFarLauncherTask() : setCloseLauncherTask(),
+                        rotateIndexerOuttakeTask(slot0)
+                    ),
+                    logTask("Shoot Task: Index " + slot0),
+                    runElevatorTask(),
+                    logTask("Shoot Task: Shoot " + slot0),
+                    rotateIndexerOuttakeTask(slot1),
+                    logTask("Shoot Task: Index " + slot1),
+                    runElevatorTask(),
+                    logTask("Shoot Task: Shoot " + slot1),
+                    rotateIndexerOuttakeTask(slot2),
+                    logTask("Shoot Task: Index " + slot2),
+                    runElevatorTask(),
+                    logTask("Shoot Task: Shoot " + slot2),
+                    setLauncherMotorVelocityTask(0)
+                ),
+                setLauncherToGoalTask(),
+                logTask("Task: End of Shoot Sequence")
+            );
+        });
     }
 
     public Task runShootSequenceTask(Pose hold, Side side, Team team) {
