@@ -259,6 +259,14 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
                 // TODO: When indexer stuck or out of alignment, recover the color of the balls
 
+                // Flip turret 180°: X = +360 servo offset, Y = -360 servo offset
+                if (currentGamepad1.x && !previousGamepad1.x) {
+                    robot.getLauncher().currentAngleOffset += 360;
+                }
+                if (currentGamepad1.y && !previousGamepad1.y) {
+                    robot.getLauncher().currentAngleOffset -= 360;
+                }
+
                 // Launcher
                 if (currentGamepad2.x && !previousGamepad2.x) {
                     robot.getLauncher().toggleLauncher();
