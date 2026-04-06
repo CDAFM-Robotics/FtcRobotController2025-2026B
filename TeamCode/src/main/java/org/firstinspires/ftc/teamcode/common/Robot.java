@@ -19,6 +19,9 @@ import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.qualcomm.hardware.lynx.LynxModule;
+
+import java.util.List;
 import java.util.LinkedList;
 
 @Configurable
@@ -31,6 +34,7 @@ public class Robot {
     private Intake intake;
     private Hud hud;
     private Limelight3A limelight;
+    private List<LynxModule> allHubs;
 
     private ElapsedTime timeSinceIndex = new ElapsedTime();
     private ElapsedTime timeSinceKick = new ElapsedTime();
@@ -105,6 +109,12 @@ public class Robot {
         this.intake = new Intake(this.hardwareMap, this.telemetry);
         //this.hud = new Hud(this.hardwareMap, this.telemetry);
 
+        // Enable bulk caching AFTER all subsystems init so their init loops get live reads
+        allHubs = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allHubs) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
+        }
+
 //        limelight = hardwareMap.get(Limelight3A.class, "limelight");
 //        limelight.pipelineSwitch(7);
 
@@ -114,6 +124,13 @@ public class Robot {
         // Distances in cm, velocities as motor power (0.0 to 1.0)
         // Example values:
 
+    }
+
+    /** Call once at the top of every OpMode loop to refresh the bulk-read cache. */
+    public void clearBulkCache() {
+        for (LynxModule hub : allHubs) {
+            hub.clearBulkCache();
+        }
     }
 
     public enum AutoIntakeState {

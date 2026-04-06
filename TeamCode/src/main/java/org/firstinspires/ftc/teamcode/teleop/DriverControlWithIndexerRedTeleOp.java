@@ -115,6 +115,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         try {
             while (opModeIsActive()) {
                 LoopTime.reset();
+                robot.clearBulkCache();
 
 
 
