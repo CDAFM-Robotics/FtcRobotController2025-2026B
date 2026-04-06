@@ -280,14 +280,14 @@ public class BlueBackPedroPathingAuto extends OpMode {
 
         // if (!staticDataSaved){
             if (motif[0]==ArtifactColor.PURPLE && motif[1]==ArtifactColor.GREEN && motif[2]==ArtifactColor.PURPLE){
-                RobotStaticValuesClass.savedOblisk =    RobotStaticValuesClass.Oblisk.PGP;
+                RobotStaticValuesClass.savedObelisk =    RobotStaticValuesClass.Obelisk.PGP;
             }
             else if (motif[0]==ArtifactColor.PURPLE && motif[1]==ArtifactColor.PURPLE && motif[2]==ArtifactColor.GREEN){
-                RobotStaticValuesClass.savedOblisk =    RobotStaticValuesClass.Oblisk.PPG;
+                RobotStaticValuesClass.savedObelisk =    RobotStaticValuesClass.Obelisk.PPG;
             }
             else
             {
-                RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.GPP;
+                RobotStaticValuesClass.savedObelisk = RobotStaticValuesClass.Obelisk.GPP;
             }
             RobotStaticValuesClass.autoCompleted = true;
             staticDataSaved = true;

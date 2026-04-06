@@ -22,9 +22,10 @@ public class RSD extends LinearOpMode {
             telemetry.addLine("");
             telemetry.addData("auto", "%s", RobotStaticValuesClass.autoCompleted);
             telemetry.addData("tele", "%s", RobotStaticValuesClass.teleOpCompleted);
-            telemetry.addData("p", "%s", RobotStaticValuesClass.savedPose);
+            telemetry.addData("X", "%s", RobotStaticValuesClass.savedPose.getX(DistanceUnit.INCH));
+            telemetry.addData("Y", "%s", RobotStaticValuesClass.savedPose.getY(DistanceUnit.INCH));
             telemetry.addData("turretAngleOffset", "%.2f", RobotStaticValuesClass.turretAngleOffset);
-            telemetry.addData("obelisk", "%s", RobotStaticValuesClass.savedOblisk);
+            telemetry.addData("obelisk", "%s", RobotStaticValuesClass.savedObelisk);
 
             telemetry.update();
 
@@ -36,14 +37,14 @@ public class RSD extends LinearOpMode {
             RobotStaticValuesClass.autoCompleted=false;
             RobotStaticValuesClass.teleOpCompleted=false;
             RobotStaticValuesClass.savedPose = new Pose2D(DistanceUnit.INCH, 0, 0, AngleUnit.RADIANS, 0);
-            RobotStaticValuesClass.savedOblisk = RobotStaticValuesClass.Oblisk.UNKNOW;
+            RobotStaticValuesClass.savedObelisk = RobotStaticValuesClass.Obelisk.UNKNOWN;
             RobotStaticValuesClass.turretAngleOffset = 0.0;
 
             telemetry.addData("auto", "%s", RobotStaticValuesClass.autoCompleted);
             telemetry.addData("tele", "%s", RobotStaticValuesClass.teleOpCompleted);
             telemetry.addData("p", "%s", RobotStaticValuesClass.savedPose);
             telemetry.addData("turretAngleOffset", "$.2f", RobotStaticValuesClass.turretAngleOffset);
-            telemetry.addData("obelisk", "%s", RobotStaticValuesClass.savedOblisk);
+            telemetry.addData("obelisk", "%s", RobotStaticValuesClass.savedObelisk);
 
             telemetry.update();
         }

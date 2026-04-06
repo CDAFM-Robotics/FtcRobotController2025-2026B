@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -9,8 +10,12 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.TelemetrySelector;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
@@ -96,12 +101,12 @@ public class BlueFrontPedroTaskAuto extends OpMode {
 
         if (telemetrySelector.getBool(0)) {
             if (telemetrySelector.getBool(1)) {
-
+                autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMarkHitGate(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
             }
             else {
-                autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE))
-                    .append(taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
+                autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
             }
+            autoTask = autoTask.append(taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
         }
 
         if (telemetrySelector.getBool(2)) {
@@ -132,25 +137,35 @@ public class BlueFrontPedroTaskAuto extends OpMode {
                 taskMaker.stopTurretTask()
             ));
 
-        RobotLog.d("Task: " + autoTask.toString());
-
 
         taskMaster = new TaskMaster(autoTask);
     }
 
     @Override
     public void loop() {
-        taskMaster.update();
+        try {
 
-        robot.getLauncher().updateElevator();
+            taskMaster.update();
 
-        if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
-            ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+            robot.getLauncher().updateElevator();
+
+            if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
+                ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+            }
+
+            follower.update();
+            telemetry.addData("Status", taskMaster.getStatus());
+
+            telemetry.update();
         }
-
-        follower.update();
-        telemetry.addData("Status", taskMaster.getStatus());
-
-        telemetry.update();
+        finally {
+            RobotStaticValuesClass.autoCompleted = true;
+            Pose ftcPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(follower.getPose());
+            RobotStaticValuesClass.saveState(
+                new Pose2D(DistanceUnit.INCH, ftcPose.getX(), ftcPose.getY(), AngleUnit.RADIANS, ftcPose.getHeading()),
+                robot.getLauncher().getLastAngleOffset(),
+                RobotStaticValuesClass.Obelisk.GPP
+            );
+        }
     }
 }

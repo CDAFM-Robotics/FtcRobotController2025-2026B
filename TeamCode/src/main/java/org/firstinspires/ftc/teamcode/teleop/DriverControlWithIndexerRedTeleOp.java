@@ -18,7 +18,6 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Hud;
@@ -48,7 +47,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     static TelemetryManager telemetryM;
 
 
-    RobotStaticValuesClass.Oblisk oblisk = RobotStaticValuesClass.Oblisk.UNKNOW;
+    RobotStaticValuesClass.Obelisk obelisk = RobotStaticValuesClass.Obelisk.UNKNOWN;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -125,7 +124,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                     debugManager.log("autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, turretoffset: %.2f, oblisk: %s",
                         RobotStaticValuesClass.autoCompleted, RobotStaticValuesClass.teleOpCompleted,
                         RobotStaticValuesClass.savedPose.getX(DistanceUnit.MM), RobotStaticValuesClass.savedPose.getY(DistanceUnit.MM),
-                        RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES), RobotStaticValuesClass.turretAngleOffset, RobotStaticValuesClass.savedOblisk);
+                        RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES), RobotStaticValuesClass.turretAngleOffset, RobotStaticValuesClass.savedObelisk);
 
                     Pose2D startPose2D;
                     if (RobotStaticValuesClass.autoCompleted
@@ -133,7 +132,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                         // read the pos and current angle offset from auto
                         startPose2D = RobotStaticValuesClass.savedPose;
                         robot.getLauncher().setCurrentAngleOffset(RobotStaticValuesClass.turretAngleOffset);
-                        oblisk = RobotStaticValuesClass.savedOblisk;
+                        obelisk = RobotStaticValuesClass.savedObelisk;
                         RobotStaticValuesClass.autoCompleted = false;
                         RobotStaticValuesClass.teleOpCompleted = false;
                     } else if (isRedSide) {
@@ -498,13 +497,13 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     public void finalSave() {
         RobotStaticValuesClass.saveState(robot.getDriveBase().getPinPointPose(),
             robot.getLauncher().getLastAngleOffset(),
-            oblisk);
+            obelisk);
         RobotStaticValuesClass.teleOpCompleted = true;
         debugManager.log("finalSave autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, angleOffset: %.2f, oblisk: %s, currentTurretAngle: %.2f",
             RobotStaticValuesClass.autoCompleted, RobotStaticValuesClass.teleOpCompleted,
             RobotStaticValuesClass.savedPose.getX(DistanceUnit.MM), RobotStaticValuesClass.savedPose.getY(DistanceUnit.MM),
             RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES),
-            RobotStaticValuesClass.turretAngleOffset, RobotStaticValuesClass.savedOblisk,
+            RobotStaticValuesClass.turretAngleOffset, RobotStaticValuesClass.savedObelisk,
             robot.getLauncher().getCurrentAngleOffset());
     }
 

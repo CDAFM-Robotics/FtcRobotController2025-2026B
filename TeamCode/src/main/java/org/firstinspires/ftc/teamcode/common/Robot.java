@@ -6,7 +6,6 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.common.subsystems.DriveBase;
@@ -50,6 +49,10 @@ public class Robot {
     private boolean safeToStop = true; //if kicker is down
     public static boolean enableDriftCorrection = false; // use vision to correct pp drift in tele
     private boolean isRedSide = false;
+
+    public boolean isRedSide() {
+        return isRedSide;
+    }
 
 
     // PID targets for use in Auto
@@ -735,11 +738,11 @@ public class Robot {
     public void shootOrderMotif() {
         shootQueue.clear();
         launchStateKicker = LaunchBallKickerState.INIT;
-        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+        if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.GPP)
             targetPattern = TargetPattern.GPP;
-        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+        else if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.PGP)
             targetPattern = TargetPattern.PGP;
-        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+        else if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.PPG)
             targetPattern = TargetPattern.PPG;
 
         shootOrder();
@@ -748,11 +751,11 @@ public class Robot {
     public void shootOrderMotifOneOff() {
         shootQueue.clear();
         launchStateKicker = LaunchBallKickerState.INIT;
-        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+        if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.GPP)
             targetPattern = TargetPattern.PPG;
-        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+        else if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.PGP)
             targetPattern = TargetPattern.GPP;
-        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+        else if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.PPG)
             targetPattern = TargetPattern.PGP;
 
         shootOrder();
@@ -761,11 +764,11 @@ public class Robot {
     public void shootOrderMotifTwoOff() {
         shootQueue.clear();
         launchStateKicker = LaunchBallKickerState.INIT;
-        if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.GPP)
+        if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.GPP)
             targetPattern = TargetPattern.PGP;
-        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PGP)
+        else if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.PGP)
             targetPattern = TargetPattern.PPG;
-        else if (RobotStaticValuesClass.savedOblisk == RobotStaticValuesClass.Oblisk.PPG)
+        else if (RobotStaticValuesClass.savedObelisk == RobotStaticValuesClass.Obelisk.PPG)
             targetPattern = TargetPattern.GPP;
 
         shootOrder();

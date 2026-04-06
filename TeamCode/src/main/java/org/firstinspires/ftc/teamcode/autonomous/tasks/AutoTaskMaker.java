@@ -68,7 +68,7 @@ public class AutoTaskMaker {
     }
 
     public Task setCloseLauncherTask() {
-        return spinUpLauncherTask(1300);
+        return spinUpLauncherTask(1330);
     }
 
     public Task setTurretPositionTask(double angle) {
@@ -182,6 +182,11 @@ public class AutoTaskMaker {
 
     public Task waitUntilTurretAimedTask() {
         return new WaitUntilTask(() -> robot.getLauncher().getAutoTurretAimed());
+    }
+
+
+    public Task detectObeliskTask()  {
+        return new AprilTagTask(robot, robot.isRedSide());
     }
 
     public enum Side {

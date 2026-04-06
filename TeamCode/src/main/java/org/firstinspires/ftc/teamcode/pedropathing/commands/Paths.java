@@ -30,7 +30,8 @@ public class Paths {
     private PathChain redCloseReturnFromFirstMark;
     private PathChain blueClosePickupSecondMark;
     private PathChain redClosePickupSecondMark;
-    private PathChain blueCloseHitGate;
+    private PathChain blueCloseReturnFromSecondMarkHitGate;
+    private PathChain redCloseReturnFromSecondMarkHitGate;
     private PathChain blueCloseReturnFromSecondMark;
     private PathChain redCloseReturnFromSecondMark;
     private PathChain blueClosePickupThirdMark;
@@ -385,18 +386,48 @@ public class Paths {
 
 
 
-    public PathChain getBlueCloseHitGate() {
-        blueCloseHitGate = follower.pathBuilder().addPath(
+    public PathChain getBlueCloseReturnFromSecondMarkHitGate() {
+        blueCloseReturnFromSecondMarkHitGate = follower.pathBuilder().addPath(
                 new BezierCurve(
-                    new Pose(21.000, 60.000),
-                    new Pose(42.000, 66.000),
-                    new Pose(15.000, 72.000)
+                    new Pose(16.000, 57.500),
+                    new Pose(37.000, 56.500),
+                    new Pose(37.000, 70.500),
+                    new Pose(16.000, 69.500)
                 )
             ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(90))
+            .addPath(
+                new BezierCurve(
+                    new Pose(16.500, 69.500),
+                    new Pose(49.179, 62.349),
+                    new Pose(54.000, 84.000)
+                )
+            ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(180))
 
             .build();
 
-        return blueCloseHitGate;
+        return blueCloseReturnFromSecondMarkHitGate;
+    }
+
+    public PathChain getRedCloseReturnFromSecondMarkHitGate() {
+        redCloseReturnFromSecondMarkHitGate = follower.pathBuilder().addPath(
+                new BezierCurve(
+                    new Pose(128, 57.500),
+                    new Pose(107, 56.500),
+                    new Pose(107, 70.500),
+                    new Pose(128, 69.500)
+                )
+            ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(90))
+            .addPath(
+                new BezierCurve(
+                    new Pose(127.5, 69.500),
+                    new Pose(94.821, 62.349),
+                    new Pose(90, 84.000)
+                )
+            ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(0))
+
+            .build();
+
+        return redCloseReturnFromSecondMarkHitGate;
     }
 
 

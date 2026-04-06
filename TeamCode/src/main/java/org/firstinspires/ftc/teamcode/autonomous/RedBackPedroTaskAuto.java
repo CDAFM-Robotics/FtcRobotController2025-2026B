@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.TelemetrySelector;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
 import org.firstinspires.ftc.teamcode.pedropathing.commands.Paths;
@@ -127,17 +128,27 @@ public class RedBackPedroTaskAuto extends OpMode {
 
     @Override
     public void loop() {
-        taskMaster.update();
+        try {
+            taskMaster.update();
 
-        robot.getLauncher().updateElevator();
+            robot.getLauncher().updateElevator();
 
-        if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
-            ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+            if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
+                ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+            }
+
+            follower.update();
+            telemetry.addData("Status", taskMaster.getStatus());
+
+            telemetry.update();
         }
-
-        follower.update();
-        telemetry.addData("Status", taskMaster.getStatus());
-
-        telemetry.update();
+        finally {
+            RobotStaticValuesClass.autoCompleted = true;
+            RobotStaticValuesClass.saveState(
+                robot.getDriveBase().getPinPointPose(),
+                robot.getLauncher().getLastAngleOffset(),
+                RobotStaticValuesClass.Obelisk.GPP
+            );
+        }
     }
 }

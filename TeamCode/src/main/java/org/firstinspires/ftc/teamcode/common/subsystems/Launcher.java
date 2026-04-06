@@ -30,6 +30,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.ArtifactColor;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.InterpolationTable;
@@ -629,6 +630,22 @@ public class Launcher {
                         return new ArtifactColor[]{ArtifactColor.PURPLE, ArtifactColor.PURPLE, ArtifactColor.GREEN};
                     }
                 }
+            }
+        }
+        return null;
+    }
+
+    public RobotStaticValuesClass.Obelisk getObelisk(boolean isRed) {
+        ArtifactColor[] motif = getMotifPattern(isRed);
+        if (motif != null) {
+            if (motif[0] == ArtifactColor.GREEN) {
+                return RobotStaticValuesClass.Obelisk.GPP;
+            }
+            if (motif[1] == ArtifactColor.GREEN) {
+                return RobotStaticValuesClass.Obelisk.PGP;
+            }
+            if (motif[2] == ArtifactColor.GREEN) {
+                return RobotStaticValuesClass.Obelisk.PPG;
             }
         }
         return null;

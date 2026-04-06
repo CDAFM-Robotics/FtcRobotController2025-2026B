@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
+import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 import org.firstinspires.ftc.teamcode.common.util.TelemetrySelector;
 import org.firstinspires.ftc.teamcode.pedropathing.Constants;
@@ -95,12 +96,12 @@ public class RedFrontPedroTaskAuto extends OpMode {
 
         if (telemetrySelector.getBool(0)) {
             if (telemetrySelector.getBool(1)) {
-
+                autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedClosePickupSecondMark(), paths.getRedCloseReturnFromSecondMarkHitGate(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED));
             }
             else {
-                autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedClosePickupSecondMark(), paths.getRedCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED))
-                    .append(taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED));
+                autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedClosePickupSecondMark(), paths.getRedCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED));
             }
+            autoTask = autoTask.append(taskMaker.runShootSequenceTask(new Pose(144 - 60, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED));
         }
 
         if (telemetrySelector.getBool(2)) {
@@ -139,17 +140,27 @@ public class RedFrontPedroTaskAuto extends OpMode {
 
     @Override
     public void loop() {
-        taskMaster.update();
+        try {
+            taskMaster.update();
 
-        robot.getLauncher().updateElevator();
+            robot.getLauncher().updateElevator();
 
-        if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
-            ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+            if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
+                ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+            }
+
+            follower.update();
+            telemetry.addData("Status", taskMaster.getStatus());
+
+            telemetry.update();
         }
-
-        follower.update();
-        telemetry.addData("Status", taskMaster.getStatus());
-
-        telemetry.update();
+        finally {
+            RobotStaticValuesClass.autoCompleted = true;
+            RobotStaticValuesClass.saveState(
+                robot.getDriveBase().getPinPointPose(),
+                robot.getLauncher().getLastAngleOffset(),
+                RobotStaticValuesClass.Obelisk.GPP
+            );
+        }
     }
 }
