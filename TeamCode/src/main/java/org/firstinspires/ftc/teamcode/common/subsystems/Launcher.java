@@ -591,7 +591,7 @@ public class Launcher {
         LLResult result = limelight.getLatestResult();
         if (result.isValid()) {
             List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
-            if (fiducialResults != null) {
+            if (!fiducialResults.isEmpty()) {
                 if (fiducialResults.size() > 1) {
                     int[] ids = new int[2];
 

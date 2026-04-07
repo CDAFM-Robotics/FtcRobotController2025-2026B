@@ -64,10 +64,15 @@ public class BlueBackPedroTaskAuto extends OpMode {
         telemetrySelector.addLine("Second Mark", 2);
         telemetrySelector.addLine("Loading Zone", 2);
         telemetrySelector.addLine("Loading Zone Repeat", 2);
+
+        robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
+
     }
 
     private Gamepad currentGamepad1 = new Gamepad();
     private Gamepad previousGamepad1 = new Gamepad();
+
+    RobotStaticValuesClass.Obelisk motif;
 
     @Override
     public void init_loop() {
@@ -76,19 +81,27 @@ public class BlueBackPedroTaskAuto extends OpMode {
 
         telemetrySelector.setInput(currentGamepad1.dpad_up && !previousGamepad1.dpad_up, currentGamepad1.dpad_down && !previousGamepad1.dpad_down, currentGamepad1.dpad_right && !previousGamepad1.dpad_right, currentGamepad1.dpad_left && !previousGamepad1.dpad_right);
         telemetrySelector.update();
+
+        motif = robot.getLauncher().getObelisk(robot.isRedSide());
+
+        telemetry.addData("Motif", motif);
+
+        telemetry.update();
     }
 
     @Override
     public void start() {
 
+        RobotStaticValuesClass.savedObelisk = motif;
+
         Task autoTask = new NullTask();
 
-        autoTask = autoTask.append(taskMaker.runShootSequenceTask(new Pose(60, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE));
+        autoTask = autoTask.append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE, 0));
 
 
         if (telemetrySelector.getBool(0)) {
             autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueFarPickupThirdMark(), paths.getBlueFarReturnFromThirdMark(), 500, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE))
-                .append(taskMaker.runShootSequenceTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE));
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE, 0));
         }
         if (telemetrySelector.getBool(1)) {
 
@@ -96,13 +109,13 @@ public class BlueBackPedroTaskAuto extends OpMode {
         if (telemetrySelector.getBool(3)) {
             autoTask = autoTask.append(new RepeatTask(() -> new SequentialTask(
                 taskMaker.runPickupSequenceTask(paths.getBlueFarPickupHumanPlayerZone(), paths.getBlueFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
-                taskMaker.runShootSequenceTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE)
+                taskMaker.runShootSequenceForObeliskTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE, -1)
             )));
         }
         else {
             if (telemetrySelector.getBool(2)) {
                 autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueFarPickupHumanPlayerZone(), paths.getBlueFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE))
-                    .append(taskMaker.runShootSequenceTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE));
+                    .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE, -1));
             }
 
             autoTask = autoTask.append(new ParallelTask(
@@ -144,6 +157,8 @@ public class BlueBackPedroTaskAuto extends OpMode {
             follower.update();
             telemetry.addData("Status", taskMaster.getStatus());
 
+            robot.clearBulkCache();
+
             telemetry.update();
         }
         finally {
@@ -152,7 +167,7 @@ public class BlueBackPedroTaskAuto extends OpMode {
             RobotStaticValuesClass.saveState(
                 new Pose2D(DistanceUnit.INCH, ftcPose.getX(), ftcPose.getY(), AngleUnit.RADIANS, ftcPose.getHeading()),
                 robot.getLauncher().getLastAngleOffset(),
-                RobotStaticValuesClass.Obelisk.GPP
+                motif
             );
         }
     }

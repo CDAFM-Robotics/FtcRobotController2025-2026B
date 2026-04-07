@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.AprilTagTask;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
@@ -89,15 +90,22 @@ public class BlueFrontPedroTaskAuto extends OpMode {
         telemetrySelector.update();
     }
 
+    AprilTagTask getAprilTag;
+
     @Override
     public void start() {
+
+        getAprilTag = new AprilTagTask(robot, robot.isRedSide());
+
         Task autoTask = new NullTask();
+
         autoTask = autoTask.append(new DeadlineTask(
                 new FollowPathTask(follower, paths.getBlueCloseStartToShoot2()),
                 taskMaker.setLauncherToGoalTask(),
-                taskMaker.setCloseLauncherTask()
+                taskMaker.setCloseLauncherTask(),
+                getAprilTag
             ))
-            .append(taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
+            .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 0));
 
         if (telemetrySelector.getBool(0)) {
             if (telemetrySelector.getBool(1)) {
@@ -106,16 +114,16 @@ public class BlueFrontPedroTaskAuto extends OpMode {
             else {
                 autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
             }
-            autoTask = autoTask.append(taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
+            autoTask = autoTask.append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 2));
         }
 
         if (telemetrySelector.getBool(2)) {
             autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE))
-                .append(taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 1));
         }
         if (telemetrySelector.getBool(3)) {
             autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE))
-                .append(taskMaker.runShootSequenceTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 0));
         }
 
         autoTask = autoTask.append(new ParallelTask(
@@ -141,17 +149,25 @@ public class BlueFrontPedroTaskAuto extends OpMode {
         taskMaster = new TaskMaster(autoTask);
     }
 
+    boolean motifIsSet = false;
+
     @Override
     public void loop() {
         try {
-
             taskMaster.update();
+
+            if (!motifIsSet && getAprilTag.getMotif() != null) {
+                motifIsSet = true;
+                RobotStaticValuesClass.savedObelisk = getAprilTag.getMotif();
+            }
 
             robot.getLauncher().updateElevator();
 
             if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
                 ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
             }
+
+            robot.clearBulkCache();
 
             follower.update();
             telemetry.addData("Status", taskMaster.getStatus());
@@ -164,7 +180,7 @@ public class BlueFrontPedroTaskAuto extends OpMode {
             RobotStaticValuesClass.saveState(
                 new Pose2D(DistanceUnit.INCH, ftcPose.getX(), ftcPose.getY(), AngleUnit.RADIANS, ftcPose.getHeading()),
                 robot.getLauncher().getLastAngleOffset(),
-                RobotStaticValuesClass.Obelisk.GPP
+                getAprilTag.getMotif() != null ? getAprilTag.getMotif() : RobotStaticValuesClass.Obelisk.UNKNOWN
             );
         }
     }

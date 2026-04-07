@@ -66,8 +66,6 @@ public class TelemetrySelector {
                 telemetry.addData("   " + captions.get(i), selections.get(i).getValue() +  ", " + selections.get(i).getBoolValue());
             }
         }
-
-        telemetry.update();
     }
 
     public int get(int index) {

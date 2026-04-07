@@ -574,8 +574,8 @@ public class Robot {
         double goalY;
         // coordinates of the blue goal
         if (isRedSide) {
-            goalX = RED_X + 1;
-            goalY = RED_Y + 2; //TODO total hack!
+            goalX = RED_X;
+            goalY = RED_Y;
         }
         else {
             goalX = BLUE_X;
@@ -594,6 +594,13 @@ public class Robot {
 
         double relativeAngle;
         relativeAngle = (absoluteAngleDegree - robotHeading);
+
+        if (isRedSide) {
+            relativeAngle -= 5;
+        }
+        else {
+            relativeAngle -= 5;
+        }
 
         relativeAngle = normalizeAngle(relativeAngle);
 

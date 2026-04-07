@@ -23,6 +23,8 @@ import org.firstinspires.ftc.teamcode.tasks.SleepTask;
 import org.firstinspires.ftc.teamcode.tasks.Task;
 import org.firstinspires.ftc.teamcode.tasks.WaitUntilTask;
 
+import java.util.Arrays;
+
 public class AutoTaskMaker {
     Robot robot;
     Follower follower;
@@ -265,70 +267,50 @@ public class AutoTaskMaker {
      * The Supplier reads RobotStaticValuesClass.savedObelisk and the indexer colors
      * when init() is called — not at construction time.
      */
-    public Task runShootSequenceForObeliskTask(Pose hold, Side side, Team team) {
+    public Task runShootSequenceForObeliskTask(Pose hold, Side side, Team team, int greenSlot) {
         return new DeferredTask(() -> {
             RobotStaticValuesClass.Obelisk obelisk = RobotStaticValuesClass.savedObelisk;
 
-            // Determine where the green ball needs to go in the shoot order
-            // GPP = green 1st, PGP = green 2nd, PPG = green 3rd
             int greenPosition;
+
             switch (obelisk) {
-                case GPP: greenPosition = 0; break;
-                case PGP: greenPosition = 1; break;
-                case PPG: greenPosition = 2; break;
-                default:  greenPosition = -1; break; // UNKNOWN — use default order
+                case GPP:
+                    greenPosition = 0;
+                    break;
+                case PGP:
+                    greenPosition = 1;
+                    break;
+                case PPG:
+                    greenPosition = 2;
+                    break;
+                default:
+                    greenPosition = -1;
+                    break;
             }
 
-            // Default shoot order: 0 → 2 → 1
-            int[] shootOrder = {0, 2, 1};
+            int[] shootOrder = new int[]{0, 2, 1};
 
-            if (greenPosition >= 0) {
-                // Find which slot has the green ball
-                ArtifactColor[] colors = robot.getIndexer().artifactColorArray;
-                int greenSlot = -1;
-                for (int i = 0; i < colors.length; i++) {
-                    if (colors[i] == ArtifactColor.GREEN) {
-                        greenSlot = i;
-                        break;
-                    }
-                }
-
-                if (greenSlot >= 0) {
-                    // Remove greenSlot from default order, insert at greenPosition
-                    int[] nonGreen = new int[2];
-                    int idx = 0;
-                    for (int s : shootOrder) {
-                        if (s != greenSlot) {
-                            nonGreen[idx++] = s;
-                        }
-                    }
-                    shootOrder = new int[3];
-                    int ni = 0;
-                    for (int i = 0; i < 3; i++) {
-                        if (i == greenPosition) {
-                            shootOrder[i] = greenSlot;
-                        } else {
-                            shootOrder[i] = nonGreen[ni++];
-                        }
-                    }
-                }
+            if (greenPosition >= 0 && greenSlot >= 0) {
+                shootOrder[0] = greenPosition == 0 ? greenSlot : (greenSlot == 0 ? 2 : 0);
+                shootOrder[1] = greenPosition == 1 ? greenSlot : (greenSlot == 2 ? (greenPosition == 0 ? 0 : 1) : 2);
+                shootOrder[2] = greenPosition == 2 ? greenSlot : (greenSlot == 1 ? 2 : 1);
             }
-
-            RobotLog.d("Deferred shoot order for obelisk %s: %d → %d → %d",
-                obelisk, shootOrder[0], shootOrder[1], shootOrder[2]);
 
             int slot0 = shootOrder[0];
             int slot1 = shootOrder[1];
             int slot2 = shootOrder[2];
 
+            RobotLog.d("Shoot Order: " + Arrays.toString(shootOrder));
+
             return new DeadlineTask(
                 new SequentialTask(
-                    logTask("Task: RunShootSequenceTask obelisk=" + obelisk),
+                    logTask("Task: RunShootSequenceTask Obelisk: " + obelisk),
                     stopIntakeTask(),
                     new HoldPointTask(follower, hold),
                     new ParallelTask(
                         side == Side.FAR ? setFarLauncherTask() : setCloseLauncherTask(),
-                        rotateIndexerOuttakeTask(slot0)
+                        rotateIndexerOuttakeTask(slot0),
+                        logTask("Shoot Task: Start Launcher and Rotate Indexer")
                     ),
                     logTask("Shoot Task: Index " + slot0),
                     runElevatorTask(),
@@ -341,10 +323,10 @@ public class AutoTaskMaker {
                     logTask("Shoot Task: Index " + slot2),
                     runElevatorTask(),
                     logTask("Shoot Task: Shoot " + slot2),
-                    setLauncherMotorVelocityTask(0)
+                    setLauncherMotorVelocityTask(0),
+                    logTask("Task: End of Shoot Sequence")
                 ),
-                setLauncherToGoalTask(),
-                logTask("Task: End of Shoot Sequence")
+                setLauncherToGoalTask()
             );
         });
     }

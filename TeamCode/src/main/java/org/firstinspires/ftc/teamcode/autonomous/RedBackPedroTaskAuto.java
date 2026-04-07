@@ -60,10 +60,17 @@ public class RedBackPedroTaskAuto extends OpMode {
         telemetrySelector.addLine("Second Mark", 2);
         telemetrySelector.addLine("Loading Zone", 2);
         telemetrySelector.addLine("Loading Zone Repeat", 2);
+
+
+        robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
+
     }
 
     private Gamepad currentGamepad1 = new Gamepad();
     private Gamepad previousGamepad1 = new Gamepad();
+
+    RobotStaticValuesClass.Obelisk motif;
+
 
     @Override
     public void init_loop() {
@@ -72,19 +79,27 @@ public class RedBackPedroTaskAuto extends OpMode {
 
         telemetrySelector.setInput(currentGamepad1.dpad_up && !previousGamepad1.dpad_up, currentGamepad1.dpad_down && !previousGamepad1.dpad_down, currentGamepad1.dpad_right && !previousGamepad1.dpad_right, currentGamepad1.dpad_left && !previousGamepad1.dpad_right);
         telemetrySelector.update();
+
+        motif = robot.getLauncher().getObelisk(robot.isRedSide());
+
+        telemetry.addData("Motif", motif);
+
+        telemetry.update();
     }
 
     @Override
     public void start() {
 
+        RobotStaticValuesClass.savedObelisk = motif;
+
         Task autoTask = new NullTask();
 
-        autoTask = autoTask.append(taskMaker.runShootSequenceTask(new Pose(84, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED));
+        autoTask = autoTask.append(taskMaker.runShootSequenceForObeliskTask(new Pose(84, 8.5, Math.toRadians(90)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED, 0));
 
 
         if (telemetrySelector.getBool(0)) {
             autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedFarPickupThirdMark(), paths.getRedFarReturnFromThirdMark(), 500, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE))
-                .append(taskMaker.runShootSequenceTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED));
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED, 0));
         }
         if (telemetrySelector.getBool(1)) {
 
@@ -92,13 +107,13 @@ public class RedBackPedroTaskAuto extends OpMode {
         if (telemetrySelector.getBool(3)) {
             autoTask = autoTask.append(new RepeatTask(() -> new SequentialTask(
                 taskMaker.runPickupSequenceTask(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE),
-                taskMaker.runShootSequenceTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED)
+                taskMaker.runShootSequenceForObeliskTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED, -1)
             )));
         }
         else {
             if (telemetrySelector.getBool(2)) {
                 autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedFarPickupHumanPlayerZone(), paths.getRedFarReturnFromHumanPlayerZone(), 1000, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE))
-                    .append(taskMaker.runShootSequenceTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED));
+                    .append(taskMaker.runShootSequenceForObeliskTask(new Pose(84, 14, Math.toRadians(0)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.RED, -1));
             }
 
             autoTask = autoTask.append(new ParallelTask(
@@ -140,6 +155,8 @@ public class RedBackPedroTaskAuto extends OpMode {
             follower.update();
             telemetry.addData("Status", taskMaster.getStatus());
 
+            robot.clearBulkCache();
+
             telemetry.update();
         }
         finally {
@@ -147,7 +164,7 @@ public class RedBackPedroTaskAuto extends OpMode {
             RobotStaticValuesClass.saveState(
                 robot.getDriveBase().getPinPointPose(),
                 robot.getLauncher().getLastAngleOffset(),
-                RobotStaticValuesClass.Obelisk.GPP
+                motif
             );
         }
     }
