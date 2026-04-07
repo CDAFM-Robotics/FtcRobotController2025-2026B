@@ -120,20 +120,16 @@ public class Indexer {
         colorSensorBackRR = new ColorSensor(hardwareMap, "colorSensorOutRight");
         colorSensorBackRR.initialize();
 
-
-
-
-
-
         // have to turn to intake to read the ball colors. DON'T REMOVE!
         turnToClosestIntake();
         while (!indexerFinishedTurning()) {}
+        sleep(150);
         updateColorAllSlots();
 
-        //move to outtake in order to let elevator motor run
+        //move to the closest outtake in order to let elevator motor run
         //moveToOuttake() moves the next shooting slot to outtake
         // should use positionForOuttake
-        positionForOuttake();
+        turnToClosestOuttake();
         while (!indexerFinishedTurning()) {}
     }
 
@@ -527,6 +523,24 @@ public class Indexer {
         }
         else if (position != POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE){
             rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE);
+        }
+    }
+
+    public void turnToClosestOuttake(){
+        double position = getAxonServoPosition();
+        debugManager.spindexer("turnToClosestOuttake", "%.2f", position);
+        debugManager.log("turnToClosestOuttake %.2f", position);
+
+        if (position < POSITION_INDEXER_SERVO_SLOT_ONE_INTAKE
+            && position != POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT) {
+            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ZERO_OUTPUT);
+        }
+        else if (position < POSITION_INDEXER_SERVO_SLOT_ZERO_INTAKE
+            && position != POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT) {
+            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_TWO_OUTPUT);
+        }
+        else if (position != POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT){
+            rotateToPosition(POSITION_INDEXER_SERVO_SLOT_ONE_OUTPUT);
         }
     }
 
