@@ -43,6 +43,7 @@ public class DriveBase {
     public Pose3D botpose_mt2 ;
     public Pose3D botpose;
     private ElapsedTime PinpointTimer = new ElapsedTime();
+    private ElapsedTime PinpointTimer2= new ElapsedTime();
 
 
     public GoBildaPinpointDriver pinpoint;
@@ -175,29 +176,35 @@ public class DriveBase {
 
         pinpoint.resetPosAndIMU();
         sleep(300);
+        PinpointTimer2.reset();
     }
 
-    public void updateSafePinpoint()
-    {
+    public void updateSafePinpoint() {
 //        telemetry.addData("X", pinpoint.getPosX(DistanceUnit.INCH));
 //        telemetry.addData("Y", pinpoint.getPosY(DistanceUnit.INCH));
 
         try {
             pinpoint.update();
             // lastStatus = pinpoint.getDeviceStatus();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             RobotLog.e("PINPOINT ERROR DURING UPDATE", e.getMessage());
             RobotLog.d("pinpoint status: %s", pinpoint.getDeviceStatus());
         }
 
-        if (Math.abs(1.0 - pinpoint.getYawScalar()) > 0.1 )
-        {
-            // TODO Pinpoint driver issue.  reset Yaw Scalar to good value and REload the lastgood heading
-            pinpoint.setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR); // initial Factory Yaw Scalar for Pinpoint from Bot1
+        if (PinpointTimer2.milliseconds() >= 250) { // throttle timer to keep from calling too many i2c.
+            PinpointTimer2.reset();
+            try {
+                if (Math.abs(1.0 - pinpoint.getYawScalar()) > 0.1) {
+                // TODO Pinpoint driver issue.  reset Yaw Scalar to good value and REload the lastgood heading
+                pinpoint.setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR); // initial Factory Yaw Scalar for Pinpoint from Bot1
+                }
+            } catch (Exception e) {
+                RobotLog.e("PINPOINT ERROR during GET or SET YawScalar");
+                RobotLog.d("pinpoint status: %s", pinpoint.getDeviceStatus());
+            }
         }
         pos = pinpoint.getPosition();
-        RobotLog.d("pinpoint heading1 %.2f: yawScalar: %.8f", pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getYawScalar());
+        // RobotLog.d("pinpoint heading1 %.2f: yawScalar: %.8f", pinpoint.getHeading(AngleUnit.RADIANS), pinpoint.getYawScalar());
 
 
     }

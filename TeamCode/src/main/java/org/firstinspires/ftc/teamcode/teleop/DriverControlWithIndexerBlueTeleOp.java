@@ -119,7 +119,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 // first loop check the saved pos from auto or last teleOp
                 if (firstLoop) {
                     // check to see if auto successfully saved the pos and turret
-                    debugManager.log("autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, turretoffset: %.2f, oblisk: %s",
+                    debugManager.log("autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, turretoffset: %.2f, obelisk: %s",
                         RobotStaticValuesClass.autoCompleted, RobotStaticValuesClass.teleOpCompleted,
                         RobotStaticValuesClass.savedPose.getX(DistanceUnit.MM), RobotStaticValuesClass.savedPose.getY(DistanceUnit.MM),
                         RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES), RobotStaticValuesClass.turretAngleOffset, RobotStaticValuesClass.savedObelisk);
@@ -361,7 +361,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                     }
                 }
 
-                //TODO: if auton did not savve oblisk, read limelight until find oblisk aprilTag
+                //TODO: if auton did not savve ob3lisk, read limelight until find ob3lisk aprilTag
 
                 //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball
 /*            if (robot.isIntake1Ball()) {
@@ -453,8 +453,8 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 // Update turret angle so that it always point to the goal
                 robot.updateShootingDistanceAngle();
 //
-//            //read oblisk if not ready yet
-//            if (!RobotStaticValuesClass.obliskReady){
+//            //read obelisk if not ready yet
+//            if (!RobotStaticValuesClass.obeliskReady){
 //                robot.getMotif();
 //             }
                 debugManager.update();
@@ -497,7 +497,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
             robot.getLauncher().getLastAngleOffset(),
             obelisk);
         RobotStaticValuesClass.teleOpCompleted = true;
-        debugManager.log("finalSave autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, angleOffset: %.2f, oblisk: %s, currentTurretAngle: %.2f",
+        debugManager.log("finalSave autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, angleOffset: %.2f, obelisk: %s, currentTurretAngle: %.2f",
             RobotStaticValuesClass.autoCompleted, RobotStaticValuesClass.teleOpCompleted,
             RobotStaticValuesClass.savedPose.getX(DistanceUnit.MM), RobotStaticValuesClass.savedPose.getY(DistanceUnit.MM),
             RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES),

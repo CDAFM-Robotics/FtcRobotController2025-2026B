@@ -121,7 +121,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 // first loop check the saved pos from auto or last teleOp
                 if (firstLoop) {
                     // check to see if auto successfully saved the pos and turret
-                    debugManager.log("autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, turretoffset: %.2f, oblisk: %s",
+                    debugManager.log("autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, turretoffset: %.2f, obelisk: %s",
                         RobotStaticValuesClass.autoCompleted, RobotStaticValuesClass.teleOpCompleted,
                         RobotStaticValuesClass.savedPose.getX(DistanceUnit.MM), RobotStaticValuesClass.savedPose.getY(DistanceUnit.MM),
                         RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES), RobotStaticValuesClass.turretAngleOffset, RobotStaticValuesClass.savedObelisk);
@@ -363,7 +363,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                     }
                 }
 
-                //TODO: if auton did not savve oblisk, read limelight until find oblisk aprilTag
+                //TODO: if auton did not savve obelisk, read limelight until find obelisk aprilTag
 
                 //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball
 /*            if (robot.isIntake1Ball()) {
@@ -381,9 +381,9 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 gamepad2.setLedColor(255, 255, 0, 20);
             }*/
 
-                debugManager.addData("Blue TeleOp color s0:", "%s", robot.getIndexer().artifactColorArray[0]);
-                debugManager.addData("Blue TeleOp color s1:", "%s", robot.getIndexer().artifactColorArray[1]);
-                debugManager.addData("Blue TeleOp color s2:", "%s", robot.getIndexer().artifactColorArray[2]);
+                debugManager.addData("Red TeleOp color s0:", "%s", robot.getIndexer().artifactColorArray[0]);
+                debugManager.addData("Red TeleOp color s1:", "%s", robot.getIndexer().artifactColorArray[1]);
+                debugManager.addData("Red TeleOp color s2:", "%s", robot.getIndexer().artifactColorArray[2]);
 
                 // TODO Measure Loop time and launcher velocity
                 // RobotLog.d("launcher velocity: %f",
@@ -399,7 +399,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 telemetryM.addData("elevatorVel", robot.getLauncher().getElevatorMotor().getVelocity());
                 telemetryM.addData("elevatorTarget", robot.getLauncher().getElevatorMotor().getTargetPosition());
                 // RobotLog.d("Angles currentAngle: %.2f currentAngleOffset: %.2f", robot.getLauncher().getTurretDegrees() ,robot.getLauncher().getCurrentAngleOffset() );
-                RobotLog.d ("Elevator: elevPos: %d, eleVel: %.2f, launcherVel: %.2f, spinPos: %.2f", robot.getLauncher().getElevatorMotor().getCurrentPosition(), robot.getLauncher().getElevatorMotor().getVelocity(), robot.getLauncher().getLauncherVelocity(), robot.getIndexer().getAxonServoPosition());
+                // RobotLog.d ("Elevator: elevPos: %d, eleVel: %.2f, launcherVel: %.2f, spinPos: %.2f", robot.getLauncher().getElevatorMotor().getCurrentPosition(), robot.getLauncher().getElevatorMotor().getVelocity(), robot.getLauncher().getLauncherVelocity(), robot.getIndexer().getAxonServoPosition());
 
                 debugManager.addData("TeleOp RobotInOutState:", "%s", robot.getRobotInOutState());
 
@@ -447,7 +447,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 // }
 
                 // TODO Add timing Log at end of loop
-                debugManager.log("Blue TeleOp c0: %s c1: %s c2: %s",
+                debugManager.log("Red TeleOp c0: %s c1: %s c2: %s",
                     robot.getIndexer().artifactColorArray[0],
                     robot.getIndexer().artifactColorArray[1],
                     robot.getIndexer().artifactColorArray[2]);
@@ -455,8 +455,8 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 // Update turret angle so that it always point to the goal
                 robot.updateShootingDistanceAngle();
 //
-//            //read oblisk if not ready yet
-//            if (!RobotStaticValuesClass.obliskReady){
+//            //read obelisk if not ready yet
+//            if (!RobotStaticValuesClass.obeliskReady){
 //                robot.getMotif();
 //             }
                 debugManager.update();
@@ -499,7 +499,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
             robot.getLauncher().getLastAngleOffset(),
             obelisk);
         RobotStaticValuesClass.teleOpCompleted = true;
-        debugManager.log("finalSave autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, angleOffset: %.2f, oblisk: %s, currentTurretAngle: %.2f",
+        debugManager.log("finalSave autoCompleted %s, teleOpCompleted %s, x: %.2f, y: %.2f, heading %.2f, angleOffset: %.2f, obelisk: %s, currentTurretAngle: %.2f",
             RobotStaticValuesClass.autoCompleted, RobotStaticValuesClass.teleOpCompleted,
             RobotStaticValuesClass.savedPose.getX(DistanceUnit.MM), RobotStaticValuesClass.savedPose.getY(DistanceUnit.MM),
             RobotStaticValuesClass.savedPose.getHeading(AngleUnit.DEGREES),
