@@ -17,7 +17,7 @@ public class AprilTagTask extends Task {
 
     @Override
     public void init() {
-        robot.getLauncher().getLimeLight().pipelineSwitch(7);
+        robot.getLauncher().getLimeLight().pipelineSwitch(Robot.LLPipelines.OBELISK.ordinal());
     }
 
     RobotStaticValuesClass.Obelisk motif = null;
