@@ -20,6 +20,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.util.DebugManager;
 
+import java.util.EnumMap;
 import java.util.List;
 
 public class DriveBase {
@@ -53,6 +54,7 @@ public class DriveBase {
     private boolean isRedSide;
 
     public boolean kickStandIsSet = false;
+    private Integer parkingState =0;
 
     public ElapsedTime timeKickStand = new ElapsedTime();
     public ElapsedTime areWeThereYet = new ElapsedTime();
@@ -285,32 +287,67 @@ public class DriveBase {
         rightKickStand.setPosition(0.81);
         leftKickStand.setPosition(0.19);
         kickStandIsSet = true;
+        parkingState = 0;
     }
 
     public void resetKickStand() {
         rightKickStand.setPosition(0.5);
         leftKickStand.setPosition(0.5);
         kickStandIsSet = false;
+        parkingState = 4;
     }
     
     public void spinFrontWheels() {
-        timeKickStand.reset();
-        while (timeKickStand.milliseconds() <= 1000) {
-            frontRightMotor.setPower(1);
-            frontLeftMotor.setPower(-1);
+        switch (parkingState) {
+            case 0: // INIT
+                if (timeKickStand.milliseconds()<=500) {
+                    // wait for a bit so we don't move
+                }
+                else {
+                    parkingState = 1;
+                    timeKickStand.reset();
+                }
+                break;
+            case 1: // Run wheels forward
+                if (timeKickStand.milliseconds() <= 600)  {
+                    frontRightMotor.setPower(1);
+                    frontLeftMotor.setPower(-1);
+                    break;
+                }
+                else {
+                    timeKickStand.reset();
+                    parkingState = 2;
+                    break;
+                }
+            case 2: // Reverse Wheels for 300ms
+                if (timeKickStand.milliseconds() <= 300) {
+                    frontRightMotor.setPower(-1);
+                    frontLeftMotor.setPower(1);
+                    break;
+                }
+                else {
+                    timeKickStand.reset();
+                    parkingState = 3;
+                    break;
+                }
+            case 3: // Reverse for final 300ms
+                if (timeKickStand.milliseconds()<=300) {
+                    frontRightMotor.setPower(1);
+                    frontLeftMotor.setPower(-1);
+                    break;
+                }
+                else {
+                    timeKickStand.reset();
+                    parkingState = 4;
+                }
+            case 4: // stop motors
+                frontRightMotor.setPower(0);
+                frontLeftMotor.setPower(0);
+                parkingState=5;
+                break;
+            case 5: // end state
+                break;
         }
-        timeKickStand.reset();
-        while (timeKickStand.milliseconds() <= 600) {
-            if (timeKickStand.milliseconds() <= 300) {
-                frontRightMotor.setPower(-1);
-                frontLeftMotor.setPower(1);
-            }
-             else if (timeKickStand.milliseconds() > 300){
-                frontRightMotor.setPower(1);
-                frontLeftMotor.setPower(-1);
-            }
-        }
-        timeKickStand.reset();
     }
 
     public void setKickStandLight() {

@@ -196,17 +196,14 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 if (currentGamepad1.a != previousGamepad1.a) {
                     robot.getDriveBase().setMotorPowers(0, 0, 0, driveSpeed, fieldCentric);
                     robot.getDriveBase().setKickStand();
-                    sleep(500);
-                    if (robot.getDriveBase().kickStandIsSet) {
+                }
 
-                        robot.getDriveBase().spinFrontWheels();
-                    }
-                    //robot.getDriveBase().setKickStandLight();
+                if (robot.getDriveBase().kickStandIsSet) {
+                    robot.getDriveBase().spinFrontWheels();
                 }
 
                 if (currentGamepad1.b != previousGamepad1.b) {
                     robot.getDriveBase().resetKickStand();
-                    //robot.getDriveBase().resetKickStandLight();
                 }
 
                 // Intake Balls. Add isSafeToStop()
