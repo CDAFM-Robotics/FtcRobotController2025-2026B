@@ -178,12 +178,12 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                     fieldCentric = !fieldCentric;
                 }
 
-                // Disabled the driver's ability to reset robot heading
-                // since we are keeping the heading from autonomous
-//            if (currentGamepad1.start && !previousGamepad1.start){
-//                robot.getDriveBase().resetIMU();
-//                gamepad1.rumble(300);
-//            }
+                // Upon Heading Loss, ROTATE Robot facing NORTH (towards Obelisk) and recalibrate IMU (preserve X,Y)
+                if (currentGamepad1.start && !previousGamepad1.start){
+                    // robot.getDriveBase().resetIMU();
+                    robot.getDriveBase().recalibratePinpoint();
+                    gamepad1.rumble(300);
+                }
 
                 if (currentGamepad1.right_bumper != previousGamepad1.right_bumper) {
                     driveSpeed = driveSpeed == 1 ? 0.5 : 1;
@@ -251,7 +251,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                     }
                     else
                     {
-                        gamepad1.rumble(1000);
+                        gamepad1.rumble(500);
                         gamepad1.setLedColor(255, 0, 0, 100);
                     }
                 }
@@ -269,11 +269,6 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 // Launcher
                 if (currentGamepad2.x && !previousGamepad2.x) {
                     robot.getLauncher().toggleLauncher();
-                    if (robot.getLauncher().isLauncherActive()) {
-                        gamepad2.rumble(0.0, 1.0, 500);
-                    } else {
-                        gamepad2.rumble(1.0, 0.0, 250);
-                    }
                 }
 
                 if (robot.getLauncher().isLauncherActive() && rumbleLauncherTimer.milliseconds() > 1000) {
@@ -365,21 +360,32 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
 
                 //TODO: if auton did not savve obelisk, read limelight until find obelisk aprilTag
 
-                //TODO: driver 1 would like the gamepad 1 to rumble when the robot pick up a ball
-/*            if (robot.isIntake1Ball()) {
-                gamepad1.rumble(250);
-                robot.setIntak1BallOff();
-            }
+                // blip gamepad1 when intake 1 ball
+                if (robot.isIntake1Ball()) {
+                    gamepad1.rumble(75);
+                    robot.setIntake1BallOff();
+                }
 
-            if (robot.isIntake3Balls()) {
-                gamepad1.rumble(500);
-                robot.setIntak3BallsOff();
-            }*/
 
-                //change gamepad 2 light bar when sped up all the way
-            /*if(robot.getLauncher().getLauncherVelocity() == robot.getLauncher().getLauncherTargetVelocity() && robot.getLauncher().getLauncherTargetVelocity() != 0.0){
-                gamepad2.setLedColor(255, 255, 0, 20);
-            }*/
+                // rumble gamepad1 on 3 balls intake
+                if (robot.isIntake3Balls()) {
+                    gamepad1.rumble(250);
+                    robot.setIntake3BallsOff();
+                }
+
+                //change gamepad 2 light when Launcher up to speed
+                if(robot.getLauncher().getLauncherVelocity() >= (robot.getLauncher().getLauncherTargetVelocity()-40) && robot.getLauncher().getLauncherTargetVelocity() != 0.0){
+                    gamepad2.setLedColor(0, 255, 0, 250);
+                }
+
+
+                // rumble driver on last ball shot, rumble shooter on last ball shot
+                if (robot.isNoArtifacts() && robot.signalAllShotTimer.milliseconds() <= 1100)
+                {
+                    gamepad1.rumble(75); // rumble driver to leave
+                    gamepad2.rumble(100);  // rumble shooter to stop shooting and turn off launcher
+                    gamepad2.setLedColor(255, 255, 0, 200); // visual feedback all balls shot
+                }
 
                 debugManager.addData("Red TeleOp color s0:", "%s", robot.getIndexer().artifactColorArray[0]);
                 debugManager.addData("Red TeleOp color s1:", "%s", robot.getIndexer().artifactColorArray[1]);

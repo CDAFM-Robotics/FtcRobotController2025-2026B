@@ -43,9 +43,12 @@ public class Robot {
     private ElapsedTime timeSinceKickReset  = new ElapsedTime();
     private ElapsedTime reverseIntakeTimer  = new ElapsedTime();
 
+    public ElapsedTime signalAllShotTimer = new ElapsedTime();
+
     //indicators for driver
     public boolean intake3Balls = false; //Picked up all three balls
     public boolean intake1Ball = false; //Picked up one ball
+    public boolean signalPlayer2 = false;
     private boolean safeToStop = true; //if kicker is down
     public static boolean enableDriftCorrection = false; // use vision to correct pp drift in tele
     private boolean isRedSide = false;
@@ -318,6 +321,7 @@ public class Robot {
                 case INIT:
 
                     debugManager.log("shootAllBalls: INIT");
+                    noArtifacts = false;
                     if(findNextBall()) {
                         debugManager.log("shootAllBalls: findNextBall");
                         launchState = LaunchBallState.TURN_TO_LAUNCH;
@@ -329,6 +333,7 @@ public class Robot {
                         }
                         launchState = LaunchBallState.READY_TO_INTAKE;
                         debugManager.log("shootAllBalls: INIT %s", launchState);
+                        noArtifacts=true;
                     }
                     break;
 
@@ -371,6 +376,7 @@ public class Robot {
                             // for some reason, there is a ball in the indexer
                             shootOrder();
                         }
+                        signalAllShotTimer.reset();
                         launchState = LaunchBallState.INIT;
                     }
                     break;
