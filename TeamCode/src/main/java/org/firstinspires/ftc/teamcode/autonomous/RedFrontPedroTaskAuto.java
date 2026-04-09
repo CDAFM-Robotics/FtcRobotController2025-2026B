@@ -70,7 +70,7 @@ public class RedFrontPedroTaskAuto extends OpMode {
         telemetrySelector.addLine("Second Mark", 2, 1);
         telemetrySelector.addLine("Gate on Second Mark", 2, 1);
         telemetrySelector.addLine("First Mark", 2, 1);
-        telemetrySelector.addLine("Third Mark", 2, 1);
+        telemetrySelector.addLine("Third Mark", 2, 0);
     }
 
     private Gamepad currentGamepad1 = new Gamepad();
@@ -89,6 +89,9 @@ public class RedFrontPedroTaskAuto extends OpMode {
 
     @Override
     public void start() {
+
+        getAprilTag = new AprilTagTask(robot, robot.isRedSide());
+
         Task autoTask = new NullTask();
         autoTask = autoTask.append(new DeadlineTask(
                 new FollowPathTask(follower, paths.getRedCloseStartToShoot2()),
@@ -96,7 +99,7 @@ public class RedFrontPedroTaskAuto extends OpMode {
                 taskMaker.setCloseLauncherTask(),
                 getAprilTag
             ))
-            .append(taskMaker.runShootSequenceForObeliskTask(new Pose(144 - 60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED, 0));
+            .append(taskMaker.runShootSequenceForObeliskTask(new Pose(90, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED, 0));
 
         if (telemetrySelector.getBool(0)) {
             if (telemetrySelector.getBool(1)) {
@@ -105,16 +108,16 @@ public class RedFrontPedroTaskAuto extends OpMode {
             else {
                 autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedClosePickupSecondMark(), paths.getRedCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED));
             }
-            autoTask = autoTask.append(taskMaker.runShootSequenceForObeliskTask(new Pose(144 - 60, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED, 2));
+            autoTask = autoTask.append(taskMaker.runShootSequenceForObeliskTask(new Pose(90, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED, 1));
         }
 
         if (telemetrySelector.getBool(2)) {
             autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedClosePickupFirstMark(), paths.getRedCloseReturnFromFirstMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED))
-                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(144 - 60, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED, 1));
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(90, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED, 2));
         }
         if (telemetrySelector.getBool(3)) {
             autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getRedClosePickupThirdMark(), paths.getRedCloseReturnFromThirdMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED))
-                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(144 - 60, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED, 0));
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(90, 84, Math.toRadians(0)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.RED, 0));
         }
 
         autoTask = autoTask.append(new ParallelTask(
@@ -136,13 +139,9 @@ public class RedFrontPedroTaskAuto extends OpMode {
                 taskMaker.stopTurretTask()
             ));
 
-        RobotLog.d("Task: " + autoTask.toString());
-
 
         taskMaster = new TaskMaster(autoTask);
     }
-
-    boolean motifIsSet = false;
 
     long lastYawRead = Long.MIN_VALUE;
 
@@ -151,8 +150,10 @@ public class RedFrontPedroTaskAuto extends OpMode {
         try {
             taskMaster.update();
 
-            if (!motifIsSet && getAprilTag.getMotif() != null) {
-                motifIsSet = true;
+            RobotLog.d("Motif: " + getAprilTag.getMotif());
+
+            if (getAprilTag.getMotif() != null) {
+                RobotLog.d("Motif: It ran this");
                 RobotStaticValuesClass.savedObelisk = getAprilTag.getMotif();
             }
 

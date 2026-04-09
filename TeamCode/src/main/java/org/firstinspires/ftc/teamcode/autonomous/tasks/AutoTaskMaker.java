@@ -73,7 +73,7 @@ public class AutoTaskMaker {
     }
 
     public Task setCloseLauncherTask() {
-        return spinUpLauncherTask(1330);
+        return spinUpLauncherTask(1310);
     }
 
     public Task setTurretPositionTask(double angle) {

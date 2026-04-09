@@ -113,8 +113,11 @@ public class Robot {
         // the initialization order is important. Don't changes
         this.indexer = new Indexer(this.hardwareMap, this.telemetry);
         this.launcher = new Launcher(this.hardwareMap, this.telemetry);
+
         this.intake = new Intake(this.hardwareMap, this.telemetry);
         //this.hud = new Hud(this.hardwareMap, this.telemetry);
+
+
 
         //read the colors
         this.indexer.initBallCollors();
@@ -600,7 +603,7 @@ public class Robot {
         relativeAngle = (absoluteAngleDegree - robotHeading);
 
         if (isRedSide) {
-            relativeAngle -= 3.5;
+            relativeAngle -= 4;
         }
         else {
             relativeAngle -= 5;

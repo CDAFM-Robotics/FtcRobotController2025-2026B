@@ -25,7 +25,7 @@ public class AprilTagTask extends Task {
     @Override
     public boolean run() {
         motif = robot.getLauncher().getObelisk(isRed);
-        return motif != null;
+        return false;
     }
 
     public RobotStaticValuesClass.Obelisk getMotif() {

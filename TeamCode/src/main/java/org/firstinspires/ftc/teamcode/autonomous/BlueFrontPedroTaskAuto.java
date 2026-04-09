@@ -75,7 +75,7 @@ public class BlueFrontPedroTaskAuto extends OpMode {
         telemetrySelector.addLine("Second Mark", 2, 1);
         telemetrySelector.addLine("Gate on Second Mark", 2, 1);
         telemetrySelector.addLine("First Mark", 2, 1);
-        telemetrySelector.addLine("Third Mark", 2, 1);
+        telemetrySelector.addLine("Third Mark", 2, 0);
     }
 
     private Gamepad currentGamepad1 = new Gamepad();

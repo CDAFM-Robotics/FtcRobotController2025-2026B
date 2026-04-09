@@ -505,6 +505,14 @@ public class Launcher {
         elevatorVelKf = elevatorVelPID.f;
 
 
+        try {
+            sleep(450);
+        }
+        catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+
         lastAngle = currentAngle;
         lastVoltage = currentVoltage;
 
@@ -589,10 +597,14 @@ public class Launcher {
 
     public ArtifactColor[] getMotifPattern(boolean isRed) {
         LLResult result = limelight.getLatestResult();
+        RobotLog.d("Motif: Run");
         if (result.isValid()) {
+            RobotLog.d("Motif: Is Valid");
             List<LLResultTypes.FiducialResult> fiducialResults = result.getFiducialResults();
             if (!fiducialResults.isEmpty()) {
+                RobotLog.d("Motif: Has stuff");
                 if (fiducialResults.size() > 1) {
+                    RobotLog.d("Motif: Has 2 stuffs");
                     int[] ids = new int[2];
 
                     ids[0] = fiducialResults.get(0).getFiducialId();
@@ -622,6 +634,7 @@ public class Launcher {
                     }
                 }
                 else {
+                    RobotLog.d("Motif: Has 1 stuffs");
                     if (fiducialResults.get(0).getFiducialId() == 21) {
                         return new ArtifactColor[]{ArtifactColor.GREEN, ArtifactColor.PURPLE, ArtifactColor.PURPLE};
                     } else if (fiducialResults.get(0).getFiducialId() == 22) {
