@@ -120,19 +120,22 @@ public class Indexer {
         colorSensorBackRR = new ColorSensor(hardwareMap, "colorSensorOutRight");
         colorSensorBackRR.initialize();
 
-        // have to turn to intake to read the ball colors. DON'T REMOVE!
-        turnToClosestIntake();
-        while (!indexerFinishedTurning()) {}
-        sleep(150);
-        updateColorAllSlots();
-
         //move to the closest outtake in order to let elevator motor run
         //moveToOuttake() moves the next shooting slot to outtake
         // should use positionForOuttake
+        timeSinceTurnIndex.reset();
         turnToClosestOuttake();
-        while (!indexerFinishedTurning()) {}
+        while (!indexerFinishedTurning() || timeSinceTurnIndex.milliseconds() < 300) {}
     }
 
+    public void initBallCollors() {
+        // have to turn to intake to read the ball colors. DON'T REMOVE!
+        timeSinceTurnIndex.reset();
+        turnToClosestIntake();
+        while (!indexerFinishedTurning() || timeSinceTurnIndex.milliseconds() < 300) {}
+        sleep(150);
+        updateColorAllSlots();
+    }
     /****************************************************
      * Autonomous Actions
      ****************************************************/

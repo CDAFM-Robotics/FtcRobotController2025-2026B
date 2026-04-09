@@ -63,14 +63,14 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
 
-        debugManager.TELEMETRY_ENABLED = false;
+        debugManager.TELEMETRY_ENABLED = true;
         debugManager.ROBOT_LOG_ENABLED = true;
 
         // Individual Telemetry flags
         debugManager.LOG_DRIVEBASE  = false;
         debugManager.LOG_PINPOINT   = false;
         debugManager.LOG_VISION     = false;
-        debugManager.LOG_LAUNCHER   = false;
+        debugManager.LOG_LAUNCHER   = true;
         debugManager.LOG_SPINDEXER  = true;
         debugManager.LOG_INTAKE     = false;
         debugManager.LOG_HUD        = false;

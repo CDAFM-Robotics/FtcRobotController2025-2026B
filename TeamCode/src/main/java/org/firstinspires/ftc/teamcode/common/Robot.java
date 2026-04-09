@@ -110,10 +110,14 @@ public class Robot {
     public void initializeSubsystems(boolean isRed) {
         // Create an instance of every subsystem in the Robot class
         this.driveBase = new DriveBase(this.hardwareMap, this.telemetry, isRed);
+        // the initialization order is important. Don't changes
         this.indexer = new Indexer(this.hardwareMap, this.telemetry);
         this.launcher = new Launcher(this.hardwareMap, this.telemetry);
         this.intake = new Intake(this.hardwareMap, this.telemetry);
         //this.hud = new Hud(this.hardwareMap, this.telemetry);
+
+        //read the colors
+        this.indexer.initBallCollors();
 
         // Enable bulk caching AFTER all subsystems init so their init loops get live reads
         allHubs = hardwareMap.getAll(LynxModule.class);
