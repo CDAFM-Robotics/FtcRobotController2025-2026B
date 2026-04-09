@@ -8,6 +8,11 @@ public class Selection {
     int range;
     int value;
 
+    public Selection(int range, int initial) {
+        this.range = range;
+        this.value = initial;
+    }
+
     public Selection(int range) {
         this.range = range;
         this.value = 0;

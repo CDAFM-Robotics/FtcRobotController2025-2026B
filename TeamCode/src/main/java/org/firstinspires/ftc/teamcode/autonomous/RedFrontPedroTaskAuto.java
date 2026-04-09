@@ -67,10 +67,10 @@ public class RedFrontPedroTaskAuto extends OpMode {
 
         telemetrySelector = new TelemetrySelector(telemetry);
 
-        telemetrySelector.addLine("Second Mark", 2);
-        telemetrySelector.addLine("Gate on Second Mark", 2);
-        telemetrySelector.addLine("First Mark", 2);
-        telemetrySelector.addLine("Third Mark", 2);
+        telemetrySelector.addLine("Second Mark", 2, 1);
+        telemetrySelector.addLine("Gate on Second Mark", 2, 1);
+        telemetrySelector.addLine("First Mark", 2, 1);
+        telemetrySelector.addLine("Third Mark", 2, 1);
     }
 
     private Gamepad currentGamepad1 = new Gamepad();

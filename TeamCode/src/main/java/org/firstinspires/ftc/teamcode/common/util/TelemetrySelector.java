@@ -28,6 +28,12 @@ public class TelemetrySelector {
         lineSelection.setRange(++lines);
     }
 
+    public void addLine(String caption, int range, int initialValue) {
+        captions.put(lines, caption);
+        selections.put(lines, new Selection(range, initialValue));
+        lineSelection.setRange(++lines);
+    }
+
     public void setInput(boolean up, boolean down, boolean inc, boolean dec) {
         if (up) {
             lineUp();

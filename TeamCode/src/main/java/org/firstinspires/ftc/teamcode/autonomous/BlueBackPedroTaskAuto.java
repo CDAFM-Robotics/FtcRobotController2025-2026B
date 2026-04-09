@@ -60,10 +60,10 @@ public class BlueBackPedroTaskAuto extends OpMode {
 
         telemetrySelector = new TelemetrySelector(telemetry);
 
-        telemetrySelector.addLine("Third Mark", 2);
-        telemetrySelector.addLine("Second Mark", 2);
-        telemetrySelector.addLine("Loading Zone", 2);
-        telemetrySelector.addLine("Loading Zone Repeat", 2);
+        telemetrySelector.addLine("Third Mark", 2, 1);
+        telemetrySelector.addLine("Second Mark", 2, 0);
+        telemetrySelector.addLine("Loading Zone", 2, 0);
+        telemetrySelector.addLine("Loading Zone Repeat", 2, 1);
 
         robot.getLauncher().setLimelightPipeline(Robot.LLPipelines.OBELISK.ordinal());
 

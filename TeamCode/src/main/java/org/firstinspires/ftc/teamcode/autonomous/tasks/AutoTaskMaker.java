@@ -294,7 +294,7 @@ public class AutoTaskMaker {
 
             if (greenPosition >= 0 && greenSlot >= 0) {
                 shootOrder[0] = greenPosition == 0 ? greenSlot : (greenSlot == 0 ? 2 : 0);
-                shootOrder[1] = greenPosition == 1 ? greenSlot : (greenSlot == 2 ? (greenPosition == 0 ? 1 : 0) : 2);
+                shootOrder[1] = greenPosition == 1 ? greenSlot : (greenSlot == 2 ? (greenPosition == 0 ? 1 : 0) : (greenSlot == 0 ? 1 : 0));
                 shootOrder[2] = greenPosition == 2 ? greenSlot : (greenSlot == 1 ? 2 : 1);
             }
 
