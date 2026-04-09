@@ -73,7 +73,7 @@ public class AutoTaskMaker {
     }
 
     public Task setCloseLauncherTask() {
-        return spinUpLauncherTask(1310);
+        return spinUpLauncherTask(1290);
     }
 
     public Task setTurretPositionTask(double angle) {
@@ -93,11 +93,11 @@ public class AutoTaskMaker {
 
 
 
-    public Task setLauncherToGoalTask() {
+    public Task setLauncherToGoalTask(Side side) {
         return new BasicTask(
             () -> {},
             () -> {
-                robot.updateTurretAngleAuto();
+                robot.updateTurretAngleAuto(side);
                 return false;
             }
         );
@@ -258,7 +258,7 @@ public class AutoTaskMaker {
                     logTask("Task: End of Pickup Sequence")
                 )
             ),
-            setLauncherToGoalTask()
+            setLauncherToGoalTask(side)
         );
     }
 
@@ -342,7 +342,7 @@ public class AutoTaskMaker {
                     setLauncherMotorVelocityTask(0),
                     logTask("Task: End of Shoot Sequence")
                 ),
-                setLauncherToGoalTask()
+                setLauncherToGoalTask(side)
             );
         });
     }
@@ -370,7 +370,7 @@ public class AutoTaskMaker {
                 logTask("Shoot Task: Shoot 2"),
                 setLauncherMotorVelocityTask(0)
             ),
-            setLauncherToGoalTask(),
+            setLauncherToGoalTask(side),
             logTask("Task: End of Shoot Sequence")
         );
     }

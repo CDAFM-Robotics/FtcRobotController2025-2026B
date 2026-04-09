@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.autonomous;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.ftc.InvertedFTCCoordinates;
 import com.pedropathing.ftc.localization.localizers.PinpointLocalizer;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
@@ -9,6 +10,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.AprilTagTask;
 import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
@@ -95,7 +99,7 @@ public class RedFrontPedroTaskAuto extends OpMode {
         Task autoTask = new NullTask();
         autoTask = autoTask.append(new DeadlineTask(
                 new FollowPathTask(follower, paths.getRedCloseStartToShoot2()),
-                taskMaker.setLauncherToGoalTask(),
+                taskMaker.setLauncherToGoalTask(AutoTaskMaker.Side.NEAR),
                 taskMaker.setCloseLauncherTask(),
                 getAprilTag
             ))
@@ -178,8 +182,9 @@ public class RedFrontPedroTaskAuto extends OpMode {
         }
         finally {
             RobotStaticValuesClass.autoCompleted = true;
+            Pose ftcPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(follower.getPose());
             RobotStaticValuesClass.saveState(
-                robot.getDriveBase().getPinPointPose(),
+                new Pose2D(DistanceUnit.INCH, ftcPose.getX(), ftcPose.getY(), AngleUnit.RADIANS, ftcPose.getHeading()),
                 robot.getLauncher().getLastAngleOffset(),
                 getAprilTag.getMotif() != null ? getAprilTag.getMotif() : RobotStaticValuesClass.Obelisk.UNKNOWN
             );

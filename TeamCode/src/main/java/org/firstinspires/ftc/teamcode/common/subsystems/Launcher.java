@@ -506,7 +506,7 @@ public class Launcher {
 
 
         try {
-            sleep(450);
+            sleep(650);
         }
         catch (InterruptedException e) {
             throw new RuntimeException(e);

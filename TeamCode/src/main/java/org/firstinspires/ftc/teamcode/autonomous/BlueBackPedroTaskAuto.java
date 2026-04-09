@@ -104,7 +104,8 @@ public class BlueBackPedroTaskAuto extends OpMode {
                 .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE, 0));
         }
         if (telemetrySelector.getBool(1)) {
-
+            autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueFarPickupSecondMark(), paths.getBlueFarReturnFromSecondMark(), 500, AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE))
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 14, Math.toRadians(180)), AutoTaskMaker.Side.FAR, AutoTaskMaker.Team.BLUE, 1));
         }
         if (telemetrySelector.getBool(3)) {
             autoTask = autoTask.append(new RepeatTask(() -> new SequentialTask(
@@ -148,6 +149,8 @@ public class BlueBackPedroTaskAuto extends OpMode {
     @Override
     public void loop() {
         try {
+            robot.clearBulkCache();
+
             taskMaster.update();
 
             robot.getLauncher().updateElevator();
@@ -164,8 +167,6 @@ public class BlueBackPedroTaskAuto extends OpMode {
 
             follower.update();
             telemetry.addData("Status", taskMaster.getStatus());
-
-            robot.clearBulkCache();
 
             telemetry.update();
         }

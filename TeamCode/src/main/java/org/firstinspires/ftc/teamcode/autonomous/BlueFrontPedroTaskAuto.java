@@ -101,11 +101,11 @@ public class BlueFrontPedroTaskAuto extends OpMode {
 
         autoTask = autoTask.append(new DeadlineTask(
                 new FollowPathTask(follower, paths.getBlueCloseStartToShoot2()),
-                taskMaker.setLauncherToGoalTask(),
+                taskMaker.setLauncherToGoalTask(AutoTaskMaker.Side.NEAR),
                 taskMaker.setCloseLauncherTask(),
                 getAprilTag
             ))
-            .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 0));
+            .append(taskMaker.runShootSequenceForObeliskTask(new Pose(54, 84, Math.toRadians(90)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 0));
 
         if (telemetrySelector.getBool(0)) {
             if (telemetrySelector.getBool(1)) {
@@ -114,16 +114,16 @@ public class BlueFrontPedroTaskAuto extends OpMode {
             else {
                 autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupSecondMark(), paths.getBlueCloseReturnFromSecondMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE));
             }
-            autoTask = autoTask.append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 2));
+            autoTask = autoTask.append(taskMaker.runShootSequenceForObeliskTask(new Pose(54, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 1));
         }
 
         if (telemetrySelector.getBool(2)) {
             autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupFirstMark(), paths.getBlueCloseReturnFromFirstMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE))
-                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 1));
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(54, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 2));
         }
         if (telemetrySelector.getBool(3)) {
             autoTask = autoTask.append(taskMaker.runPickupSequenceTask(paths.getBlueClosePickupThirdMark(), paths.getBlueCloseReturnFromThirdMark(), 500, AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE))
-                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(60, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 0));
+                .append(taskMaker.runShootSequenceForObeliskTask(new Pose(54, 84, Math.toRadians(180)), AutoTaskMaker.Side.NEAR, AutoTaskMaker.Team.BLUE, 0));
         }
 
         autoTask = autoTask.append(new ParallelTask(

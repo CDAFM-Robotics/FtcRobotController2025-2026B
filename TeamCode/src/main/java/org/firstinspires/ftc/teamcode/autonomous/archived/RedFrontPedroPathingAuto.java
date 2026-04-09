@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.Robot;
 import org.firstinspires.ftc.teamcode.common.RobotStaticValuesClass;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
@@ -312,7 +313,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
                 robot.getLauncher().setAutoVelocity(1280);
 
                 // robot.getLauncher().autoUpdateTurretPID(turretAngle);
-                robot.updateTurretAngleAuto();
+                robot.updateTurretAngleAuto(AutoTaskMaker.Side.FAR);
                 follower.holdPoint(holdPose);
 
                 robot.setRobotState(Robot.RobotInOutState.OUTTAKE);
@@ -334,7 +335,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
 
 
                 // robot.getLauncher().autoUpdateTurretPID(turretAngle);
-                robot.updateTurretAngleAuto();
+                robot.updateTurretAngleAuto(AutoTaskMaker.Side.FAR);
 
                 if (robot.getLauncher().getLauncherVelocity() >= (robot.getLauncher().getLauncherTargetVelocity()-20) /*&& Math.abs(robot.getLauncher().getTurretDegrees() - turretAngle) < 2.5*/) {
                     shootState = ShootState.SHOOTING_0;
@@ -343,7 +344,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
             case SHOOTING_0:
                 // RobotLog.d ("SS: SHOOTING_0");
                 // robot.getLauncher().autoUpdateTurretPID(turretAngle);
-                robot.updateTurretAngleAuto();
+                robot.updateTurretAngleAuto(AutoTaskMaker.Side.FAR);
 
                 robot.shootAllBallsAuto();
 
@@ -517,7 +518,7 @@ public class RedFrontPedroPathingAuto extends OpMode {
                 }
 
                 // robot.getLauncher().autoUpdateTurretPID(turretAngle);
-                robot.updateTurretAngleAuto();
+                robot.updateTurretAngleAuto(AutoTaskMaker.Side.FAR);
                 break;
             case FINISHED:
                 state = getNextState();

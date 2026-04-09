@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.autonomous.tasks.AutoTaskMaker;
 import org.firstinspires.ftc.teamcode.common.subsystems.DriveBase;
 import org.firstinspires.ftc.teamcode.common.subsystems.Hud;
 import org.firstinspires.ftc.teamcode.common.subsystems.Indexer;
@@ -562,7 +563,7 @@ public class Robot {
     }
 
     //updating the turret every loop
-    public void updateTurretAngleAuto(){
+    public void updateTurretAngleAuto(AutoTaskMaker.Side side){
         //read the current pose
         Pose FTCPose = new Pose();
         FTCPose = InvertedFTCCoordinates.INSTANCE.convertFromPedro(new Pose(driveBase.getPinPointPosX(), driveBase.getPinPointPosY(), driveBase.getPinPointHeading()));
@@ -606,7 +607,12 @@ public class Robot {
             relativeAngle -= 4;
         }
         else {
-            relativeAngle -= 5;
+            if (side == AutoTaskMaker.Side.FAR) {
+                relativeAngle -= 6;
+            }
+            else {
+                relativeAngle -= 4;
+            }
         }
 
         relativeAngle = normalizeAngle(relativeAngle);
