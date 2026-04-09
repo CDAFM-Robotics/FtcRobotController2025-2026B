@@ -38,6 +38,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
     private static final int READ_EVERY_N_LOOPS = 20;
     private boolean colorConfirmed = false;
     private ElapsedTime LoopTime = new ElapsedTime();
+    private ElapsedTime safetyTimer = new ElapsedTime();
 
     private LLResult result;
 
@@ -103,6 +104,7 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         hud = new Hud(hardwareMap, telemetry);
 
         debugManager.update();
+        safetyTimer.reset(); // reset the HUD update timer
 
         waitForStart();
 
@@ -443,8 +445,12 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
                 // Refresh the indicator lights
                 // if (loopCount%READ_EVERY_N_LOOPS == 4) {
                     hud.setBalls(robot.getIndexer().artifactColorArray[0], robot.getIndexer().artifactColorArray[1], robot.getIndexer().artifactColorArray[2]);
-                    hud.UpdateBallUI();
-                    // hud.update(); // New  hudUpdate 1 ball per loop max
+                    // hud.UpdateBallUI();
+                    if (safetyTimer.milliseconds() > 25) {
+                        hud.update(); // update HUD (1 "ball" per loop with min 25ms delay per update call)
+                        safetyTimer.reset();
+                    }
+
                 // }
 
                 // TODO Add timing Log at end of loop

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.testing;
 
 import android.graphics.Color;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Blinker;
@@ -14,6 +15,7 @@ import androidx.annotation.ColorInt;
 import java.util.Random;
 
 
+@Disabled
 @TeleOp (group = "testing", name = "LEDStickTest")
 public class LEDStickTest extends LinearOpMode {
   private Blinker control_Hub;
