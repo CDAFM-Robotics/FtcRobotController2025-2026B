@@ -596,7 +596,7 @@ public class Robot {
         relativeAngle = (absoluteAngleDegree - robotHeading);
 
         if (isRedSide) {
-            relativeAngle -= 5;
+            relativeAngle -= 3.5;
         }
         else {
             relativeAngle -= 5;

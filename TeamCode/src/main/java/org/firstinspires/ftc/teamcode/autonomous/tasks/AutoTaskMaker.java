@@ -69,7 +69,7 @@ public class AutoTaskMaker {
     }
 
     public Task setFarLauncherTask() {
-        return spinUpLauncherTask(1570);
+        return spinUpLauncherTask(1530);
     }
 
     public Task setCloseLauncherTask() {
@@ -290,9 +290,11 @@ public class AutoTaskMaker {
 
             int[] shootOrder = new int[]{0, 2, 1};
 
+            // gp = 2 gs = 0
+
             if (greenPosition >= 0 && greenSlot >= 0) {
                 shootOrder[0] = greenPosition == 0 ? greenSlot : (greenSlot == 0 ? 2 : 0);
-                shootOrder[1] = greenPosition == 1 ? greenSlot : (greenSlot == 2 ? (greenPosition == 0 ? 0 : 1) : 2);
+                shootOrder[1] = greenPosition == 1 ? greenSlot : (greenSlot == 2 ? (greenPosition == 0 ? 1 : 0) : 2);
                 shootOrder[2] = greenPosition == 2 ? greenSlot : (greenSlot == 1 ? 2 : 1);
             }
 

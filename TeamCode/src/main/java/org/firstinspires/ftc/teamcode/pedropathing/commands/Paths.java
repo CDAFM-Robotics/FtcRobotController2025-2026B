@@ -127,7 +127,7 @@ public class Paths {
                         new BezierCurve(
                                 new Pose(84.000, 8.5),
                                 new Pose(84.000, 37.7),
-                                new Pose(129, 36.000)
+                                new Pose(130, 36.000)
                         )
                 ).setTangentHeadingInterpolation()
 
@@ -139,7 +139,7 @@ public class Paths {
     public PathChain getRedFarReturnFromThirdMark() {
         redFarReturnFromThirdMark = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(134, 36.000),
+                                new Pose(130, 36.000),
 
                                 new Pose(84.000, 14)
                         )
@@ -184,7 +184,7 @@ public class Paths {
                 .addPath(
                         new BezierLine(
                                 new Pose(84.000, 14),
-                                new Pose(132, 10)
+                                new Pose(130.5, 10)
                         )).setConstantHeadingInterpolation(Math.toRadians(0))
 
                 .build();
@@ -200,7 +200,7 @@ public class Paths {
         redFarReturnFromHumanPlayerZone = follower.pathBuilder()
                 .addPath(
                         new BezierLine(
-                                new Pose(132.000, 10),
+                                new Pose(130.5, 10),
                                 new Pose(84.000, 14)
                         )).setConstantHeadingInterpolation(Math.toRadians(0))
 

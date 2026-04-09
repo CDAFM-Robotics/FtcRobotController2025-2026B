@@ -143,6 +143,8 @@ public class BlueBackPedroTaskAuto extends OpMode {
         taskMaster = new TaskMaster(autoTask);
     }
 
+    long lastYawRead = Long.MIN_VALUE;
+
     @Override
     public void loop() {
         try {
@@ -150,8 +152,14 @@ public class BlueBackPedroTaskAuto extends OpMode {
 
             robot.getLauncher().updateElevator();
 
-            if (((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar() != Robot.PINPOINT_B1_YAW_SCALAR) {
-                ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+            long currentTime = System.currentTimeMillis();
+
+            if (currentTime - lastYawRead > 250) {
+                double yawScalar = ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().getYawScalar();
+                lastYawRead = currentTime;
+                if (yawScalar != Robot.PINPOINT_B1_YAW_SCALAR) {
+                    ((PinpointLocalizer) follower.getPoseTracker().getLocalizer()).getPinpoint().setYawScalar(Robot.PINPOINT_B1_YAW_SCALAR);
+                }
             }
 
             follower.update();
