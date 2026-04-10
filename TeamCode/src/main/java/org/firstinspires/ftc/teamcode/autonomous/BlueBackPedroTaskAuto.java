@@ -92,7 +92,7 @@ public class BlueBackPedroTaskAuto extends OpMode {
     @Override
     public void start() {
 
-        RobotStaticValuesClass.savedObelisk = motif;
+        RobotStaticValuesClass.savedObelisk = motif == null ? RobotStaticValuesClass.Obelisk.GPP : motif;
 
         Task autoTask = new NullTask();
 
@@ -176,7 +176,7 @@ public class BlueBackPedroTaskAuto extends OpMode {
             RobotStaticValuesClass.saveState(
                 new Pose2D(DistanceUnit.INCH, ftcPose.getX(), ftcPose.getY(), AngleUnit.RADIANS, ftcPose.getHeading()),
                 robot.getLauncher().getLastAngleOffset(),
-                motif
+                motif == null ? RobotStaticValuesClass.Obelisk.GPP : motif
             );
         }
     }

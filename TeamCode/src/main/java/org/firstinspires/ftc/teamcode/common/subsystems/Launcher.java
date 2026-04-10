@@ -1079,6 +1079,7 @@ public class Launcher {
     private boolean autoTurretAimed;
 
     public void autoUpdateTurretPID (double target) {
+        lastAngleOffset = currentAngleOffset;
 
         double turretLastTime = turretTime;
         turretTime = System.nanoTime() / 1000000000.0;
