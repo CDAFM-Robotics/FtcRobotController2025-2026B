@@ -72,10 +72,10 @@ public class DriverControlWithIndexerRedTeleOp extends LinearOpMode {
         debugManager.LOG_PINPOINT   = false;
         debugManager.LOG_VISION     = false;
         debugManager.LOG_LAUNCHER   = false;
-        debugManager.LOG_SPINDEXER  = true;
+        debugManager.LOG_SPINDEXER  = false;
         debugManager.LOG_INTAKE     = false;
         debugManager.LOG_HUD        = false;
-        debugManager.LOG_ROBOT      = true;
+        debugManager.LOG_ROBOT      = false;
 
         // ───────────────────────────────────────────────────────────
         debugManager.addData("Red side", "%s", isRedSide);

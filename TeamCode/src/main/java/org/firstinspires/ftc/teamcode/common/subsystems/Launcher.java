@@ -561,12 +561,12 @@ public class Launcher {
         shootingTable.add(110.08,1420,0.10);
         shootingTable.add(115.05,1480,0.08);
         shootingTable.add(120.25,1500,0.03);
-        shootingTable.add(125.20,1520,0.025);
+        shootingTable.add(125.20,1520,0.02);
         shootingTable.add(130.20,1540,0.02);
         shootingTable.add(135.20,1560,0.01);
         shootingTable.add(140.09,1580,0.00);
         shootingTable.add(145.39,1620,0.00);
-        shootingTable.add(149.96,1640,0.00);
+        shootingTable.add(150.96,1620,0.00); //velocity was 1640
 
 
 
@@ -1063,7 +1063,7 @@ public class Launcher {
 
 
         // Logging
-        // TODO RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
+        RobotLog.d("Power: %.2f, Servo Angle: %.2f, Last Servo Angle: %.2f, Difference: %.2f, Angle Offset: %.2f, Actual Servo Angle: %.2f, target angle: %.2f", turretPower, currentAngle, lastAngle, diff, currentAngleOffset, actualAngle, turretTarget);
         // Set last variables for next loop
 
         lastAngle = currentAngle;

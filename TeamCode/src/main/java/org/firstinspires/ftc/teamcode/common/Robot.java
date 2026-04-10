@@ -539,6 +539,10 @@ public class Robot {
         double relativeAngle;
         relativeAngle = (absoluteAngleDegree - robotHeading);
         if (isRedSide) {
+            //reduce offset close to 180
+            relativeAngle = normalizeAngle(relativeAngle); //off set red side
+            double headingOffset = -3.5 + (Math.abs(relativeAngle) / 180.0) * 2.0;
+            relativeAngle += headingOffset;
             relativeAngle = normalizeAngle(relativeAngle);
         }
         else {
