@@ -288,6 +288,7 @@ public class DriveBase {
         leftKickStand.setPosition(0.19);
         kickStandIsSet = true;
         parkingState = 0;
+        timeKickStand.reset();
     }
 
     public void resetKickStand() {
@@ -300,7 +301,7 @@ public class DriveBase {
     public void spinFrontWheels() {
         switch (parkingState) {
             case 0: // INIT
-                if (timeKickStand.milliseconds()<=500) {
+                if (timeKickStand.milliseconds()<=750) {
                     // wait for a bit so we don't move
                 }
                 else {

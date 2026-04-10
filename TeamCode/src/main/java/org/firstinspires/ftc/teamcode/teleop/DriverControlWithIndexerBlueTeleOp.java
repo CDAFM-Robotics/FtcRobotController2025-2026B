@@ -43,7 +43,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
     private LLResult result;
 
     // TODO add Data to Panels
-    static TelemetryManager telemetryM;
+    // static TelemetryManager telemetryM;
 
 
     RobotStaticValuesClass.Obelisk obelisk = RobotStaticValuesClass.Obelisk.UNKNOWN;
@@ -56,22 +56,22 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         // telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
         // TODO Panels telemetry and robot drawing
-        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
-        Drawing.init();
+//        telemetryM = PanelsTelemetry.INSTANCE.getTelemetry();
+//        Drawing.init();
 
         // One line to set up — pass your telemetry and a tag name
         debugManager = new DebugManager(telemetry, "TELEOP");
         // ── Toggle these for competition vs. development ────────────
         // ─── Master switches ────────────────────────────────────────
 
-        debugManager.TELEMETRY_ENABLED = true;
-        debugManager.ROBOT_LOG_ENABLED = true;
+        debugManager.TELEMETRY_ENABLED = false;
+        debugManager.ROBOT_LOG_ENABLED = false;
 
         // Individual Telemetry flags
         debugManager.LOG_DRIVEBASE  = false;
         debugManager.LOG_PINPOINT   = false;
         debugManager.LOG_VISION     = false;
-        debugManager.LOG_LAUNCHER   = true;
+        debugManager.LOG_LAUNCHER   = false;
         debugManager.LOG_SPINDEXER  = true;
         debugManager.LOG_INTAKE     = false;
         debugManager.LOG_HUD        = false;
@@ -98,7 +98,6 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
         ElapsedTime reverseIntakeTimer  = new ElapsedTime();
         reverseIntakeTimer.reset();
 
-        // TODO Adding localization Pipeline
         robot.getLauncher().setLimelightPipeline((Robot.LLPipelines.APRIL_TAG.ordinal()));
 
         hud = new Hud(hardwareMap, telemetry);
@@ -153,7 +152,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                     firstLoop = false;
                 }
 
-                // TODO LOCALIZATION UPDATE
+                // LOCALIZATION UPDATE
                 // Get april tags
                 result = robot.getLauncher().getLimeLight().getLatestResult();
                 robot.getDriveBase().correctHeadingFromVision(result, robot);
@@ -170,7 +169,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
                 // Driving controls for the robot
                 if (currentGamepad1.left_stick_button && !previousGamepad1.left_stick_button) {
-                    // TODO Disabling slow mode toggle on left stick 4Apr26 (too sensitive)
+                    // Disabling slow mode toggle on left stick 4Apr26 (too sensitive)
                     // driveSpeed = driveSpeed == 1 ? 0.5 : 1;
                 }
 
@@ -196,7 +195,6 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
                 // Kickstand control
                 if (currentGamepad1.a != previousGamepad1.a) {
-                    robot.getDriveBase().setMotorPowers(0, 0, 0, driveSpeed, fieldCentric);
                     robot.getDriveBase().setKickStand();
                 }
 
@@ -227,7 +225,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                 if (currentGamepad1.right_trigger == 0.0 && previousGamepad1.right_trigger != 0) {
                     //robot update artifact colors
                     robot.getIntake().stopIntake();
-                    //TODO: reverse intake for 500 milliseconds if there are three ball already
+                    //reverse intake for 500 milliseconds if there are three ball already
                     robot.setRobotState(Robot.RobotInOutState.IDLE);
                     colorConfirmed = false;
                 }
@@ -355,7 +353,7 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
                     }
                 }
 
-                //TODO: if auton did not savve obelisk, read limelight until find obelisk aprilTag
+                //TODO: if auton did not save obelisk, read limelight until find obelisk aprilTag
 
                 // blip gamepad1 when intake 1 ball
                 if (robot.isIntake1Ball()) {
@@ -394,13 +392,13 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
                 // TODO spit it out to Panels graph
                 //telemetryM.addData("Velocity", robot.getLauncher().getLauncherVelocity());
-                telemetryM.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
-                telemetryM.addData("Target", robot.last_TurretAngle_Target);
-                telemetryM.addData("currentAngleOffset", robot.getLauncher().getCurrentAngleOffset());
-                telemetryM.addData("currentAngle", robot.getLauncher().getTurretDegrees());
-                telemetryM.addData("elevatorPos", robot.getLauncher().getElevatorMotor().getCurrentPosition());
-                telemetryM.addData("elevatorVel", robot.getLauncher().getElevatorMotor().getVelocity());
-                telemetryM.addData("elevatorTarget", robot.getLauncher().getElevatorMotor().getTargetPosition());
+//                telemetryM.addData("Turret Angle", robot.getLauncher().getTurretDegrees());
+//                telemetryM.addData("Target", robot.last_TurretAngle_Target);
+//                telemetryM.addData("currentAngleOffset", robot.getLauncher().getCurrentAngleOffset());
+//                telemetryM.addData("currentAngle", robot.getLauncher().getTurretDegrees());
+//                telemetryM.addData("elevatorPos", robot.getLauncher().getElevatorMotor().getCurrentPosition());
+//                telemetryM.addData("elevatorVel", robot.getLauncher().getElevatorMotor().getVelocity());
+//                telemetryM.addData("elevatorTarget", robot.getLauncher().getElevatorMotor().getTargetPosition());
                 // RobotLog.d("Angles currentAngle: %.2f currentAngleOffset: %.2f", robot.getLauncher().getTurretDegrees() ,robot.getLauncher().getCurrentAngleOffset() );
                 // RobotLog.d ("Elevator: elevPos: %d, eleVel: %.2f, launcherVel: %.2f, spinPos: %.2f", robot.getLauncher().getElevatorMotor().getCurrentPosition(), robot.getLauncher().getElevatorMotor().getVelocity(), robot.getLauncher().getLauncherVelocity(), robot.getIndexer().getAxonServoPosition());
 
@@ -471,28 +469,28 @@ public class DriverControlWithIndexerBlueTeleOp extends LinearOpMode {
 
 
                 // TODO update drawing in panels
-                try {
-                    // Draw the Pinpoint Pose
-                    Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
-                    // Draw the MT2 pose
-                    if (robot.getDriveBase().botpose_mt2 != null) {
-                        Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose_mt2.getPosition().x, robot.getDriveBase().botpose_mt2.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.5));
-                    }
-                    // Draw the MT1 pose
-                    if(robot.getDriveBase().botpose != null) {
-                        Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose.getPosition().x, robot.getDriveBase().botpose.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Green", 0.5));
-                    }
-                    Drawing.sendPacket();
-                } catch (Exception e) {
-                    throw new RuntimeException("Drawing failed" + e);
-                }
+//                try {
+//                    // Draw the Pinpoint Pose
+//                    Drawing.drawRobot(PoseConverter.pose2DToPose(robot.getDriveBase().getPinPointPose(), InvertedFTCCoordinates.INSTANCE));
+//                    // Draw the MT2 pose
+//                    if (robot.getDriveBase().botpose_mt2 != null) {
+//                        Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose_mt2.getPosition().x, robot.getDriveBase().botpose_mt2.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose_mt2.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Red", 0.5));
+//                    }
+//                    // Draw the MT1 pose
+//                    if(robot.getDriveBase().botpose != null) {
+//                        Drawing.drawRobot(PoseConverter.pose2DToPose(new Pose2D(DistanceUnit.METER, robot.getDriveBase().botpose.getPosition().x, robot.getDriveBase().botpose.getPosition().y, AngleUnit.DEGREES, robot.getDriveBase().botpose.getOrientation().getYaw()), InvertedFTCCoordinates.INSTANCE), new Style("", "Green", 0.5));
+//                    }
+//                    Drawing.sendPacket();
+//                } catch (Exception e) {
+//                    throw new RuntimeException("Drawing failed" + e);
+//                }
 
-                double lastLoopTime = LoopTime.milliseconds();
-                telemetryM.addData("LoopTime", lastLoopTime);
-                RobotLog.d("LoopTime %.4f", lastLoopTime);
+//                double lastLoopTime = LoopTime.milliseconds();
+//                telemetryM.addData("LoopTime", lastLoopTime);
+//                RobotLog.d("LoopTime %.4f", lastLoopTime);
 
                 // TODO add panels telem
-                telemetryM.update();
+//                telemetryM.update();
             } // end While Opmode
         }
         finally {
